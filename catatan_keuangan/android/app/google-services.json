@@ -1,0 +1,49 @@
+{
+  "project_info": {
+    "project_number": "990321993205",
+    "firebase_url": "https://latihan-60ea4.firebaseio.com",
+    "project_id": "latihan-60ea4",
+    "storage_bucket": "latihan-60ea4.firebasestorage.app"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:990321993205:android:059f2ae6deeda2cf0aecbc",
+        "android_client_info": {
+          "package_name": "com.example.catatan_keuangan"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyDRPozn5Ksx5J6U9sddiMv5E6AoqE7zQlw"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    },
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:990321993205:android:e396e08110c7ea940aecbc",
+        "android_client_info": {
+          "package_name": "com.example.flutter_app"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyDRPozn5Ksx5J6U9sddiMv5E6AoqE7zQlw"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}

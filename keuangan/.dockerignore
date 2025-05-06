@@ -1,0 +1,10 @@
+node_modules
+dist
+Dockerfile
+docker-compose.yml
+*.log
+*.md
+.git
+.env
+.env copy
+latihan-60ea4-firebase-adminsdk-fbsvc-b9ef930382

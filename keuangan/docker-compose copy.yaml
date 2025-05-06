@@ -1,0 +1,36 @@
+version: '3.8'
+# docker compose up -d
+
+services:
+  nest-api:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    container_name: nestjs-prod
+    restart: always
+    ports:
+      - "3000:3000"
+    
+    environment:
+      NODE_ENV: production
+      PORT: 3000
+      TYPE_DB: sample
+      HOST_DB: sample
+      PORT_DB: sample
+      USERNAME_DB: sample
+      PASS_DB: sample
+      DB: sample
+      # PORT=3000
+      secret_jwt: sample
+      secret_refresh_jwt: sample
+      FIREBASE_PROJECT_ID: sample
+      FIREBASE_CLIENT_EMAIL: sample
+      FIREBASE_PRIVATE_KEY: sample
+    deploy:
+      resources:
+        limits:
+          cpus: '0.50'
+          memory: 300m
+    # depends_on:
+    #   - mysql
+    
