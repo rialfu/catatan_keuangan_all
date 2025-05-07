@@ -9,26 +9,35 @@ import {
 import { CategoryService } from '../category/category.service';
 import { ExtendedValidationArguments } from 'src/config/lib';
 import { REQUEST_CONTEXT } from 'src/config/InjectUserIntercept';
+import { SavingPlanService } from 'src/saving-plan/saving-plan.service';
 
 interface IsInDateReminderOptions {
     isNeed: boolean;
 }
 
-@ValidatorConstraint({ name: 'CustomTypeReminder', async: true })
+@ValidatorConstraint({ name: 'CustomDateReminder', async: true })
 @Injectable()
 export class DateReminderValidation implements ValidatorConstraintInterface {
-    constructor() {}
+     constructor(private service:  SavingPlanService) {}
     
     async validate(value: any, args: ExtendedValidationArguments): Promise<boolean>  {
-        if(args['object']['type_reminder'] == 'daily' || args['object']['type_reminder'] == undefined || args['object']['type_reminder'] == null) return true
-        if(typeof value != 'string') return false;
+        
+        let type_reminder :string | null = args['object']['type_reminder'] ?? null;
+        if(type_reminder ==null && (value == undefined || value == null)) return true;
+        if(type_reminder == 'daily') return true;
         
         try {
-            if(args['object']['type_reminder'] == 'monthly'){
+            if(type_reminder == null  && args['object']['id'] != undefined){
+               const res = await this.service.get_data_with_search_single({'id':args['object']['id']})
+               if(res == null) return false;
+               type_reminder = res.type_reminder
+            }
+
+            if(type_reminder == 'monthly'){
                 if(isInt(value)== false) return false
                 const data: number = Number(value)
                 if(data < 1 || data > 31) return false;
-            }else if(args['object']['type_reminder'] == 'weekly'){
+            }else if(type_reminder == 'weekly'){
                 if(value != 'monday' && value != 'tuesday' && value != 'wednesday' && value != 'thursday' && value != 'friday' && value != 'saturday' && value != 'sunday' ) return false;
             }
         }catch(err) {

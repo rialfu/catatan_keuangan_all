@@ -1,10 +1,10 @@
 import { Injectable } from '@nestjs/common';
 import { Cron, CronExpression } from '@nestjs/schedule';
-import { InjectRepository } from '@nestjs/typeorm';
+import { InjectRepository, InjectDataSource, InjectEntityManager } from '@nestjs/typeorm';
 import { SavingPlan } from 'src/model/saving_plan.entity';
 import { SavingPlanCheckout } from 'src/model/saving_plan_checkout_entity';
 import { User } from 'src/model/user.entity';
-import { Brackets, DeleteResult, Repository } from 'typeorm';
+import { Brackets, DeleteResult, Repository, DataSource, EntityManager } from 'typeorm';
 
 @Injectable()
 export class SavingPlanService {
@@ -13,6 +13,7 @@ export class SavingPlanService {
         private readonly savingPlanRepo: Repository<SavingPlan>,
         @InjectRepository(SavingPlanCheckout)
         private readonly savingPlanCheckoutRepo: Repository<SavingPlanCheckout>,
+        @InjectDataSource() private dataSource: DataSource
         
     ) { 
     }
@@ -95,7 +96,23 @@ export class SavingPlanService {
             
         })
     }
-    get_data_with_search_single_and_user(search:{[key: string]: any}) :Promise<SavingPlan | null>{
+    get_single_data_with_custom(search:{[key: string]: any}) : Promise<any>{
+        let defaultValueforSum : string = 'IFNULL(sub.total, 0)'
+        if(process.env.TYPE_DB == 'mssql'){
+            defaultValueforSum = 'ISNULL(sub.total,0)'
+        }
+        let query = this.savingPlanRepo.createQueryBuilder('sp')
+        query.innerJoin(User, 'u', 'u.id=sp.userId')
+        .leftJoin(sub=>{
+            return sub.select(['savingPlanId','sum(money) as total']).from(SavingPlanCheckout,'spc')
+            .groupBy('spc.savingPlanId')
+        },'sub','sub.savingPlanId=sp.id')
+        .addSelect(`${defaultValueforSum} as stored`)
+        .where('u.id = :user', { user : search['userId'] })
+        .andWhere('sp.id = :id', { user : search['id'] })
+        return query.getRawOne()
+    }
+    get_data_with_search_single_and_user_checkout(search:{[key: string]: any}) :Promise<SavingPlan | null>{
         return this.savingPlanRepo.findOne({
             where:search,
             relations:{
@@ -112,6 +129,9 @@ export class SavingPlanService {
                 user:{
                     id:true
                 },
+                checkout:{
+                    money:true
+                }
             },
             order:{
                 target_date:'ASC'
@@ -159,6 +179,50 @@ export class SavingPlanService {
     }
     delete_checkout(search:{[key: string]: any}): Promise<DeleteResult>{
         return this.savingPlanCheckoutRepo.delete(search)
+    }
+    async process_create_checkout(data: Partial<SavingPlanCheckout>, id_saving_plan: string, id_user: string) : Promise<{[key: string]: any}>{
+        const queryRunner = this.dataSource.createQueryRunner();
+        await queryRunner.connect();
+        await queryRunner.startTransaction();
+        try{
+            const tx = await queryRunner.manager.findOne(SavingPlan, 
+                {
+                    where:{
+                        id:id_saving_plan
+                    }, 
+                    relations:{
+                        checkout:true,
+                        user:true,
+                    },
+                    select:{
+                        target_money:true,
+                        checkout:{
+                            money:true
+                        },
+                        user:{
+                            id:true
+                        }
+                    }
+                })
+            if(tx == null){
+                await queryRunner.release()
+                return new Promise((resolve)=> resolve({'result':false, 'message':'please use another saving plan before checkout', 'code':422}))
+            }
+            let stores : number = tx.checkout.reduce((prev, cur)=> prev + cur.money, 0)
+            if(stores > tx.target_money){
+                await queryRunner.release()
+                return new Promise((resolve)=> resolve({'result':false, 'message':'Your savings have exceeded the target.', 'code':403}))
+            }
+            data.savingPlan = tx
+            const result = await queryRunner.manager.insert(SavingPlanCheckout, data);
+            await queryRunner.commitTransaction()
+            await queryRunner.release()
+            return new Promise((resolve)=> resolve({'result':true, 'data':result}))
+        }catch(err){
+            await queryRunner.rollbackTransaction();
+            await queryRunner.release()
+            return new Promise((resolve)=> resolve({'result':false, 'message':'server error', 'code':500}))
+        }
     }
     // CRO
     // @Cron( ' * * * * *')

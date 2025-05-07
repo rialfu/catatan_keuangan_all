@@ -1,5 +1,6 @@
 import { IsBoolean, IsDateString, IsIn, IsNotEmpty, IsNumber, IsOptional, IsPositive, IsString, MaxLength } from "class-validator";
 import { IsInDateReminder } from "src/validations/is_in_date_reminder";
+import { IsInTypeReminder } from "src/validations/is_in_type_reminder";
 
 
 export class CreateSavingPlanDTO{
@@ -36,28 +37,29 @@ export class UpdateSavingPlanDTO{
     @IsOptional()
     @IsString({'message':'Name is must string'})
     @MaxLength(100.,{message:'Name has max 100 characters'})
-    name: string;
+    name?: string;
     
     @IsOptional()
     @IsIn(['monthly', 'weekly', 'daily'],{'message':'Type Reminder must choose monthly, weekly or daily'})
     @IsOptional()
-    type_reminder: string;
+    @IsInTypeReminder()
+    type_reminder?: string;
 
     @IsInDateReminder()
-    date_reminder: string
+    date_reminder?: string
 
 
     @IsOptional()
     @IsDateString()
-    target_date: string;
+    target_date?: string;
 
     @IsOptional()
     @IsPositive({'message':'Target Money must more than zero'})
-    target_money: number;
+    target_money?: number;
     
     @IsOptional()
     @IsBoolean()
-    notification: boolean;
+    notification?: boolean;
     // tar:number;
 }
 

@@ -7,13 +7,13 @@ export class UserToken {
     @PrimaryGeneratedColumn('increment', {type:'bigint',unsigned:true}) //it is used to generate primary id, when new data inserted.
     id: number;
     
-    @Column({ unique:true })
+    @Column()
     fcm_token: string;
     
     @ManyToOne(() => User, (User)=> User.userTokens,{ })
     user: User;
 
-    @UpdateDateColumn()
+    @Column('date')
     expired_date: string;
 
 

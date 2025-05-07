@@ -1,4 +1,4 @@
-import { Body, Controller, Delete, Get, HttpException, Param, Post, Request, UseGuards } from '@nestjs/common';
+import { Body, Controller, Delete, Get, HttpException, HttpStatus, Param, Post, Request, UseGuards } from '@nestjs/common';
 import { SkipThrottle } from '@nestjs/throttler';
 import { SavingPlanService } from './saving-plan.service';
 import { SavingPlan } from 'src/model/saving_plan.entity';
@@ -7,6 +7,7 @@ import { User } from 'src/model/user.entity';
 import { UserJWT } from 'src/model/user_jwt.dto';
 import { AuthGuard } from '@nestjs/passport';
 import { SavingPlanCheckout } from 'src/model/saving_plan_checkout_entity';
+import { InjectUserToBody } from 'src/config/apply_decorator';
 
 // @SkipThrottle()
 @Controller('saving-plan')
@@ -93,8 +94,9 @@ export class SavingPlanController {
        return {'data':res, 'message':'berhasil'};
     }
     @Post('create')
-    // @UseGuards(AuthGuard('jwt'))
-    create(@Body() body:CreateSavingPlanDTO, @Request() req,){
+    @UseGuards(AuthGuard('jwt'))
+    @InjectUserToBody()
+    async create(@Body() body:CreateSavingPlanDTO, @Request() req,){
         // const userData: UserJWT = req.user
 
         const data = new SavingPlan()
@@ -105,23 +107,20 @@ export class SavingPlanController {
         data.target_money = body.target_money
 
         const user = new User()
-        // user.id = userData.userId
         data.user = user
-
+        await this.savingPlanService.create(data)
         return {'message':'berhasil', 'result':data}
-        // this.savingPlanService.create(data)
+        // 
     }
     @Post('update')
     @UseGuards(AuthGuard('jwt'))
+    @InjectUserToBody()
     async Update(@Body() body:UpdateSavingPlanDTO, @Request() req,){
         const userData: UserJWT = req.user
-        const tx = await this.savingPlanService.get_data_with_search_single(
+        const tx = await this.savingPlanService.get_single_data_with_custom(
             {
-                id:body.id, 
-                user:
-                {
-                    id:userData.userId
-                }
+                'id': body.id,
+                'userId':userData,
             }
         )
         if(tx == null){
@@ -134,8 +133,13 @@ export class SavingPlanController {
         data.date_reminder = body.date_reminder
         data.target_date = body.date_reminder
         data.target_money = body.target_money
-
-        this.savingPlanService.update(data, body.id)
+        if(tx['stored'] > tx['target_money']){
+            data.notification = false;
+        }else{
+            data.notification = body.notification
+        }
+        
+        await this.savingPlanService.update(data, body.id)
 
         return {'message':'berhasil', 'result':data}
         // this.savingPlanService.create(data)
@@ -169,27 +173,16 @@ export class SavingPlanController {
     @UseGuards(AuthGuard('jwt'))
     async create_checkout(@Body() body:CreateSavingPlanCheckoutDTO, @Request() req,){
         const userData: UserJWT = req.user
-        const tx = await this.savingPlanService.get_data_with_search_single(
-            {
-                id:body.id_saving_plan, 
-                user:
-                {
-                    id:userData.userId
-                }
-            }
-        )
-        if(tx == null){
-            throw new HttpException({'message':'please use another saving plan before checkout'}, 422);
-        }
-
+        
         const data = new SavingPlanCheckout()
         data.date_checkout = body.date_checkout
         data.money = body.money
-        data.savingPlan = tx
+        const res = await this.savingPlanService.process_create_checkout(data, body.id_saving_plan, userData.userId);
+        if(res['result'] == false){
+            throw new HttpException({'message':res['message']}, res['code']);
+        }
 
-        const res = await this.savingPlanService.create_checkout(data)
-
-        return {'message':'berhasil', 'result':res}
+        return {'message':'berhasil', 'result':res['data']}
         // this.savingPlanService.create(data)
     }
     @Delete('/checkout/delete/:id')

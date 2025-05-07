@@ -83,6 +83,12 @@ export class AppController {
     const res = await this.userService.create(user)
     return {'message':'Success', 'result':res}
   }
+  formatDate(date :  Date) : string{
+    const year = date.getFullYear();
+    const month = String(date.getMonth() + 1).padStart(2, '0'); // Months are 0-indexed
+    const day = String(date.getDate()).padStart(2, '0');
+    return `${year}-${month}-${day}`;
+  }
 
   @UseGuards(AuthGuard('local'))
   @Post('auth/login')
@@ -90,17 +96,67 @@ export class AppController {
   async login(@Request() req) {
     const token = req['body']['fcm_token']
     if(token != undefined && (typeof token === 'string' )){
-      const res  = await this.userService.get_token_exist(token)
-      const userToken : Partial<UserToken> = new UserToken()
-      userToken.fcm_token = token
-      if(res != null){
-        await this.userService.update_token_user(userToken, res.user.id)
-      }else{
+      let userToken : UserToken | null = await this.userService.get_user_token(req['user']['id'])
+      const tokenInDb : UserToken | null  = await this.userService.get_token_exist(token)
+
+      if(userToken == null){
         const user = new User()
         user.id = req.user.id
-        userToken.user = user
-        await this.userService.insert_token_user(userToken)
+        if(tokenInDb != null){
+          tokenInDb.user = user
+          let date = new Date()
+          date = new Date(new Date(date).setMonth(date.getMonth() + 8));
+          tokenInDb.expired_date = this.formatDate(date)
+          console.log('1')
+          await this.userService.update_token_user(tokenInDb, tokenInDb.id)
+        }else{
+          userToken = new UserToken()
+          userToken.fcm_token = token      
+          userToken.user = user
+          let date = new Date()
+          date = new Date(new Date(date).setMonth(date.getMonth() + 8));
+          userToken.expired_date = this.formatDate(date)
+          console.log('2')
+          await this.userService.insert_token_user(userToken)
+        }
+       
+      }else{
+        if(tokenInDb == null){
+          console.log('3')
+          userToken.fcm_token = token
+          let date = new Date()
+          date = new Date(new Date(date).setMonth(date.getMonth() + 8));
+          userToken.expired_date = this.formatDate(date)
+          await this.userService.update_token_user(userToken, userToken.id)
+          
+        }else{
+          if( userToken.id == tokenInDb.id){
+            console.log('4')
+            let date = new Date()
+            date = new Date(new Date(date).setMonth(date.getMonth() + 8));
+            userToken.expired_date = this.formatDate(date)
+            await this.userService.update_token_user(userToken, userToken.id)
+          }else{
+            console.log('5')
+          }
+        }
+        
       }
+      // const userToken : Partial<UserToken> = new UserToken()
+      // userToken.fcm_token = token
+      // console.log(res)
+      // // console.log(req)
+      // if(res != null){
+      //   console.log('update')
+      //   // userToken.id = res.id
+      //   // await this.userService.update_token_user(userToken, req.user.id)
+      // }else{
+      //   console.log('insert')
+      //   const user = new User()
+      //   user.id = req.user.id
+      //   userToken.user = user
+      //   // await this.userService.insert_token_user(userToken)
+      // }
     }
     return this.authService.login(req.user)
   }

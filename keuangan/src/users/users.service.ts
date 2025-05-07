@@ -19,8 +19,11 @@ export class UsersService {
     get_token_exist(token: string): Promise<UserToken | null>{
         return this.userTokens.findOneBy({fcm_token:token});
     }
-    update_token_user(data: Partial<UserToken>, id: string) :Promise<UpdateResult>{
-        return this.userTokens.update({user:{id}}, data);
+    get_user_token(id: string): Promise<UserToken | null>{
+        return this.userTokens.findOneBy({user:{id}})
+    }
+    update_token_user(data: Partial<UserToken>, id: number) :Promise<UpdateResult>{
+        return this.userTokens.update({id}, data);
     }
     insert_token_user(data: Partial<UserToken>){
         return this.userTokens.save(data)
