@@ -183,12 +183,13 @@ class _MainScreenState extends State<MainScreen> with TickerProviderStateMixin {
               ListTile(
                 title: Text("Home / Catatan"),
                 onTap: () {
-                  Navigator.of(context, rootNavigator: true).pop();
+                  // Navigator.of(context, rootNavigator: true).pop();
                 },
               ),
               ListTile(
                 title: Text("Saving Plan"),
                 onTap: () {
+                  Navigator.pop(context);
                   Navigator.push(
                     context,
                     MaterialPageRoute(

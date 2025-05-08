@@ -18,7 +18,7 @@ class SavingPlanModel {
     required this.dateReminder,
     required this.targetDate,
     required this.targetMoney,
-    this.notification = true,
+    this.notification = false,
     this.checkout = const [],
   });
   factory SavingPlanModel.fromJson(Map<String, dynamic> json) {
@@ -71,12 +71,24 @@ class SavingPlanModel {
       checkout: checkout,
     );
   }
+  SavingPlanModel update({bool? newNotification}) {
+    return SavingPlanModel(
+      id: id,
+      name: name,
+      typeReminder: typeReminder,
+      dateReminder: dateReminder,
+      targetDate: targetDate,
+      targetMoney: targetMoney,
+      notification: newNotification ?? notification,
+    );
+  }
+
   Map<String, dynamic> toJsonSave() {
     return {
       'name': name,
       'type_reminder': typeReminder,
       'date_reminder': dateReminder,
-      'target_date': dateReminder,
+      'target_date': targetDate,
       'target_money': targetMoney,
       'notification': notification
     };
@@ -88,7 +100,7 @@ class SavingPlanModel {
       'name': name,
       'type_reminder': typeReminder,
       'date_reminder': dateReminder,
-      'target_date': dateReminder,
+      'target_date': targetDate,
       'target_money': targetMoney,
       'notification': notification
     };

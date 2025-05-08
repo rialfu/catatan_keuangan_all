@@ -25,17 +25,23 @@ export class DateReminderValidation implements ValidatorConstraintInterface {
         let type_reminder :string | null = args['object']['type_reminder'] ?? null;
         if(type_reminder ==null && (value == undefined || value == null)) return true;
         if(type_reminder == 'daily') return true;
-        
-        try {
-            if(type_reminder == null  && args['object']['id'] != undefined){
-               const res = await this.service.get_data_with_search_single({'id':args['object']['id']})
-               if(res == null) return false;
-               type_reminder = res.type_reminder
-            }
 
+        try {
+            const res = await this.service.get_data_with_search_single({'id':args['object']['id']})
+            if(type_reminder == null  && args['object']['id'] != undefined){
+                console.log('date')
+                if(res == null) return false;
+                type_reminder = res.type_reminder
+            }
+            if(value == undefined || value == null){
+                value = res?.date_reminder
+            }
+            
             if(type_reminder == 'monthly'){
+                console.log('date_reminder')
                 if(isInt(value)== false) return false
                 const data: number = Number(value)
+                console.log('date_reminder')
                 if(data < 1 || data > 31) return false;
             }else if(type_reminder == 'weekly'){
                 if(value != 'monday' && value != 'tuesday' && value != 'wednesday' && value != 'thursday' && value != 'friday' && value != 'saturday' && value != 'sunday' ) return false;

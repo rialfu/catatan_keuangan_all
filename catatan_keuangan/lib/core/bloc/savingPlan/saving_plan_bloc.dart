@@ -31,6 +31,12 @@ class SavingPlanBloc extends Bloc<SavingPlanEvent, SavingPlanState> {
         print('request sp');
         List<SavingPlanModel> res = await savingPlanService.getAllSavingPlan();
         emit(SavingPlanStateFinishLoad(data: res));
+      } on CustomExceptionForPost catch (e) {
+        if (e.codeError == 400 || e.codeError == 429) {
+          emit(SavingPlanState.error(state.savingPlans, e.cause));
+          return;
+        }
+        emit(SavingPlanStateFinishLoad(data: state.savingPlans));
       } catch (err) {
         if (err.toString().contains('unauthorized')) {
           emit(SavingPlanState.sessionLost());
@@ -56,10 +62,11 @@ class SavingPlanBloc extends Bloc<SavingPlanEvent, SavingPlanState> {
         data.sort((a, b) => b.targetDate.compareTo(a.targetDate));
         emit(SavingPlanStateFinishLoad(data: data));
       } on CustomExceptionForPost catch (e) {
-        print('error custom:' + e.codeError.toString());
-        if (e.codeError == 400) {
+        if (e.codeError == 400 || e.codeError == 429) {
           emit(SavingPlanState.error(state.savingPlans, e.cause));
+          return;
         }
+        emit(SavingPlanStateFinishLoad(data: state.savingPlans));
       } catch (err) {
         if (err.toString().contains('unauthorized')) {
           emit(SavingPlanState.sessionLost());
@@ -73,19 +80,49 @@ class SavingPlanBloc extends Bloc<SavingPlanEvent, SavingPlanState> {
       try {
         var data = [...(state.savingPlans)];
         await savingPlanService.updateSavingPlan(event.data);
-        data.map((e) {
-          if (e.id == event.data.id) {
-            return event.data;
+        data = data.map((e) {
+          if (e.id == event.forUpdate.id) {
+            return event.forUpdate;
           }
           return e;
-        });
+        }).toList();
         data.sort((a, b) => b.targetDate.compareTo(a.targetDate));
         emit(SavingPlanStateFinishLoad(data: data));
       } on CustomExceptionForPost catch (e) {
-        print('error custom:' + e.codeError.toString());
-        if (e.codeError == 400) {
+        if (e.codeError == 400 || e.codeError == 429 || e.codeError == 422) {
           emit(SavingPlanState.error(state.savingPlans, e.cause));
+          return;
         }
+        emit(SavingPlanStateFinishLoad(data: state.savingPlans));
+      } catch (err) {
+        print(err);
+        if (err.toString().contains('unauthorized')) {
+          emit(SavingPlanState.sessionLost());
+          return;
+        }
+        emit(SavingPlanState.error(state.savingPlans, err.toString()));
+      }
+    });
+    on<SavingPlanNotificationRequested>((event, emit) async {
+      emit(SavingPlanStateLoad(data: state.savingPlans));
+      try {
+        var data = [...(state.savingPlans)];
+        await savingPlanService.updateSavingPlan(event.data);
+        data = data.map((e) {
+          if (e.id == event.data['id']) {
+            return e.update(
+                newNotification: event.data['notification'] as bool);
+          }
+          return e;
+        }).toList();
+        data.sort((a, b) => b.targetDate.compareTo(a.targetDate));
+        emit(SavingPlanStateFinishLoad(data: data));
+      } on CustomExceptionForPost catch (e) {
+        if (e.codeError == 400 || e.codeError == 429) {
+          emit(SavingPlanState.error(state.savingPlans, e.cause));
+          return;
+        }
+        emit(SavingPlanStateFinishLoad(data: state.savingPlans));
       } catch (err) {
         print(err);
         if (err.toString().contains('unauthorized')) {
@@ -103,10 +140,11 @@ class SavingPlanBloc extends Bloc<SavingPlanEvent, SavingPlanState> {
         data.removeWhere((e) => e.id == event.id);
         emit(SavingPlanStateFinishLoad(data: data));
       } on CustomExceptionForPost catch (e) {
-        print('error custom:' + e.codeError.toString());
-        if (e.codeError == 400) {
+        if (e.codeError == 400 || e.codeError == 429) {
           emit(SavingPlanState.error(state.savingPlans, e.cause));
+          return;
         }
+        emit(SavingPlanStateFinishLoad(data: state.savingPlans));
       } catch (err) {
         print(err);
         if (err.toString().contains('unauthorized')) {
@@ -139,10 +177,11 @@ class SavingPlanBloc extends Bloc<SavingPlanEvent, SavingPlanState> {
 
         emit(SavingPlanStateFinishLoad(data: newData));
       } on CustomExceptionForPost catch (e) {
-        print('error custom:' + e.codeError.toString());
-        if (e.codeError == 400) {
+        if (e.codeError == 400 || e.codeError == 429) {
           emit(SavingPlanState.error(state.savingPlans, e.cause));
+          return;
         }
+        emit(SavingPlanStateFinishLoad(data: state.savingPlans));
       } catch (err) {
         print(err);
         if (err.toString().contains('unauthorized')) {

@@ -1,3 +1,4 @@
+import 'package:catatan_keuangan/extensions/context_entension.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 
@@ -21,7 +22,8 @@ class DropDownComponent extends StatelessWidget {
       child: DropdownButton<String>(
         hint: Text("Choose"),
         value: setValue,
-        isExpanded: true,
+        menuMaxHeight: context.dynamicHeight(0.3),
+        isExpanded: false,
         items: listData
             .map(
               (e) => DropdownMenuItem<String>(

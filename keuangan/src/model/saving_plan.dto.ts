@@ -12,6 +12,7 @@ export class CreateSavingPlanDTO{
     @IsIn(['monthly', 'weekly', 'daily'], {'message':'Type Reminder must choose monthly, weekly or daily'})
     type_reminder: string;
 
+    @IsNotEmpty()
     @IsInDateReminder()
     date_reminder: string
 

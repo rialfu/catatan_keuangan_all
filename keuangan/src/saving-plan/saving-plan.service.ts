@@ -97,6 +97,7 @@ export class SavingPlanService {
         })
     }
     get_single_data_with_custom(search:{[key: string]: any}) : Promise<any>{
+        console.log(search)
         let defaultValueforSum : string = 'IFNULL(sub.total, 0)'
         if(process.env.TYPE_DB == 'mssql'){
             defaultValueforSum = 'ISNULL(sub.total,0)'
@@ -107,9 +108,10 @@ export class SavingPlanService {
             return sub.select(['savingPlanId','sum(money) as total']).from(SavingPlanCheckout,'spc')
             .groupBy('spc.savingPlanId')
         },'sub','sub.savingPlanId=sp.id')
-        .addSelect(`${defaultValueforSum} as stored`)
+        .addSelect(`${defaultValueforSum} as store_money`)
+        .addSelect(`(sp.target_money <= ${defaultValueforSum}) as isAchiveTarget`)
         .where('u.id = :user', { user : search['userId'] })
-        .andWhere('sp.id = :id', { user : search['id'] })
+        .andWhere('sp.id = :id', { id : search['id'] })
         return query.getRawOne()
     }
     get_data_with_search_single_and_user_checkout(search:{[key: string]: any}) :Promise<SavingPlan | null>{
@@ -185,40 +187,75 @@ export class SavingPlanService {
         await queryRunner.connect();
         await queryRunner.startTransaction();
         try{
-            const tx = await queryRunner.manager.findOne(SavingPlan, 
-                {
-                    where:{
-                        id:id_saving_plan
-                    }, 
-                    relations:{
-                        checkout:true,
-                        user:true,
-                    },
-                    select:{
-                        target_money:true,
-                        checkout:{
-                            money:true
-                        },
-                        user:{
-                            id:true
-                        }
-                    }
-                })
+            let defaultValueforSum : string = 'IFNULL(sub.total, 0)'
+            if(process.env.TYPE_DB == 'mssql'){
+                defaultValueforSum = 'ISNULL(sub.total,0)'
+            }
+            let query = queryRunner.manager.createQueryBuilder(SavingPlan, 'sp')
+            query = query.innerJoin(User, 'u', 'u.id=sp.userId')
+            .leftJoin(sub=>{
+                let query1 = sub.select(['savingPlanId','sum(money) as total'])
+                query1 = query1.from(SavingPlanCheckout,'spc')
+                return query1.groupBy('spc.savingPlanId')
+                // return sub.select(['savingPlanId','sum(money) as total']).from(SavingPlanCheckout,'spc')
+                // .groupBy('spc.savingPlanId')
+            },'sub','sub.savingPlanId=sp.id')
+            query = query.addSelect(`sp.target_money - ${defaultValueforSum} as remain`)
+                .where('u.id = :user', { user : id_user })
+                .andWhere('sp.id = :id', { id : id_saving_plan })
+            const tx = await query.getRawOne()
             if(tx == null){
                 await queryRunner.release()
                 return new Promise((resolve)=> resolve({'result':false, 'message':'please use another saving plan before checkout', 'code':422}))
             }
-            let stores : number = tx.checkout.reduce((prev, cur)=> prev + cur.money, 0)
-            if(stores > tx.target_money){
+            if(tx['remain'] <= 0){
                 await queryRunner.release()
                 return new Promise((resolve)=> resolve({'result':false, 'message':'Your savings have exceeded the target.', 'code':403}))
             }
-            data.savingPlan = tx
+            let sp : SavingPlan = new SavingPlan()
+            sp.id = id_saving_plan
+            data.savingPlan = sp
+            // const tx = await queryRunner.manager.findOne(SavingPlan, 
+            //     {
+            //         where:{
+            //             id:id_saving_plan
+            //         }, 
+            //         relations:{
+            //             checkout:true,
+            //             user:true,
+            //         },
+            //         select:{
+            //             target_money:true,
+            //             checkout:{
+            //                 money:true
+            //             },
+            //             user:{
+            //                 id:true
+            //             }
+            //         }
+            //     })
+            // if(tx == null){
+            //     await queryRunner.release()
+            //     return new Promise((resolve)=> resolve({'result':false, 'message':'please use another saving plan before checkout', 'code':422}))
+            // }
+            // let stores : number = tx.checkout.reduce((prev, cur)=> prev + cur.money, 0)
+            // if(stores > tx.target_money){
+            //     await queryRunner.release()
+            //     return new Promise((resolve)=> resolve({'result':false, 'message':'Your savings have exceeded the target.', 'code':403}))
+            // }
+            // data.savingPlan = tx
+            
             const result = await queryRunner.manager.insert(SavingPlanCheckout, data);
+            if(tx['remain'] - (data?.money ?? 0) <= 0){
+                let sp1 : Partial<SavingPlan> = new SavingPlan()
+                sp1.notification = false;
+                await queryRunner.manager.update(SavingPlan, {id:id_saving_plan}, sp1)   
+            }
             await queryRunner.commitTransaction()
             await queryRunner.release()
             return new Promise((resolve)=> resolve({'result':true, 'data':result}))
         }catch(err){
+            console.log(err)
             await queryRunner.rollbackTransaction();
             await queryRunner.release()
             return new Promise((resolve)=> resolve({'result':false, 'message':'server error', 'code':500}))

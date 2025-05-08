@@ -1,4 +1,4 @@
-import { Body, Controller, Delete, Get, HttpException, HttpStatus, Param, Post, Request, UseGuards } from '@nestjs/common';
+import { Body, Controller, Delete, Get, HttpException, HttpStatus, Param, Post, Put, Request, UseGuards } from '@nestjs/common';
 import { SkipThrottle } from '@nestjs/throttler';
 import { SavingPlanService } from './saving-plan.service';
 import { SavingPlan } from 'src/model/saving_plan.entity';
@@ -97,22 +97,24 @@ export class SavingPlanController {
     @UseGuards(AuthGuard('jwt'))
     @InjectUserToBody()
     async create(@Body() body:CreateSavingPlanDTO, @Request() req,){
-        // const userData: UserJWT = req.user
+        const userData: UserJWT = req.user
 
         const data = new SavingPlan()
         data.name = body.name
         data.type_reminder = body.type_reminder
         data.date_reminder = body.date_reminder
-        data.target_date = body.date_reminder
+        data.target_date = body.target_date
         data.target_money = body.target_money
+        data.notification = body.notification
 
         const user = new User()
+        user.id = userData.userId
         data.user = user
         await this.savingPlanService.create(data)
         return {'message':'berhasil', 'result':data}
         // 
     }
-    @Post('update')
+    @Put('update')
     @UseGuards(AuthGuard('jwt'))
     @InjectUserToBody()
     async Update(@Body() body:UpdateSavingPlanDTO, @Request() req,){
@@ -120,7 +122,7 @@ export class SavingPlanController {
         const tx = await this.savingPlanService.get_single_data_with_custom(
             {
                 'id': body.id,
-                'userId':userData,
+                'userId':userData.userId,
             }
         )
         if(tx == null){
@@ -131,10 +133,13 @@ export class SavingPlanController {
         data.name = body.name
         data.type_reminder = body.type_reminder
         data.date_reminder = body.date_reminder
-        data.target_date = body.date_reminder
+        data.target_date = body.target_date
         data.target_money = body.target_money
-        if(tx['stored'] > tx['target_money']){
-            data.notification = false;
+        
+        
+        if(tx['isAchiveTarget'] == '1' || tx['isAchiveTarget'] == true){
+            throw new HttpException({'message':'target is achive, notification can\'t active'}, 422);
+            
         }else{
             data.notification = body.notification
         }
@@ -152,7 +157,9 @@ export class SavingPlanController {
         if(tx ==null){
             throw new HttpException({'message':'please use another saving plan'}, 400);
         }
-        const res = await this.savingPlanService.delete({id:parseInt(id)});
+        console.log(id)
+        const res = await this.savingPlanService.delete({id});
+        console.log(res);
         return {'message':'success',"info":res}
     }
     @Get('checkout/:id')

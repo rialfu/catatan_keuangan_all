@@ -3,12 +3,14 @@ import 'package:catatan_keuangan/core/bloc/savingPlan/saving_plan_bloc.dart';
 import 'package:catatan_keuangan/core/bloc/savingPlan/saving_plan_state.dart';
 import 'package:catatan_keuangan/core/model/saving_plan_model.dart';
 import 'package:catatan_keuangan/extensions/string_extension.dart';
+import 'package:catatan_keuangan/screens/modify_saving_plan_screen.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 
 class DetailSavingScreen extends StatefulWidget {
   final int index;
-  const DetailSavingScreen({required this.index, super.key});
+  final String id;
+  const DetailSavingScreen({required this.index, required this.id, super.key});
 
   @override
   State<DetailSavingScreen> createState() => _DetailSavingScreenState();
@@ -83,6 +85,21 @@ class _DetailSavingScreenState extends State<DetailSavingScreen> {
       ),
       body: BlocBuilder<SavingPlanBloc, SavingPlanState>(
           builder: (context, state) {
+        SavingPlanModel data = state.savingPlans[widget.index];
+        if (data.id != widget.id) {
+          data = state.savingPlans.firstWhere(
+            (e) => e.id == widget.id,
+            orElse: () => SavingPlanModel(
+              id: '',
+              name: '',
+              typeReminder: '',
+              dateReminder: '',
+              targetDate: '',
+              targetMoney: 0,
+              notification: false,
+            ),
+          );
+        }
         return Container(
           padding: EdgeInsets.only(top: 8),
           child: Column(
@@ -127,7 +144,16 @@ class _DetailSavingScreenState extends State<DetailSavingScreen> {
                     width: 15,
                   ),
                   ElevatedButton(
-                    onPressed: () {},
+                    onPressed: () {
+                      Navigator.push(
+                        context,
+                        MaterialPageRoute(
+                          builder: (context) => ModifySavingPlanScreen(
+                            data: data,
+                          ),
+                        ),
+                      );
+                    },
                     child: Text("Edit Info"),
                   ),
                   ElevatedButton(

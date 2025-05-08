@@ -21,6 +21,9 @@ class SavingPlanService {
       if (e.response?.statusCode == HttpStatus.unauthorized) {
         throw Exception('unauthorized');
       }
+      if (e.response?.statusCode == HttpStatus.tooManyRequests) {
+        throw CustomExceptionForPost(429, e.response?.data['message']);
+      }
       throw Exception(e.message);
     } catch (err) {
       print(err);
@@ -56,6 +59,9 @@ class SavingPlanService {
         print(e.response?.data);
         throw CustomExceptionForPost(400, e.response?.data['message']);
       }
+      if (e.response?.statusCode == HttpStatus.tooManyRequests) {
+        throw CustomExceptionForPost(429, e.response?.data['message']);
+      }
       throw Exception(e.message);
     } catch (err) {
       print(err);
@@ -63,16 +69,22 @@ class SavingPlanService {
     }
   }
 
-  Future<void> updateSavingPlan(SavingPlanModel data) async {
+  Future<void> updateSavingPlan(Map<String, dynamic> data) async {
     try {
       await dioManager.dio.put(
         'saving-plan/update',
-        data: data.toJsonUpdate(),
+        data: data,
       );
       // List data = res.data['data'];
     } on DioException catch (e) {
       if (e.response?.statusCode == HttpStatus.unauthorized) {
         throw Exception('unauthorized');
+      }
+      if (e.response?.statusCode == HttpStatus.tooManyRequests) {
+        throw CustomExceptionForPost(429, e.response?.data['message']);
+      }
+      if (e.response?.statusCode == HttpStatus.unprocessableEntity) {
+        throw CustomExceptionForPost(429, e.response?.data['message']);
       }
       throw Exception(e.message);
     } catch (err) {
@@ -96,6 +108,9 @@ class SavingPlanService {
         print(e.response?.data);
         throw CustomExceptionForPost(400, e.response?.data['message']);
       }
+      if (e.response?.statusCode == HttpStatus.tooManyRequests) {
+        throw CustomExceptionForPost(429, e.response?.data['message']);
+      }
     }
   }
 
@@ -113,6 +128,9 @@ class SavingPlanService {
       if (e.response?.statusCode == HttpStatus.badRequest) {
         print(e.response?.data);
         throw CustomExceptionForPost(400, e.response?.data['message']);
+      }
+      if (e.response?.statusCode == HttpStatus.tooManyRequests) {
+        throw CustomExceptionForPost(429, e.response?.data['message']);
       }
     }
     return [];

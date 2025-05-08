@@ -22,9 +22,17 @@ class SavingPlanSaveRequested extends SavingPlanEvent {
   List<Object?> get props => [data];
 }
 
+class SavingPlanNotificationRequested extends SavingPlanEvent {
+  final Map<String, dynamic> data;
+  const SavingPlanNotificationRequested(this.data);
+  @override
+  List<Object?> get props => [data];
+}
+
 class SavingPlanUpdateRequested extends SavingPlanEvent {
-  final SavingPlanModel data;
-  const SavingPlanUpdateRequested(this.data);
+  final Map<String, dynamic> data;
+  final SavingPlanModel forUpdate;
+  const SavingPlanUpdateRequested(this.data, this.forUpdate);
   @override
   List<Object?> get props => [data];
 }
