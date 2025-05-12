@@ -119,6 +119,7 @@ class SavingPlanService {
       var res = await dioManager.dio.get(
         'saving-plan/checkout/$id',
       );
+      print(res.data.toString() + '||' + id);
       List data = res.data['data'];
       return data.map((e) => SavingPlanCheckoutModel.fromJson(e)).toList();
     } on DioException catch (e) {

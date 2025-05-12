@@ -11,7 +11,7 @@ import { RolesModule } from './roles/roles.module';
 import { TransactionModule } from './transaction/transaction.module';
 import { Category } from './model/category.entity';
 import { CategoryModule } from './category/category.module';
-import { ThrottlerGuard, ThrottlerModule } from '@nestjs/throttler';
+import { ThrottlerGuard, ThrottlerModule, ThrottlerStorageService } from '@nestjs/throttler';
 import { APP_GUARD } from '@nestjs/core';
 import { CustomThrottlerGuard } from './config/CustomThrottle';
 import { SavingPlan } from './model/saving_plan.entity';
@@ -39,6 +39,9 @@ import { UserToken } from './model/user_token.entity';
       username: process.env.USERNAME_DB,
       password: process.env.PASS_DB,
       database: process.env.DB,
+      // supportBigNumbers:true,
+      bigNumberStrings:false,
+      
       entities: [User, Role, Transaction, Category, SavingPlan, SavingPlanCheckout, SavingGoldOwner, SavingGold, UserToken,],
       synchronize: true,
     }),
@@ -59,7 +62,7 @@ import { UserToken } from './model/user_token.entity';
   providers: [AppService, {
     provide: APP_GUARD,
     useClass: CustomThrottlerGuard
-  },],
+  },ThrottlerStorageService],
 })
 export class AppModule {
   constructor(){

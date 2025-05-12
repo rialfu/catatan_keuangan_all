@@ -59,7 +59,7 @@ class SavingPlanBloc extends Bloc<SavingPlanEvent, SavingPlanState> {
           cache['id'] = id;
           data.add(SavingPlanModel.fromJson(cache));
         }
-        data.sort((a, b) => b.targetDate.compareTo(a.targetDate));
+        data.sort((a, b) => a.targetDate.compareTo(b.targetDate));
         emit(SavingPlanStateFinishLoad(data: data));
       } on CustomExceptionForPost catch (e) {
         if (e.codeError == 400 || e.codeError == 429) {
@@ -86,7 +86,7 @@ class SavingPlanBloc extends Bloc<SavingPlanEvent, SavingPlanState> {
           }
           return e;
         }).toList();
-        data.sort((a, b) => b.targetDate.compareTo(a.targetDate));
+        data.sort((a, b) => a.targetDate.compareTo(b.targetDate));
         emit(SavingPlanStateFinishLoad(data: data));
       } on CustomExceptionForPost catch (e) {
         if (e.codeError == 400 || e.codeError == 429 || e.codeError == 422) {
@@ -115,7 +115,7 @@ class SavingPlanBloc extends Bloc<SavingPlanEvent, SavingPlanState> {
           }
           return e;
         }).toList();
-        data.sort((a, b) => b.targetDate.compareTo(a.targetDate));
+        data.sort((a, b) => a.targetDate.compareTo(b.targetDate));
         emit(SavingPlanStateFinishLoad(data: data));
       } on CustomExceptionForPost catch (e) {
         if (e.codeError == 400 || e.codeError == 429) {
@@ -162,17 +162,19 @@ class SavingPlanBloc extends Bloc<SavingPlanEvent, SavingPlanState> {
       try {
         List<SavingPlanCheckoutModel> data =
             await savingPlanService.getListCheckout(event.id);
+        print(data);
         List<SavingPlanModel> newData = state.savingPlans.map((e) {
           if (e.id != event.id) return e;
-          return SavingPlanModel(
-            id: e.id,
-            name: e.name,
-            targetDate: e.targetDate,
-            targetMoney: e.targetMoney,
-            dateReminder: e.dateReminder,
-            typeReminder: e.typeReminder,
-            checkout: data,
-          );
+          return e.update(newCheckout: data);
+          // return SavingPlanModel(
+          //   id: e.id,
+          //   name: e.name,
+          //   targetDate: e.targetDate,
+          //   targetMoney: e.targetMoney,
+          //   dateReminder: e.dateReminder,
+          //   typeReminder: e.typeReminder,
+          //   checkout: data,
+          // );
         }).toList();
 
         emit(SavingPlanStateFinishLoad(data: newData));

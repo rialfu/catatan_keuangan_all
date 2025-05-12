@@ -135,7 +135,7 @@ class TransactionService {
       if ((res.data as Map).containsKey('result')) {
         Map dataRes = (res.data as Map)['result'];
         if (dataRes.containsKey('id') == false) return null;
-        String id = dataRes['id'] as String;
+        int id = dataRes['id'] as int;
         return data.addId(id);
         // if (data.containsKey('detail') == false) return null;
         // if (data.containsKey('harga') == false) return null;
@@ -174,7 +174,7 @@ class TransactionService {
     }
   }
 
-  Future<void> deleteTransaction(String id) async {
+  Future<void> deleteTransaction(int id) async {
     try {
       // print(data.toJsonUpdate());
       var res = await dioManager.dio.delete(
@@ -194,7 +194,7 @@ class TransactionService {
     }
   }
 
-  Future<List> monthlyTransaction(String data) async {
+  Future<List<TransactionBulkModel>> monthlyTransaction(String data) async {
     try {
       var res = await dioManager.dio
           .get('transaction/accumulation_month', queryParameters: {'date': data}

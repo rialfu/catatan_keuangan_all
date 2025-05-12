@@ -60,11 +60,28 @@ class TransactionState extends Equatable {
   List<Object?> get props => [loading, daily, monthly, status];
 }
 
+class TransactionStateLoading extends TransactionState {
+  const TransactionStateLoading({
+    required List<TransactionDailyModel> newDaily,
+    required List<TransactionBulkModel> newMonthly,
+  }) : super(
+          daily: newDaily,
+          monthly: newMonthly,
+          loading: true,
+        );
+  @override
+  List<Object?> get props =>
+      [super.loading, super.daily, super.monthly, super.status];
+}
+
 class TransactionStateFinishLoad extends TransactionState {
   const TransactionStateFinishLoad({
     required List<TransactionDailyModel> newDaily,
     required List<TransactionBulkModel> newMonthly,
-  }) : super(daily: newDaily, monthly: newMonthly);
+  }) : super(
+          daily: newDaily,
+          monthly: newMonthly,
+        );
   @override
   List<Object?> get props =>
       [super.loading, super.daily, super.monthly, super.status];

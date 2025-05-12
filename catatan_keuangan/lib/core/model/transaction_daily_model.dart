@@ -1,5 +1,5 @@
 class TransactionDailyModel {
-  String id;
+  int id;
   String name;
   String? detail;
   String harga;
@@ -20,7 +20,7 @@ class TransactionDailyModel {
     required this.categoryId,
     // this.kategori2 = 'primer',
   });
-  TransactionDailyModel addId(String id) {
+  TransactionDailyModel addId(int id) {
     return TransactionDailyModel(
       id: id,
       name: name,
@@ -33,7 +33,7 @@ class TransactionDailyModel {
 
   factory TransactionDailyModel.fromJson(Map<String, dynamic> json) {
     return TransactionDailyModel(
-      id: json['id'] as String,
+      id: json['id'] as int,
       name: json['name'] as String,
       detail: json['detail'] as String?,
       harga: json['harga'] as String,

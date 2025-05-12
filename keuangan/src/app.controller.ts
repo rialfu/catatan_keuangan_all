@@ -1,4 +1,4 @@
-import { Body, Controller, Get, HttpCode, HttpException, HttpStatus, Logger, Post, Request, Res, UseGuards } from '@nestjs/common';
+import { Body, Controller, Get, HttpCode, HttpException, HttpStatus, Logger, Post, Request, Res, UseGuards, UseInterceptors } from '@nestjs/common';
 import { AppService } from './app.service';
 import { AuthGuard } from '@nestjs/passport';
 import { UsersService } from './users/users.service';
@@ -10,10 +10,9 @@ import { Role, RoleType } from './model/role.entity';
 import { RolesGuard } from './auth/roles.guard';
 import { CreateUserDTO } from './model/user.dto';
 import { UserJWT } from './model/user_jwt.dto';
-import { Throttle } from '@nestjs/throttler';
+import { SkipThrottle, Throttle, ThrottlerGuard, ThrottlerStorageService } from '@nestjs/throttler';
 import * as admin from "firebase-admin"
 import { UserToken } from './model/user_token.entity';
-
 @Controller()
 export class AppController {
   constructor(
@@ -61,10 +60,12 @@ export class AppController {
     // }
     
   }
-  @Throttle({ default: { limit: 1, ttl: 60000 } })
+  
+  
+  @SkipThrottle()
   @Post('/create-account')
   async create_account(@Request() req, @Body() body:CreateUserDTO){
-    
+    console.log('create-')
     const exist = await this.userService.findOne(body.email)
     if(exist != null){
       throw new HttpException({'message':['Email has used']}, 400);
@@ -142,6 +143,7 @@ export class AppController {
         }
         
       }
+
       // const userToken : Partial<UserToken> = new UserToken()
       // userToken.fcm_token = token
       // console.log(res)

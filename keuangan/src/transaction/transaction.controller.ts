@@ -183,7 +183,7 @@ export class TransactionController {
             cat.id = body.category
             valueSave.category = cat
         }
-        const res = await this.transactionService.update_transaction(valueSave, parseInt(body.id))
+        const res = await this.transactionService.update_transaction(valueSave, body.id)
         return {message:"success", result:res}
         
     }

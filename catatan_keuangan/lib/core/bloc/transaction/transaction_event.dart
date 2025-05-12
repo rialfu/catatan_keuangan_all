@@ -35,7 +35,7 @@ class TransactionUpdateRequested extends TransactionEvent {
 }
 
 class TransactionDeleteRequested extends TransactionEvent {
-  final String id;
+  final int id;
   const TransactionDeleteRequested(this.id);
   @override
   List<Object?> get props => [id];

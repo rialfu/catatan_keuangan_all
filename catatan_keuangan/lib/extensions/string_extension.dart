@@ -13,7 +13,18 @@ extension StringCustom on String {
     if (this == '') return 0;
     List<String> data = this.split('.');
     String newString = data[0].replaceAll(',', '');
-    return double.tryParse(newString + '.' + data[1]) ?? 0;
+    // newString + '.' + data[1]
+    return double.tryParse('$newString.${data[1]}') ?? 0;
+  }
+
+  String StringDoubleToMoney() {
+    if (this == '') return '';
+    List<String> data = this.split('.');
+    String newString = data[0].replaceAll(',', '');
+    // newString + '.' + data[1]
+    double value = double.tryParse('$newString.${data[1]}') ?? 0;
+    final NumberFormat usCurrency = NumberFormat("#,##0.00", "en_US");
+    return usCurrency.format(value);
   }
 
   String formatDateddMMyyyy() {
@@ -36,5 +47,18 @@ extension StringCustom on String {
     return RegExp(
             r'^(([^<>()[\]\\.,;:\s@\"]+(\.[^<>()[\]\\.,;:\s@\"]+)*)|(\".+\"))@((\[[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\])|(([a-zA-Z\-0-9]+\.)+[a-zA-Z]{2,}))$')
         .hasMatch(this);
+  }
+
+  String formatMonthDotYear() {
+    List<String> data = this.split('-');
+    return '${data[1]}.${data[0]}';
+  }
+
+  String getNameOfWeek() {
+    try {
+      return DateTime.parse(this).getNameWeek();
+    } catch (err) {
+      return '';
+    }
   }
 }

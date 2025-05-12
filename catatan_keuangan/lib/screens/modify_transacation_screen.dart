@@ -4,6 +4,8 @@ import 'package:catatan_keuangan/components/dropdown_component.dart';
 import 'package:catatan_keuangan/core/bloc/auth/auth_bloc.dart';
 // import 'package:catatan_keuangan/core/bloc/auth/auth_event.dart';
 import 'package:catatan_keuangan/core/bloc/category/category_bloc.dart';
+import 'package:catatan_keuangan/core/bloc/category/category_event.dart';
+import 'package:catatan_keuangan/core/bloc/category/category_state.dart';
 import 'package:catatan_keuangan/core/bloc/transaction/transaction_bloc.dart';
 import 'package:catatan_keuangan/core/bloc/transaction/transaction_event.dart';
 import 'package:catatan_keuangan/core/bloc/transaction/transaction_state.dart';
@@ -11,6 +13,7 @@ import 'package:catatan_keuangan/core/enum/auth_enum.dart';
 import 'package:catatan_keuangan/core/model/transaction_daily_model.dart';
 import 'package:catatan_keuangan/extensions/datetime_extension.dart';
 import 'package:catatan_keuangan/extensions/string_extension.dart';
+import 'package:catatan_keuangan/template/categoryscreen.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
@@ -160,8 +163,14 @@ class _ModifyTransactionScreenState extends State<ModifyTransactionScreen> {
           ),
         ),
       ),
-      body: BlocBuilder<TransactionBloc, TransactionState>(
-          builder: (context, state) {
+      body: BlocBuilder<CategoryBloc, CategoryState>(builder: (context, state) {
+        List<Map<String, String>> dropdownCategory = [];
+        dropdownCategory = state.categories
+            .map((e) => {'value': e.id.toString(), 'name': e.name})
+            .toList();
+
+        dropdownCategory.sort((a, b) => a['name']!.compareTo(b['name']!));
+        // dropdownCategory.insert(0, {'value': '', 'name': 'Please Select'});
         return Container(
           padding: EdgeInsets.symmetric(horizontal: 12, vertical: 10),
           child: Form(
@@ -232,18 +241,44 @@ class _ModifyTransactionScreenState extends State<ModifyTransactionScreen> {
                   height: 15,
                 ),
                 Text('Category', textAlign: TextAlign.left),
-                DropDownComponent(
-                  position: AlignmentDirectional.centerStart,
-                  callback: (String? val) {
-                    setState(() {
-                      category = int.tryParse(val ?? '');
-                    });
-                  },
-                  listData: catBloc.state.categories
-                      .map((e) => {'value': e.id.toString(), 'name': e.name})
-                      .toList(),
-                  setValue: category?.toString(),
+                Row(
+                  children: [
+                    DropDownComponent(
+                      position: AlignmentDirectional.centerStart,
+                      callback: (String? val) {
+                        setState(() {
+                          category = int.tryParse(val ?? '');
+                        });
+                      },
+                      listData: dropdownCategory,
+                      setValue: category?.toString(),
+                    ),
+                    IconButton(
+                      onPressed: () {
+                        var bloc = context.read<CategoryBloc>();
+                        if (bloc.state.loading) return;
+                        bloc.add(CategoryRequested());
+                      },
+                      icon: Icon(
+                        Icons.refresh,
+                      ),
+                    ),
+                    IconButton(
+                      onPressed: () {
+                        Navigator.push(
+                          context,
+                          MaterialPageRoute(
+                            builder: (context) => CategoryScreen(),
+                          ),
+                        );
+                      },
+                      icon: Icon(
+                        Icons.remove_red_eye,
+                      ),
+                    )
+                  ],
                 ),
+
                 SizedBox(
                   height: 15,
                 ),
@@ -304,36 +339,26 @@ class _ModifyTransactionScreenState extends State<ModifyTransactionScreen> {
                             break;
                           }
                         }
-                        print(cat);
+                        var data = TransactionDailyModel(
+                          id: widget.data?.id ?? 0,
+                          name: name.text,
+                          detail: detail.text,
+                          categoryId: category ?? 0,
+                          harga: harga.text.moneyToDouble().toString(),
+                          debitCredit: debCre,
+                          category: cat,
+                          tanggal: tanggal.yyyymmdd(),
+                        );
                         if (widget.data == null) {
                           tranBloc.add(
                             TransactionSaveRequested(
-                              TransactionDailyModel(
-                                id: '',
-                                name: name.text,
-                                detail: detail.text,
-                                categoryId: category ?? 0,
-                                harga: harga.text.moneyToDouble().toString(),
-                                debitCredit: debCre,
-                                category: cat,
-                                tanggal: tanggal.yyyymmdd(),
-                              ),
+                              data,
                             ),
                           );
                         } else {
                           tranBloc.add(
                             TransactionUpdateRequested(
-                              TransactionDailyModel(
-                                id: widget.data?.id ?? '',
-                                name: name.text,
-                                detail: detail.text,
-                                categoryId: category ?? 0,
-                                harga: harga.text.moneyToDouble().toString(),
-                                debitCredit: debCre,
-                                category: cat,
-                                tanggal: tanggal.yyyymmdd(),
-                                // category:
-                              ),
+                              data,
                             ),
                           );
                         }

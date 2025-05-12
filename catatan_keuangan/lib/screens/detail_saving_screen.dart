@@ -1,5 +1,6 @@
 import 'package:auto_size_text/auto_size_text.dart';
 import 'package:catatan_keuangan/core/bloc/savingPlan/saving_plan_bloc.dart';
+import 'package:catatan_keuangan/core/bloc/savingPlan/saving_plan_event.dart';
 import 'package:catatan_keuangan/core/bloc/savingPlan/saving_plan_state.dart';
 import 'package:catatan_keuangan/core/model/saving_plan_model.dart';
 import 'package:catatan_keuangan/extensions/string_extension.dart';
@@ -47,7 +48,7 @@ class _DetailSavingScreenState extends State<DetailSavingScreen> {
 
   String formattingEnd(String? data) {
     if (data == null) return '';
-    int? numbering = int.tryParse(data) ?? null;
+    int? numbering = int.tryParse(data);
     if (numbering != null) {
       if (!(numbering >= 1 && numbering <= 31)) {
         return '';
@@ -86,6 +87,8 @@ class _DetailSavingScreenState extends State<DetailSavingScreen> {
       body: BlocBuilder<SavingPlanBloc, SavingPlanState>(
           builder: (context, state) {
         SavingPlanModel data = state.savingPlans[widget.index];
+        print(data.id + '||' + widget.id);
+        print(data.checkout.toString());
         if (data.id != widget.id) {
           data = state.savingPlans.firstWhere(
             (e) => e.id == widget.id,
@@ -137,7 +140,10 @@ class _DetailSavingScreenState extends State<DetailSavingScreen> {
                 mainAxisAlignment: MainAxisAlignment.center,
                 children: [
                   ElevatedButton(
-                    onPressed: () {},
+                    onPressed: () {
+                      var bloc = context.read<SavingPlanBloc>();
+                      bloc.add(SavingPlanCheckoutRequested(data.id));
+                    },
                     child: Text("Refresh"),
                   ),
                   SizedBox(

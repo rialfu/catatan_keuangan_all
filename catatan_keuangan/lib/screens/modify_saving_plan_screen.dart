@@ -8,7 +8,6 @@ import 'package:catatan_keuangan/core/enum/auth_enum.dart';
 import 'package:catatan_keuangan/core/model/saving_plan_model.dart';
 import 'package:catatan_keuangan/extensions/datetime_extension.dart';
 import 'package:catatan_keuangan/extensions/string_extension.dart';
-import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
@@ -62,22 +61,22 @@ class _ModifySavingPlanScreenState extends State<ModifySavingPlanScreen> {
           message: ['Success ${widget.data == null ? "Add" : "Update"}'],
           title: 'Success',
         );
-      } else if (state.status == AuthStatus.guest) {
-      } else if (state.message != null) {
-        List message = [];
-        if (state.message is List) {
-          message.addAll(state.message as List);
-        } else {
-          message.add(state.message);
-        }
-        return alertDialogCustom(
-          callback: () {
-            bloc.add(SavingPlanCleanMessage());
-            Navigator.of(context).pop();
-          },
-          message: message,
-        );
-      }
+      } else if (state.status == AuthStatus.guest) {}
+      //  else if (state.message != null) {
+      //   List message = [];
+      //   if (state.message is List) {
+      //     message.addAll(state.message as List);
+      //   } else {
+      //     message.add(state.message);
+      //   }
+      //   return alertDialogCustom(
+      //     callback: () {
+      //       bloc.add(SavingPlanCleanMessage());
+      //       Navigator.of(context).pop();
+      //     },
+      //     message: message,
+      //   );
+      // }
     });
     if (widget.data != null) {
       name.text = widget.data?.name ?? '';
@@ -178,6 +177,16 @@ class _ModifySavingPlanScreenState extends State<ModifySavingPlanScreen> {
     return widgets;
   }
 
+  bool setNotification(SavingPlanModel? data, double newMoney) {
+    if (data == null) {
+      return false;
+    }
+    if (data.checkout.fold(0.0, (p, c) => p + c.money) >= newMoney) {
+      return false;
+    }
+    return data.notification;
+  }
+
   @override
   Widget build(BuildContext context) {
     // widget.data.
@@ -257,6 +266,7 @@ class _ModifySavingPlanScreenState extends State<ModifySavingPlanScreen> {
                     if ((value?.moneyToDouble() ?? 0) < 0) {
                       return 'Please target not zero';
                     }
+                    return null;
                   },
                   onChanged: (String textValue) {
                     var valueNumber =
@@ -280,18 +290,25 @@ class _ModifySavingPlanScreenState extends State<ModifySavingPlanScreen> {
                       if (_formKey.currentState!.validate()) {
                         var bloc = context.read<SavingPlanBloc>();
                         var data = SavingPlanModel(
-                          id: widget.data == null ? '' : widget.data?.id ?? '',
-                          name: name.text,
-                          typeReminder: typeReminder,
-                          dateReminder: typeReminder == 'monthly'
-                              ? dateReminderMonthly
-                              : dateReminderWeekly,
-                          targetDate: dataDate.yyyymmdd(),
-                          targetMoney: money.text.moneyToDouble(),
-                          notification: widget.data == null
-                              ? false
-                              : widget.data?.notification ?? false,
-                        );
+                            id: widget.data == null
+                                ? ''
+                                : widget.data?.id ?? '',
+                            name: name.text,
+                            typeReminder: typeReminder,
+                            dateReminder: typeReminder == 'monthly'
+                                ? dateReminderMonthly
+                                : dateReminderWeekly,
+                            targetDate: dataDate.yyyymmdd(),
+                            targetMoney: money.text.moneyToDouble(),
+                            notification: setNotification(
+                              widget.data,
+                              money.text.moneyToDouble(),
+                            ),
+                            checkout: widget.data?.checkout ?? []
+                            // notification: widget.data == null
+                            //     ? false
+                            //     : widget.data?.notification ?? false,
+                            );
                         // print(data.toJsonSave());
                         if (widget.data == null) {
                           bloc.add(SavingPlanSaveRequested(data));

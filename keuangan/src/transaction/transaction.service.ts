@@ -71,7 +71,7 @@ export class TransactionService {
         // }
         // console.log(user_id)
         let defaultFormat :string = `DATE_FORMAT(t.tanggal_transaksi,\'%Y-%m-%d\') as tanggal_transaksi`
-        defaultFormat = 't.tanggal_transaksi as tanggal_transaksi'
+        // defaultFormat = 't.tanggal_transaksi as tanggal_transaksi'
         if(process.env.TYPE_DB == 'mssql'){
             defaultFormat = `convert(varchar, t.tanggal, 23)`
         }

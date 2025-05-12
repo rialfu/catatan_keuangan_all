@@ -1,6 +1,4 @@
 import 'package:catatan_keuangan/core/model/saving_plan_checkout_model.dart';
-import 'package:catatan_keuangan/extensions/string_extension.dart';
-import 'package:intl/intl.dart';
 
 class SavingPlanModel {
   String id;
@@ -59,7 +57,6 @@ class SavingPlanModel {
     } catch (err) {
       print(err);
     }
-    print('notification:${notification} {ddd}');
     return SavingPlanModel(
       id: id,
       name: name,
@@ -71,7 +68,8 @@ class SavingPlanModel {
       checkout: checkout,
     );
   }
-  SavingPlanModel update({bool? newNotification}) {
+  SavingPlanModel update(
+      {bool? newNotification, List<SavingPlanCheckoutModel>? newCheckout}) {
     return SavingPlanModel(
       id: id,
       name: name,
@@ -79,6 +77,7 @@ class SavingPlanModel {
       dateReminder: dateReminder,
       targetDate: targetDate,
       targetMoney: targetMoney,
+      checkout: newCheckout ?? checkout,
       notification: newNotification ?? notification,
     );
   }

@@ -9,7 +9,8 @@ class DioManager {
     return _instance!;
   }
 
-  final String _baseUrl = 'http://192.168.1.100:3000/';
+  // final String _baseUrl = 'http://192.168.1.100:3000/';
+  final String _baseUrl = 'https://wildcat-vital-broadly.ngrok-free.app/';
   late final Dio dio;
 
   DioManager._init() {

@@ -12,6 +12,8 @@ class CategoryModel {
       canDelete = json['canDelete'] == '1' ? true : false;
     } else if (json['canDelete'] is bool) {
       canDelete = json['canDelete'] as bool;
+    } else if (json['canDelete'] is int) {
+      canDelete = json['canDelete'] == 1 ? true : false;
     }
 
     return CategoryModel(id, name, canDelete: canDelete);

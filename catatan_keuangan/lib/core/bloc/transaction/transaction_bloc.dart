@@ -19,20 +19,27 @@ class TransactionBloc extends Bloc<TransactionEvent, TransactionState> {
     });
     on<TransactionDailyRequested>((event, emit) async {
       try {
-        emit(TransactionState.setLoading(true, state.daily, state.monthly));
+        emit(TransactionStateLoading(
+          newDaily: state.daily,
+          newMonthly: state.monthly,
+        ));
+        // emit(TransactionState.setLoading(true, state.daily, state.monthly));
         var res = await transactionService.getTransaction(dateData: event.date);
 
-        emit(TransactionState.finishLoad(res, state.monthly));
-        // print(res);
+        emit(TransactionStateFinishLoad(
+          newDaily: res,
+          newMonthly: state.monthly,
+        ));
       } catch (err) {
+        print('err:' + err.toString());
         if (err.toString().contains('unauthorized')) {
           emit(TransactionState.sessionLost());
           return;
         }
+
         emit(
             TransactionState.error(state.daily, state.monthly, err.toString()));
-        print(err.toString().contains('unauthorized'));
-        // err.toString()
+
         print(err);
       }
 
@@ -40,7 +47,11 @@ class TransactionBloc extends Bloc<TransactionEvent, TransactionState> {
     });
     on<TransactionSaveRequested>((event, emit) async {
       try {
-        emit(TransactionState.setLoading(true, state.daily, state.monthly));
+        // emit(TransactionState.setLoading(true, state.daily, state.monthly));
+        emit(TransactionStateLoading(
+          newDaily: state.daily,
+          newMonthly: state.monthly,
+        ));
         await transactionService.saveTransaction(event.data);
         var copyArr = [...state.daily];
         emit(TransactionStateFinishLoad(
@@ -57,19 +68,21 @@ class TransactionBloc extends Bloc<TransactionEvent, TransactionState> {
           emit(TransactionState.sessionLost());
           return;
         }
-        emit(
-            TransactionState.error(state.daily, state.monthly, err.toString()));
-        print(err.toString().contains('unauthorized'));
-        // err.toString()
-        print(err);
+        emit(TransactionState.error(
+          state.daily,
+          state.monthly,
+          err.toString(),
+        ));
       }
 
       // var res=
     });
     on<TransactionUpdateRequested>((event, emit) async {
-      // late TransactionState stateStatus;
       try {
-        emit(TransactionState.setLoading(true, state.daily, state.monthly));
+        emit(TransactionStateLoading(
+          newDaily: state.daily,
+          newMonthly: state.monthly,
+        ));
         await transactionService.updateTransaction(event.data);
         List<TransactionDailyModel> data = [...state.daily];
         for (int i = 0; i < data.length; i++) {
@@ -81,7 +94,6 @@ class TransactionBloc extends Bloc<TransactionEvent, TransactionState> {
             data[i].tanggal = event.data.tanggal;
             data[i].category = event.data.category;
             data[i].categoryId = event.data.categoryId;
-            print(data[i].toJson());
             break;
           }
         }
@@ -109,18 +121,20 @@ class TransactionBloc extends Bloc<TransactionEvent, TransactionState> {
     on<TransactionDeleteRequested>((event, emit) async {
       // late TransactionState stateStatus;
       try {
-        emit(TransactionState.setLoading(true, state.daily, state.monthly));
+        emit(TransactionStateLoading(
+          newDaily: state.daily,
+          newMonthly: state.monthly,
+        ));
+        // emit(TransactionState.setLoading(true, state.daily, state.monthly));
         await transactionService.deleteTransaction(event.id);
-
-        emit(TransactionState.finishLoad(
-            state.daily.where((e) => e.id != event.id.toString()).toList(),
-            state.monthly));
-        // print(res);
+        emit(TransactionStateFinishLoad(
+          newDaily: state.daily.where((e) => e.id != event.id).toList(),
+          newMonthly: state.monthly,
+        ));
       } on CustomExceptionForPost catch (e) {
         print('error custom:' + e.codeError.toString());
         if (e.codeError == 400) {
           emit(TransactionState.error(state.daily, state.monthly, e.cause));
-          // print(stateStatus.message);
         }
       } catch (err) {
         if (err.toString().contains('unauthorized')) {
@@ -134,20 +148,23 @@ class TransactionBloc extends Bloc<TransactionEvent, TransactionState> {
       // var res=
     });
     on<TransactionCleanMessage>((event, emit) async {
-      emit(TransactionState.finishLoad(state.daily, state.monthly));
+      emit(TransactionStateFinishLoad(
+        newDaily: state.daily,
+        newMonthly: state.monthly,
+      ));
     });
     on<TransactionGetMonthlyData>((event, emit) async {
-      // late TransactionState stateStatus;
       try {
-        emit(TransactionState.setLoading(true, state.daily, state.monthly));
-        List<TransactionBulkModel> data = await transactionService
-            .monthlyTransaction(event.year) as List<TransactionBulkModel>;
-
-        emit(TransactionState.finishLoad(
-          state.daily,
-          data,
+        emit(TransactionStateLoading(
+          newDaily: state.daily,
+          newMonthly: state.monthly,
         ));
-        // print(res);
+        List<TransactionBulkModel> data =
+            await transactionService.monthlyTransaction(event.year);
+        emit(TransactionStateFinishLoad(
+          newDaily: state.daily,
+          newMonthly: data,
+        ));
       } on CustomExceptionForPost catch (e) {
         print('error custom:' + e.codeError.toString());
         if (e.codeError == 400) {

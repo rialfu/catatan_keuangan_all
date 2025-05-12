@@ -16,8 +16,5 @@ export class CreateUserDTO{
     @MinLength(8)
     @MaxLength(20)
     password: string;
-    
-
-    
 
 }

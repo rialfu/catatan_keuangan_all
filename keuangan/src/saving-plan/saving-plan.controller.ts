@@ -137,7 +137,7 @@ export class SavingPlanController {
         data.target_money = body.target_money
         
         
-        if(tx['isAchiveTarget'] == '1' || tx['isAchiveTarget'] == true){
+        if((tx['isAchiveTarget'] == '1' || tx['isAchiveTarget'] == true) && body.notification == true){
             throw new HttpException({'message':'target is achive, notification can\'t active'}, 422);
             
         }else{
@@ -169,12 +169,12 @@ export class SavingPlanController {
         let checkouts = await this.savingPlanService.get_data_checkout_with_search({
             savingPlan:{
                 id,
-                user:{
-                    id:userData.userId
-                }
+                // user:{
+                //     id:userData.userId
+                // }
             }
         },)
-        return {'data':checkouts };
+        return {'data':checkouts, 'message':'berhasil'};
     }
     @Post('checkout/create')
     @UseGuards(AuthGuard('jwt'))

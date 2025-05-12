@@ -1,4 +1,3 @@
-import 'package:catatan_keuangan/init/network/dio_manager.dart';
 import 'package:dio/dio.dart';
 
 class GetPublicApi {
@@ -11,7 +10,7 @@ class GetPublicApi {
         'https://api.bareksa.com/internal/v1/public/gold/chart/buy?product_code=EMASPEGADAIAN&period=1w');
     final response = res.data;
     if (response is Map && response.containsKey('data')) {
-      final data = (response as Map)['data'];
+      final data = response['data'];
       print(data);
     }
     // this.dioManager.dio.getUri(uri)

@@ -86,7 +86,10 @@ export class SavingPlanService {
             where:search,
             relations:relations,
             order:{
-                target_date:'ASC'
+                target_date:'ASC',
+                checkout:{
+                    date_checkout:'DESC'
+                }
             }
         })
     }
@@ -152,15 +155,15 @@ export class SavingPlanService {
 
     get_data_checkout_with_search(search:{[key: string]: any}) :Promise<SavingPlanCheckout[]>{
         return this.savingPlanCheckoutRepo.find({
-            // where:search,
-            where:{
-                savingPlan:{
-                    id:'',
-                    user:{
-                        id:''
-                    }
-                }
-            },
+            where:search,
+            // where:{
+            //     savingPlan:{
+            //         id:'',
+            //         user:{
+            //             id:''
+            //         }
+            //     }
+            // },
             order:{
                 date_checkout:'desc'
             },

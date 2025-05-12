@@ -2,6 +2,8 @@ import 'dart:async';
 
 // import 'package:catatan_keuangan/core/bloc/auth/auth_bloc.dart';
 // import 'package:catatan_keuangan/core/bloc/auth/auth_event.dart';
+import 'package:catatan_keuangan/core/bloc/auth/auth_bloc.dart';
+import 'package:catatan_keuangan/core/bloc/auth/auth_event.dart';
 import 'package:catatan_keuangan/core/bloc/category/category_bloc.dart';
 import 'package:catatan_keuangan/core/bloc/category/category_event.dart';
 import 'package:catatan_keuangan/core/bloc/category/category_state.dart';
@@ -34,6 +36,7 @@ class _ModifyCategoryScreenState extends State<ModifyCategoryScreen> {
       if (state is CategoryStateFinishLoad) {
         return _showMyDialog(
           customMethod: () {
+            Navigator.of(context).pop();
             categoryBloc.add(CategoryCleanMessage());
             Navigator.of(context).pop();
           },
@@ -44,10 +47,10 @@ class _ModifyCategoryScreenState extends State<ModifyCategoryScreen> {
           textClose: 'Close',
         );
       } else if (state.status == AuthStatus.guest) {
-        // return _showMyDialog(customMethod: () {
-        //   var authBloc = context.read<AuthBloc>();
-        //   authBloc.add(LogoutRequested());
-        // });
+        return _showMyDialog(customMethod: () {
+          var authBloc = context.read<AuthBloc>();
+          authBloc.add(LogoutRequested());
+        });
       } else if (state.message != null) {
         List message = [];
         if (state.message is List) {
@@ -58,7 +61,7 @@ class _ModifyCategoryScreenState extends State<ModifyCategoryScreen> {
         _showMyDialog(
           customMethod: () {
             Navigator.of(context).pop();
-            Navigator.of(context).pop();
+            // Navigator.of(context).pop();
             categoryBloc.add(CategoryCleanMessage());
           },
           title: 'error',
@@ -112,9 +115,11 @@ class _ModifyCategoryScreenState extends State<ModifyCategoryScreen> {
         backgroundColor: Colors.red,
         title: Text(
           "Form Add",
-          style: TextStyle(
-            color: Colors.white,
-          ),
+          style: TextStyle(fontSize: 18),
+        ),
+        iconTheme: IconThemeData(color: Colors.white),
+        titleTextStyle: TextStyle(
+          color: Colors.white,
         ),
       ),
       body: Container(

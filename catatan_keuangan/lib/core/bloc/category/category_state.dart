@@ -51,21 +51,8 @@ class CategoryState extends Equatable {
 }
 
 class CategoryStateFinishLoad extends CategoryState {
-  // final bool loading;
-  // final List<CategoryModel> categories;
-  // final AuthStatus status;
-  // final Object? message;
-  // CategoryStateFinishLoad({
-  //   this.loading = false,
-  //   required this.categories,
-  //   this.status = AuthStatus.authenticated,
-  //   this.message,
-  // });
   const CategoryStateFinishLoad({
-    // this.loading = false,
     required List<CategoryModel> newCategories,
-    // this.status = AuthStatus.authenticated,
-    // this.message,
   }) : super(categories: newCategories);
   @override
   List<Object?> get props => [super.loading, super.categories, super.status];

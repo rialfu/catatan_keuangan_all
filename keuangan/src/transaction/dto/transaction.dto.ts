@@ -33,9 +33,10 @@ export class CreateTransactionDTO{
 
 export class UpdateTransactionDTO {
     @IsNotEmpty()
-    @IsNumberString()
+    @IsNumber()
+    // @IsNumberString()
     @IsTranExist()
-    id: string;
+    id: number;
 
     @IsOptional()
     @IsString()
