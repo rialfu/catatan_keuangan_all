@@ -20,7 +20,6 @@ class SavingPlanModel {
     this.checkout = const [],
   });
   factory SavingPlanModel.fromJson(Map<String, dynamic> json) {
-    print(json);
     String id = json['id'] as String;
     String name = json['name'] as String;
     String typeReminder = json['type_reminder'] as String;
@@ -36,7 +35,6 @@ class SavingPlanModel {
       }
     }
     if (json.containsKey('notification')) {
-      print('notification:${json['notification'] == true} {}');
       if (json['notification'] is String) {
         notification = json['notification'] == '1' ? true : false;
       } else if (json['notification'] is bool) {
@@ -80,6 +78,14 @@ class SavingPlanModel {
       checkout: newCheckout ?? checkout,
       notification: newNotification ?? notification,
     );
+  }
+
+  double totalStored() {
+    return checkout.fold(0.0, (prev, curr) => prev + curr.money);
+  }
+
+  double remain() {
+    return targetMoney - totalStored();
   }
 
   Map<String, dynamic> toJsonSave() {

@@ -20,7 +20,6 @@ class CategoryBloc extends Bloc<CategoryEvent, CategoryState> {
 
         emit(CategoryStateFinishLoad(newCategories: res));
       } catch (err) {
-        print(err);
         emit(CategoryState.error(state.categories, err.toString()));
       }
     });
@@ -34,7 +33,6 @@ class CategoryBloc extends Bloc<CategoryEvent, CategoryState> {
           emit(CategoryState.sessionLost());
           return;
         }
-        print(err);
         emit(CategoryState.error(state.categories, err.toString()));
       }
 
@@ -47,9 +45,7 @@ class CategoryBloc extends Bloc<CategoryEvent, CategoryState> {
           true,
           state.categories,
         ));
-        // print(event.data);
         int? id = await transactionService.saveCategory(event.data);
-        print('data:$id');
         var data = [...state.categories];
         if (id != null) {
           data.add(CategoryModel(id, event.data.name, canDelete: true));
@@ -59,7 +55,6 @@ class CategoryBloc extends Bloc<CategoryEvent, CategoryState> {
         ));
         // print(res);
       } on CustomExceptionForPost catch (e) {
-        print('error custom:' + e.codeError.toString());
         if (e.codeError == 400) {
           emit(CategoryState.error(state.categories, e.cause));
           // print(stateStatus.message);
@@ -84,13 +79,11 @@ class CategoryBloc extends Bloc<CategoryEvent, CategoryState> {
           newCategories: state.categories,
         ));
       } on CustomExceptionForPost catch (e) {
-        print('error custom:' + e.codeError.toString());
         if (e.codeError == 400) {
           emit(CategoryState.error(state.categories, e.cause));
           // print(stateStatus.message);
         }
       } catch (err) {
-        print(err);
         if (err.toString().contains('unauthorized')) {
           emit(CategoryState.sessionLost());
           return;
@@ -114,9 +107,7 @@ class CategoryBloc extends Bloc<CategoryEvent, CategoryState> {
         ));
         // print(res);
       } on CustomExceptionForPost catch (e) {
-        print('error custom:' + e.codeError.toString());
         if (e.codeError == 400) {
-          print(e.cause);
           emit(CategoryState.error(state.categories, e.cause));
           // print(stateStatus.message);
         }

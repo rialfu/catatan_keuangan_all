@@ -6,7 +6,6 @@ import 'package:catatan_keuangan/core/bloc/category/category_bloc.dart';
 import 'package:catatan_keuangan/core/bloc/category/category_event.dart';
 import 'package:catatan_keuangan/core/bloc/category/category_state.dart';
 import 'package:catatan_keuangan/core/enum/auth_enum.dart';
-import 'package:catatan_keuangan/core/model/category_model.dart';
 import 'package:catatan_keuangan/extensions/context_entension.dart';
 import 'package:catatan_keuangan/screens/modify_category_screen.dart';
 import 'package:flutter/material.dart';

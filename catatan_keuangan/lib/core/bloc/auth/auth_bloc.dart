@@ -46,7 +46,7 @@ class AuthBloc extends Bloc<AuthEvent, AuthState> {
           final AuthModel? result = await authService.login(
               email: event.email, password: event.password);
           // print(result);
-          print(result?.token ?? 'tidak ada');
+          // print(result?.token ?? 'tidak ada');
           if (result != null && result.token != null) {
             await authCacheManager.updateToken(
               result.token,
@@ -60,9 +60,7 @@ class AuthBloc extends Bloc<AuthEvent, AuthState> {
             emit(const AuthState.error(error: AuthError.wrongEmailOrPassword));
           }
         } catch (err) {
-          print('error');
-          print(err);
-          // add(LogoutRequested());
+          print('error:${err.toString()}');
           emit(const AuthState.error(error: AuthError.wrongEmailOrPassword));
         }
       },

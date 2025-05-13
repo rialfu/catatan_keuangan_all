@@ -15,7 +15,6 @@ import 'package:catatan_keuangan/extensions/datetime_extension.dart';
 import 'package:catatan_keuangan/extensions/navigate_extension.dart';
 import 'package:catatan_keuangan/screens/modify_transacation_screen.dart';
 import 'package:catatan_keuangan/screens/saving_plan_screen.dart';
-import 'package:catatan_keuangan/template/categoryscreen.dart';
 import 'package:catatan_keuangan/template/dailyscreen.dart';
 import 'package:catatan_keuangan/template/monthlyscreen.dart';
 import 'package:flutter/material.dart';
@@ -68,74 +67,78 @@ class _MainScreenState extends State<MainScreen> with TickerProviderStateMixin {
     _tabController.addListener(eventListenerTab);
     yearNow = DateTime.now().year;
     monthNow = DateTime.now().month;
-    try {
-      authBloc = context.read<AuthBloc>();
-      authStream = authBloc.stream.listen((state) {
-        if (context.mounted) {
-          Navigator.pushReplacement(
-            context,
-            MaterialPageRoute(
-              builder: (context) => state.status.firstView,
-            ),
-          );
+    // try {
+    authBloc = context.read<AuthBloc>();
+    authStream = authBloc.stream.listen((state) {
+      if (context.mounted) {
+        Navigator.pushReplacement(
+          context,
+          MaterialPageRoute(
+            builder: (context) => state.status.firstView,
+          ),
+        );
+      }
+    });
+    //transaction
+    tranBloc = context.read<TransactionBloc>();
+    tranBloc.add(TransactionStarted());
+    setState(() {
+      isLoad = true;
+    });
+    tranStream = tranBloc.stream.listen((state) {
+      if (state.message != null) {
+        List message = [];
+        if (state.message is List) {
+          message.addAll(state.message as List);
+        } else {
+          message.add(state.message);
         }
-      });
-      //transaction
-      tranBloc = context.read<TransactionBloc>();
-      tranBloc.add(TransactionStarted());
-      tranStream = tranBloc.stream.listen((state) {
-        if (state.message != null) {
-          List message = [];
-          if (state.message is List) {
-            message.addAll(state.message as List);
-          } else {
-            message.add(state.message);
-          }
-          showDialog<void>(
-            context: context,
-            barrierDismissible: false, // user must tap button!
-            builder: (BuildContext context) {
-              return AlertDialog(
-                title: const Text('Error'),
-                content: SingleChildScrollView(
-                  child: ListBody(
-                    children: message.map((e) => Text(e.toString())).toList(),
-                  ),
+        showDialog<void>(
+          context: context,
+          barrierDismissible: false, // user must tap button!
+          builder: (BuildContext context) {
+            return AlertDialog(
+              title: const Text('Error'),
+              content: SingleChildScrollView(
+                child: ListBody(
+                  children: message.map((e) => Text(e.toString())).toList(),
                 ),
-                actions: <Widget>[
-                  TextButton(
-                    child: const Text('Close'),
-                    onPressed: () {
-                      Navigator.of(context).pop();
-                      tranBloc.add(TransactionCleanMessage());
-                    },
-                  ),
-                ],
-              );
-            },
-          );
-          return;
-        }
-        if (state is TransactionStateLoading) {
-          setState(() {
-            isLoad = true;
-          });
-        } else if (state is TransactionStateFinishLoad) {
-          setState(() {
-            isLoad = false;
-          });
-        } else if (state.status == AuthStatus.guest) {
-          _showMyDialog();
-        }
-      });
-      catBloc = context.read<CategoryBloc>();
-      catBloc.add(CategoryStarted());
-      catStream = catBloc.stream.listen((state) {
-        if (state.status == AuthStatus.guest) {
-          _showMyDialog();
-        }
-      });
-    } catch (err) {}
+              ),
+              actions: <Widget>[
+                TextButton(
+                  child: const Text('Close'),
+                  onPressed: () {
+                    Navigator.of(context).pop();
+                    tranBloc.add(TransactionCleanMessage());
+                  },
+                ),
+              ],
+            );
+          },
+        );
+        return;
+      }
+      if (state.loading == false) {
+        setState(() {
+          isLoad = false;
+        });
+      } else {
+        setState(() {
+          isLoad = true;
+        });
+      }
+      if (state.status == AuthStatus.guest) {
+        _showMyDialog();
+      }
+    });
+    catBloc = context.read<CategoryBloc>();
+    catBloc.add(CategoryStarted());
+    catStream = catBloc.stream.listen((state) {
+      if (state.status == AuthStatus.guest) {
+        _showMyDialog();
+      }
+    });
+    // } catch (err) {}
     if (_tabController.index == 0) {
       setDaily(monthNow, yearNow);
     }
@@ -355,9 +358,11 @@ class _MainScreenState extends State<MainScreen> with TickerProviderStateMixin {
   }
 
   void setDaily(int month, int year) {
+    // isLoad = true;
     setState(() {
       monthNow = month;
       yearNow = year;
+      isLoad = true;
     });
     tranBloc.add(TransactionDailyRequested(
         '$year-${month.toString().padLeft(2, '0')}-01'));
@@ -366,6 +371,7 @@ class _MainScreenState extends State<MainScreen> with TickerProviderStateMixin {
   void setMonth(int year) {
     setState(() {
       yearNow = year;
+      isLoad = true;
     });
     tranBloc.add(TransactionGetMonthlyData('$year'));
   }
@@ -376,7 +382,7 @@ class _MainScreenState extends State<MainScreen> with TickerProviderStateMixin {
   }
 
   void eventListenerTab() {
-    if (isLoad) return;
+    if (isLoad || tranBloc.state.loading) return;
     if (_tabController.index == 0) {
       tranBloc.add(TransactionDailyRequested(
           '$yearNow-${monthNow.toString().padLeft(2, '0')}-01'));
@@ -387,201 +393,207 @@ class _MainScreenState extends State<MainScreen> with TickerProviderStateMixin {
 
   @override
   Widget build(BuildContext context1) {
-    return BlocBuilder<AuthBloc, AuthState>(builder: (context, state) {
-      return Scaffold(
-        appBar: AppBar(
-          iconTheme: IconThemeData(color: Colors.white),
-          backgroundColor: Colors.red,
-          toolbarHeight: 100,
-          automaticallyImplyLeading: false,
-          titleSpacing: 0,
-          title: Container(
-            // height: 120,
-            padding: EdgeInsets.symmetric(
-              horizontal: 10,
-            ),
-            width: context.dynamicWidth(1),
-            child: Column(
-              children: [
-                Row(
-                  children: [
-                    Expanded(
-                      flex: 2,
-                      child: AutoSizeText(
-                        'Welcome ${state.name}',
-                        maxLines: 2,
-                        style: TextStyle(color: Colors.white, fontSize: 19),
+    return BlocBuilder<TransactionBloc, TransactionState>(
+        builder: (context, stateTran) {
+      return BlocBuilder<AuthBloc, AuthState>(builder: (context, state) {
+        return Scaffold(
+          appBar: AppBar(
+            backgroundColor: Colors.red,
+            toolbarHeight: 100,
+            iconTheme: IconThemeData(color: Colors.white),
+            automaticallyImplyLeading: false,
+            titleSpacing: 0,
+            title: Container(
+              // height: 120,
+              padding: EdgeInsets.symmetric(
+                horizontal: 10,
+              ),
+              width: context.dynamicWidth(1),
+              child: Column(
+                children: [
+                  Row(
+                    children: [
+                      Expanded(
+                        flex: 2,
+                        child: AutoSizeText(
+                          'Welcome ${state.name}',
+                          maxLines: 2,
+                          style: TextStyle(color: Colors.white, fontSize: 19),
+                        ),
                       ),
-                    ),
-                    Expanded(
-                      flex: 3,
-                      child: Row(
-                        mainAxisAlignment: MainAxisAlignment.end,
-                        children: [
-                          IconButton(
-                            onPressed: () {
-                              if (_tabController.index == 0) {
-                                Navigator.push(
-                                  context,
-                                  MaterialPageRoute(
-                                    builder: (context) =>
-                                        ModifyTransactionScreen(),
+                      Expanded(
+                        flex: 3,
+                        child: Row(
+                          mainAxisAlignment: MainAxisAlignment.end,
+                          children: [
+                            IconButton(
+                              onPressed: () {
+                                if (_tabController.index == 0) {
+                                  Navigator.push(
+                                    context,
+                                    MaterialPageRoute(
+                                      builder: (context) =>
+                                          ModifyTransactionScreen(),
+                                    ),
+                                  );
+                                }
+                              },
+                              icon: Icon(
+                                Icons.add,
+                              ),
+                            ),
+                            IconButton(
+                              onPressed: isLoad || stateTran.loading
+                                  ? null
+                                  : () {
+                                      // if (isLoad) return;
+                                      if (_tabController.index == 0) {
+                                        setDaily(monthNow, yearNow);
+                                      } else if (_tabController.index == 1) {
+                                        setMonth(yearNow);
+                                      }
+                                    },
+                              icon: Icon(
+                                Icons.refresh,
+                              ),
+                            ),
+                            Builder(
+                              builder: (context) {
+                                return IconButton(
+                                  onPressed: () {
+                                    Scaffold.of(context).openDrawer();
+                                  },
+                                  icon: Icon(
+                                    Icons.more_vert,
                                   ),
                                 );
-                              }
-                            },
-                            icon: Icon(
-                              Icons.add,
+                              },
                             ),
-                          ),
-                          IconButton(
-                            onPressed: () {
-                              if (isLoad) return;
-                              if (_tabController.index == 0) {
-                                setDaily(monthNow, yearNow);
-                              } else if (_tabController.index == 1) {
-                                setMonth(yearNow);
-                              }
-                            },
-                            icon: Icon(
-                              Icons.refresh,
-                            ),
-                          ),
-                          Builder(
-                            builder: (context) {
-                              return IconButton(
-                                onPressed: () {
-                                  Scaffold.of(context).openDrawer();
-                                },
-                                icon: Icon(
-                                  Icons.more_vert,
-                                ),
-                              );
-                            },
-                          ),
-                        ],
+                          ],
+                        ),
                       ),
-                    ),
-                  ],
-                ),
-                Row(
-                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                  children: [
-                    IconButton(
-                      // padding: EdgeInsets.zero,
-                      onPressed: () {
-                        if (isLoad) return;
-                        if (_tabController.index == 0) {
-                          if ((monthNow - 1) == 0) {
-                            setDaily(12, yearNow - 1);
-                          } else {
-                            setDaily(monthNow - 1, yearNow);
+                    ],
+                  ),
+                  Row(
+                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                    children: [
+                      IconButton(
+                        // padding: EdgeInsets.zero,
+                        onPressed: () {
+                          if (isLoad || stateTran.loading) return;
+
+                          if (_tabController.index == 0) {
+                            if ((monthNow - 1) == 0) {
+                              setDaily(12, yearNow - 1);
+                            } else {
+                              setDaily(monthNow - 1, yearNow);
+                            }
+                          } else if (_tabController.index == 1) {
+                            setMonth(yearNow - 1);
                           }
-                        } else if (_tabController.index == 1) {
-                          setMonth(yearNow - 1);
-                        }
-                      },
-                      icon: Icon(Icons.chevron_left),
-                    ),
-                    TextButton(
-                      onPressed: () {
-                        if (isLoad) return;
-                        if (_tabController.index == 0) {
-                          startOverlay();
-                        }
-                      },
-                      child: Text(
-                        _tabController.index == 1
-                            ? yearNow.toString()
-                            : DateTime.parse(
-                                    '$yearNow-${monthNow.toString().padLeft(2, '0')}-01')
-                                .MM3chyyyy(),
-                        style: TextStyle(color: Colors.white, fontSize: 18),
+                        },
+                        icon: Icon(Icons.chevron_left),
                       ),
-                    ),
-                    IconButton(
-                      onPressed: () {
-                        if (isLoad) return;
-                        if (_tabController.index == 0) {
-                          if ((monthNow + 1) == 13) {
-                            setDaily(1, yearNow + 1);
-                          } else {
-                            setDaily(monthNow + 1, yearNow);
+                      TextButton(
+                        onPressed: () {
+                          if (isLoad) return;
+                          if (_tabController.index == 0) {
+                            startOverlay();
                           }
-                        } else if (_tabController.index == 1) {
-                          setMonth(yearNow + 1);
-                        }
-                      },
-                      icon: Icon(Icons.chevron_right),
-                    )
-                  ],
+                        },
+                        child: Text(
+                          _tabController.index == 1
+                              ? yearNow.toString()
+                              : DateTime.parse(
+                                      '$yearNow-${monthNow.toString().padLeft(2, '0')}-01')
+                                  .MM3chyyyy(),
+                          style: TextStyle(color: Colors.white, fontSize: 18),
+                        ),
+                      ),
+                      IconButton(
+                        onPressed: () {
+                          if (isLoad || stateTran.loading) return;
+                          if (_tabController.index == 0) {
+                            if ((monthNow + 1) == 13) {
+                              setDaily(1, yearNow + 1);
+                            } else {
+                              setDaily(monthNow + 1, yearNow);
+                            }
+                          } else if (_tabController.index == 1) {
+                            setMonth(yearNow + 1);
+                          }
+                        },
+                        icon: Icon(Icons.chevron_right),
+                      )
+                    ],
+                  ),
+                ],
+              ),
+            ),
+            bottom: TabBar(
+              unselectedLabelColor: Colors.grey,
+              labelColor: Colors.white,
+              indicatorColor: Colors.white,
+              tabs: _tabs,
+              controller: _tabController,
+            ),
+          ),
+          drawer: Drawer(
+            child: ListView(
+              children: [
+                ListTile(
+                  title: Text("Home / Catatan"),
+                  onTap: () {
+                    print(isLoad);
+                    // Navigator.of(context, rootNavigator: true).pop();
+                  },
                 ),
+                ListTile(
+                  title: Text("Saving Plan"),
+                  onTap: () {
+                    Navigator.pop(context);
+                    Navigator.push(
+                      context,
+                      MaterialPageRoute(
+                        builder: (context) => SavingPlanScreen(),
+                      ),
+                    );
+                  },
+                ),
+                ListTile(
+                  title: Text("Log out"),
+                  onTap: () {
+                    authBloc.add(LogoutRequested());
+                  },
+                )
               ],
             ),
           ),
-          bottom: TabBar(
-            unselectedLabelColor: Colors.grey,
-            labelColor: Colors.white,
-            indicatorColor: Colors.white,
-            tabs: _tabs,
-            controller: _tabController,
-          ),
-        ),
-        drawer: Drawer(
-          child: ListView(
+          body: Stack(
             children: [
-              ListTile(
-                title: Text("Home / Catatan"),
-                onTap: () {
-                  print(isLoad);
-                  // Navigator.of(context, rootNavigator: true).pop();
-                },
+              TabBarView(
+                controller: _tabController,
+                // children: tab_name.map((e) => e['screen'] as Widget).toList(),
+                children: [
+                  DailyScreen(),
+                  MonthlyScreen(),
+                  // CategoryScreen(),
+                ],
               ),
-              ListTile(
-                title: Text("Saving Plan"),
-                onTap: () {
-                  Navigator.pop(context);
-                  Navigator.push(
-                    context,
-                    MaterialPageRoute(
-                      builder: (context) => SavingPlanScreen(),
-                    ),
-                  );
-                },
-              ),
-              ListTile(
-                title: Text("Log out"),
-                onTap: () {
-                  authBloc.add(LogoutRequested());
-                },
-              )
+              isLoad
+                  ? Container(
+                      color: Colors.transparent,
+                      width: context.dynamicWidth(1),
+                      height: context.dynamicHeight(1),
+                      child: Center(
+                        child: CircularProgressIndicator(),
+                      ),
+                    )
+                  : Container()
             ],
           ),
-        ),
-        body: Stack(
-          children: [
-            TabBarView(
-              controller: _tabController,
-              // children: tab_name.map((e) => e['screen'] as Widget).toList(),
-              children: [
-                DailyScreen(),
-                MonthlyScreen(),
-                // CategoryScreen(),
-              ],
-            ),
-            isLoad
-                ? Container(
-                    color: Colors.transparent,
-                    width: context.dynamicWidth(1),
-                    height: context.dynamicHeight(1),
-                    child: Center(
-                      child: CircularProgressIndicator(),
-                    ),
-                  )
-                : Container()
-          ],
-        ),
-      );
+        );
+      });
     });
   }
 }

@@ -1,3 +1,4 @@
+import 'package:catatan_keuangan/core/model/saving_plan_checkout_model.dart';
 import 'package:catatan_keuangan/core/model/saving_plan_model.dart';
 import 'package:equatable/equatable.dart';
 
@@ -56,4 +57,20 @@ class SavingPlanCheckoutRequested extends SavingPlanEvent {
   const SavingPlanCheckoutRequested(this.id);
   @override
   List<Object?> get props => [id];
+}
+
+class SavingPlanCheckoutSavingRequested extends SavingPlanEvent {
+  final SavingPlanCheckoutModel data;
+  final String idSavingPlan;
+  const SavingPlanCheckoutSavingRequested(this.data, this.idSavingPlan);
+  @override
+  List<Object?> get props => [data, idSavingPlan];
+}
+
+class SavingPlanCheckoutDeleteRequested extends SavingPlanEvent {
+  final int id;
+  final String idSavingPlan;
+  const SavingPlanCheckoutDeleteRequested(this.id, this.idSavingPlan);
+  @override
+  List<Object?> get props => [id, idSavingPlan];
 }

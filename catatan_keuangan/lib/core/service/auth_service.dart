@@ -1,5 +1,7 @@
 import 'dart:io';
 
+import 'package:catatan_keuangan/init/network/firebase_message.dart';
+
 import '../../core/enum/network_enum.dart';
 import '../../core/model/auth_model.dart';
 import '../../core/model/login_model.dart';
@@ -13,14 +15,17 @@ class AuthService extends IAuthService {
     required String email,
     required String password,
   }) async {
-    print('AuthService:start1' + email + ' ' + password);
-    // var response = await dioManager.dio.post('/login');
+    print('AuthService:start1 $email $password');
+    var data = LoginModel(
+      email: email,
+      password: password,
+    ).toJson();
+    if (FirebaseMsg.fcmToken != '') {
+      data['fcm_token'] = FirebaseMsg.fcmToken;
+    }
     var response = await dioManager.dio.post(
       NetworkEnums.loginurl.path,
-      data: LoginModel(
-        email: email,
-        password: password,
-      ).toJson(),
+      data: data,
     );
     print(response.data);
     if (response.statusCode == HttpStatus.ok) {

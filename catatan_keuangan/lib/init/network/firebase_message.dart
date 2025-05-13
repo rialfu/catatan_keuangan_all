@@ -2,6 +2,7 @@ import 'package:firebase_messaging/firebase_messaging.dart';
 import 'package:flutter_local_notifications/flutter_local_notifications.dart';
 
 class FirebaseMsg {
+  static String fcmToken = '';
   FirebaseMsg._();
   static final FirebaseMsg instance = FirebaseMsg._();
   final _messaging = FirebaseMessaging.instance;
@@ -32,6 +33,9 @@ class FirebaseMsg {
 
     // Get FCM token
     final token = await _messaging.getToken();
+    if (token != null) {
+      fcmToken = token;
+    }
     print('FCM Token: $token');
   }
 

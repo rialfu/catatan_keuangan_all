@@ -1,14 +1,9 @@
-import 'dart:async';
-
-import 'package:auto_size_text/auto_size_text.dart';
-import 'package:catatan_keuangan/components/dropdown_component.dart';
 import 'package:catatan_keuangan/core/bloc/transaction/transaction_bloc.dart';
 import 'package:catatan_keuangan/core/bloc/transaction/transaction_event.dart';
 import 'package:catatan_keuangan/core/bloc/transaction/transaction_state.dart';
 import 'package:catatan_keuangan/core/model/transaction_daily_model.dart';
 import 'package:catatan_keuangan/extensions/context_entension.dart';
 import 'package:catatan_keuangan/extensions/string_extension.dart';
-import 'package:catatan_keuangan/screens/detail_transaction_screen.dart';
 import 'package:catatan_keuangan/screens/modify_transacation_screen.dart';
 import 'package:catatan_keuangan/template/templateHeader1.dart';
 import 'package:flutter/material.dart';
@@ -40,13 +35,11 @@ class _DailyScreenState extends State<DailyScreen> {
       double totalIn = valueTrans.daily.fold(
           0.0,
           (prev, curr) =>
-              prev +
-              (curr.debitCredit == 'debit' ? curr.harga.moneyToDouble() : 0));
+              prev + (curr.debitCredit == 'debit' ? curr.harga : 0));
       double totalOut = valueTrans.daily.fold(
           0.0,
           (prev, curr) =>
-              prev +
-              (curr.debitCredit == 'credit' ? curr.harga.moneyToDouble() : 0));
+              prev + (curr.debitCredit == 'credit' ? curr.harga : 0));
       Map<String, List<TransactionDailyModel>> data = {};
       for (int i = 0; i < valueTrans.daily.length; i++) {
         if (data.containsKey(valueTrans.daily[i].tanggal)) {
@@ -168,7 +161,7 @@ class _DailyScreenState extends State<DailyScreen> {
                                           (p, c) =>
                                               p +
                                               (c.debitCredit == 'debit'
-                                                  ? c.harga.moneyToDouble()
+                                                  ? c.harga
                                                   : 0))
                                       .toString()
                                       .formatMoney(),
@@ -189,7 +182,7 @@ class _DailyScreenState extends State<DailyScreen> {
                                           (p, c) =>
                                               p +
                                               (c.debitCredit == 'credit'
-                                                  ? c.harga.moneyToDouble()
+                                                  ? c.harga
                                                   : 0))
                                       .toString()
                                       .formatMoney(),
@@ -241,7 +234,7 @@ class _DailyScreenState extends State<DailyScreen> {
                                     flex: 4,
                                     child: Text(
                                       textAlign: TextAlign.end,
-                                      e.harga.StringDoubleToMoney(),
+                                      e.hargaWithFormatMoney(),
                                       style: TextStyle(
                                         fontSize: 16,
                                         color: e.debitCredit == 'debit'

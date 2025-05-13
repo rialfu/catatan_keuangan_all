@@ -1,5 +1,5 @@
 class SavingPlanCheckoutModel {
-  String id;
+  int id;
   double money;
   String dateCheckout;
   SavingPlanCheckoutModel({
@@ -7,6 +7,13 @@ class SavingPlanCheckoutModel {
     required this.money,
     required this.dateCheckout,
   });
+  Map<String, dynamic> toJsonSave() {
+    return {
+      'money': money,
+      'date_checkout': dateCheckout,
+    };
+  }
+
   Map<String, dynamic> toJsonUpdate() {
     return {
       'id': id,
@@ -16,7 +23,7 @@ class SavingPlanCheckoutModel {
   }
 
   factory SavingPlanCheckoutModel.fromJson(Map<String, dynamic> json) {
-    String id = json['id'] as String;
+    int id = json['id'] as int;
     double money = 0;
     // String dateCheckout = '';
     String dateCheckout = json['date_checkout'] as String;

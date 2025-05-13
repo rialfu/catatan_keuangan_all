@@ -45,7 +45,7 @@ class _DetailTransactionScreenState extends State<DetailTransactionScreen> {
               height: 10,
             ),
             Text("Money :"),
-            Text(widget.data.harga.formatMoney()),
+            Text(widget.data.hargaWithFormatMoney()),
             SizedBox(
               height: 10,
             ),

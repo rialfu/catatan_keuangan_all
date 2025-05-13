@@ -1,3 +1,4 @@
+import 'package:bloc_concurrency/bloc_concurrency.dart';
 import 'package:catatan_keuangan/core/bloc/savingPlan/saving_plan_event.dart';
 import 'package:catatan_keuangan/core/bloc/savingPlan/saving_plan_state.dart';
 import 'package:catatan_keuangan/core/model/saving_plan_checkout_model.dart';
@@ -17,19 +18,21 @@ class SavingPlanBloc extends Bloc<SavingPlanEvent, SavingPlanState> {
     on<SavingPlanStarted>((event, emit) async {
       emit(SavingPlanStateLoad(data: state.savingPlans));
       try {
-        // List<SavingPlanModel> res = await transactionService.getAllModel();
-        // res.forEach((e) => print('${e.id}, ${e.canDelete}'));
         emit(SavingPlanStateFinishLoad(data: []));
       } catch (err) {
-        print(err);
         emit(SavingPlanState.error(state.savingPlans, err.toString()));
       }
     });
     on<SavingPlanRequested>((event, emit) async {
       emit(SavingPlanStateLoad(data: state.savingPlans));
       try {
-        print('request sp');
+        int start = DateTime.now().millisecondsSinceEpoch;
+
         List<SavingPlanModel> res = await savingPlanService.getAllSavingPlan();
+        int finish = DateTime.now().millisecondsSinceEpoch;
+        if (finish - start <= 1200) {
+          await Future.delayed(Duration(milliseconds: 1000 - (finish - start)));
+        }
         emit(SavingPlanStateFinishLoad(data: res));
       } on CustomExceptionForPost catch (e) {
         if (e.codeError == 400 || e.codeError == 429) {
@@ -46,13 +49,14 @@ class SavingPlanBloc extends Bloc<SavingPlanEvent, SavingPlanState> {
       }
 
       // var res=
-    });
+    }, transformer: droppable());
     on<SavingPlanSaveRequested>((event, emit) async {
       // late TransactionState stateStatus;
       emit(SavingPlanStateLoad(data: state.savingPlans));
       try {
+        int start = DateTime.now().millisecondsSinceEpoch;
+
         var data = [...(state.savingPlans)];
-        // print(event.data);
         String? id = await savingPlanService.saveSavingPlan(event.data);
         if (id != null) {
           Map<String, dynamic> cache = event.data.toJsonSave();
@@ -60,6 +64,10 @@ class SavingPlanBloc extends Bloc<SavingPlanEvent, SavingPlanState> {
           data.add(SavingPlanModel.fromJson(cache));
         }
         data.sort((a, b) => a.targetDate.compareTo(b.targetDate));
+        int finish = DateTime.now().millisecondsSinceEpoch;
+        if (finish - start <= 1200) {
+          await Future.delayed(Duration(milliseconds: 1000 - (finish - start)));
+        }
         emit(SavingPlanStateFinishLoad(data: data));
       } on CustomExceptionForPost catch (e) {
         if (e.codeError == 400 || e.codeError == 429) {
@@ -74,10 +82,12 @@ class SavingPlanBloc extends Bloc<SavingPlanEvent, SavingPlanState> {
         }
         emit(SavingPlanState.error(state.savingPlans, err.toString()));
       }
-    });
+    }, transformer: droppable());
     on<SavingPlanUpdateRequested>((event, emit) async {
       emit(SavingPlanStateLoad(data: state.savingPlans));
       try {
+        int start = DateTime.now().millisecondsSinceEpoch;
+
         var data = [...(state.savingPlans)];
         await savingPlanService.updateSavingPlan(event.data);
         data = data.map((e) {
@@ -87,6 +97,10 @@ class SavingPlanBloc extends Bloc<SavingPlanEvent, SavingPlanState> {
           return e;
         }).toList();
         data.sort((a, b) => a.targetDate.compareTo(b.targetDate));
+        int finish = DateTime.now().millisecondsSinceEpoch;
+        if (finish - start <= 1200) {
+          await Future.delayed(Duration(milliseconds: 1000 - (finish - start)));
+        }
         emit(SavingPlanStateFinishLoad(data: data));
       } on CustomExceptionForPost catch (e) {
         if (e.codeError == 400 || e.codeError == 429 || e.codeError == 422) {
@@ -95,17 +109,18 @@ class SavingPlanBloc extends Bloc<SavingPlanEvent, SavingPlanState> {
         }
         emit(SavingPlanStateFinishLoad(data: state.savingPlans));
       } catch (err) {
-        print(err);
         if (err.toString().contains('unauthorized')) {
           emit(SavingPlanState.sessionLost());
           return;
         }
         emit(SavingPlanState.error(state.savingPlans, err.toString()));
       }
-    });
+    }, transformer: droppable());
     on<SavingPlanNotificationRequested>((event, emit) async {
       emit(SavingPlanStateLoad(data: state.savingPlans));
       try {
+        int start = DateTime.now().millisecondsSinceEpoch;
+
         var data = [...(state.savingPlans)];
         await savingPlanService.updateSavingPlan(event.data);
         data = data.map((e) {
@@ -116,6 +131,10 @@ class SavingPlanBloc extends Bloc<SavingPlanEvent, SavingPlanState> {
           return e;
         }).toList();
         data.sort((a, b) => a.targetDate.compareTo(b.targetDate));
+        int finish = DateTime.now().millisecondsSinceEpoch;
+        if (finish - start <= 1200) {
+          await Future.delayed(Duration(milliseconds: 1000 - (finish - start)));
+        }
         emit(SavingPlanStateFinishLoad(data: data));
       } on CustomExceptionForPost catch (e) {
         if (e.codeError == 400 || e.codeError == 429) {
@@ -124,20 +143,25 @@ class SavingPlanBloc extends Bloc<SavingPlanEvent, SavingPlanState> {
         }
         emit(SavingPlanStateFinishLoad(data: state.savingPlans));
       } catch (err) {
-        print(err);
         if (err.toString().contains('unauthorized')) {
           emit(SavingPlanState.sessionLost());
           return;
         }
         emit(SavingPlanState.error(state.savingPlans, err.toString()));
       }
-    });
+    }, transformer: droppable());
     on<SavingPlanDeleteRequested>((event, emit) async {
       emit(SavingPlanStateLoad(data: state.savingPlans));
       try {
+        int start = DateTime.now().millisecondsSinceEpoch;
+
         await savingPlanService.deleteSavingPlan(event.id);
         var data = [...(state.savingPlans)];
         data.removeWhere((e) => e.id == event.id);
+        int finish = DateTime.now().millisecondsSinceEpoch;
+        if (finish - start <= 1200) {
+          await Future.delayed(Duration(milliseconds: 1000 - (finish - start)));
+        }
         emit(SavingPlanStateFinishLoad(data: data));
       } on CustomExceptionForPost catch (e) {
         if (e.codeError == 400 || e.codeError == 429) {
@@ -146,37 +170,31 @@ class SavingPlanBloc extends Bloc<SavingPlanEvent, SavingPlanState> {
         }
         emit(SavingPlanStateFinishLoad(data: state.savingPlans));
       } catch (err) {
-        print(err);
         if (err.toString().contains('unauthorized')) {
           emit(SavingPlanState.sessionLost());
           return;
         }
         emit(SavingPlanState.error(state.savingPlans, err.toString()));
       }
-    });
+    }, transformer: droppable());
     on<SavingPlanCleanMessage>((event, emit) async {
       emit(SavingPlanState.finishLoad(state.savingPlans));
     });
     on<SavingPlanCheckoutRequested>((event, emit) async {
       emit(SavingPlanStateLoad(data: state.savingPlans));
       try {
+        int start = DateTime.now().millisecondsSinceEpoch;
+
         List<SavingPlanCheckoutModel> data =
             await savingPlanService.getListCheckout(event.id);
-        print(data);
         List<SavingPlanModel> newData = state.savingPlans.map((e) {
           if (e.id != event.id) return e;
           return e.update(newCheckout: data);
-          // return SavingPlanModel(
-          //   id: e.id,
-          //   name: e.name,
-          //   targetDate: e.targetDate,
-          //   targetMoney: e.targetMoney,
-          //   dateReminder: e.dateReminder,
-          //   typeReminder: e.typeReminder,
-          //   checkout: data,
-          // );
         }).toList();
-
+        int finish = DateTime.now().millisecondsSinceEpoch;
+        if (finish - start <= 1200) {
+          await Future.delayed(Duration(milliseconds: 1000 - (finish - start)));
+        }
         emit(SavingPlanStateFinishLoad(data: newData));
       } on CustomExceptionForPost catch (e) {
         if (e.codeError == 400 || e.codeError == 429) {
@@ -185,13 +203,93 @@ class SavingPlanBloc extends Bloc<SavingPlanEvent, SavingPlanState> {
         }
         emit(SavingPlanStateFinishLoad(data: state.savingPlans));
       } catch (err) {
-        print(err);
         if (err.toString().contains('unauthorized')) {
           emit(SavingPlanState.sessionLost());
           return;
         }
         emit(SavingPlanState.error(state.savingPlans, err.toString()));
       }
-    });
+    }, transformer: droppable());
+    on<SavingPlanCheckoutSavingRequested>((event, emit) async {
+      emit(SavingPlanStateLoad(data: state.savingPlans));
+      try {
+        int start = DateTime.now().millisecondsSinceEpoch;
+
+        int? id = await savingPlanService.savingStore(
+          event.data,
+          event.idSavingPlan,
+        );
+        var data = [...state.savingPlans];
+        if (id != null) {
+          data = data.map((e) {
+            if (e.id == event.idSavingPlan) {
+              var newCheckout = [...e.checkout];
+              newCheckout.add(SavingPlanCheckoutModel(
+                id: id,
+                money: event.data.money,
+                dateCheckout: event.data.dateCheckout,
+              ));
+
+              return e.update(newCheckout: newCheckout);
+            }
+            return e;
+          }).toList();
+        }
+
+        int finish = DateTime.now().millisecondsSinceEpoch;
+        if (finish - start <= 1200) {
+          await Future.delayed(Duration(milliseconds: 1000 - (finish - start)));
+        }
+        emit(SavingPlanStateFinishLoad(data: data));
+      } on CustomExceptionForPost catch (e) {
+        if (e.codeError == 400 || e.codeError == 429) {
+          emit(SavingPlanState.error(state.savingPlans, e.cause));
+          return;
+        }
+        emit(SavingPlanStateFinishLoad(data: state.savingPlans));
+      } catch (err) {
+        if (err.toString().contains('unauthorized')) {
+          emit(SavingPlanState.sessionLost());
+          return;
+        }
+        emit(SavingPlanState.error(state.savingPlans, err.toString()));
+      }
+    }, transformer: droppable());
+    on<SavingPlanCheckoutDeleteRequested>((event, emit) async {
+      emit(SavingPlanStateLoad(data: state.savingPlans));
+      try {
+        int start = DateTime.now().millisecondsSinceEpoch;
+
+        await savingPlanService.deleteStore(
+          event.id,
+        );
+        var data = state.savingPlans.map((e) {
+          if (e.id == event.idSavingPlan) {
+            var checkout = [...e.checkout];
+            checkout = e.checkout.where((c) => c.id != event.id).toList();
+            return e.update(newCheckout: checkout);
+          }
+          return e;
+        }).toList();
+
+        int finish = DateTime.now().millisecondsSinceEpoch;
+        if (finish - start <= 1200) {
+          await Future.delayed(Duration(milliseconds: 1000 - (finish - start)));
+        }
+        emit(SavingPlanStateFinishLoad(data: data));
+      } on CustomExceptionForPost catch (e) {
+        if (e.codeError == 400 || e.codeError == 429) {
+          emit(SavingPlanState.error(state.savingPlans, e.cause));
+          return;
+        }
+        emit(SavingPlanStateFinishLoad(data: state.savingPlans));
+      } catch (err) {
+        if (err.toString().contains('unauthorized')) {
+          emit(SavingPlanState.sessionLost());
+          return;
+        }
+        emit(SavingPlanState.error(state.savingPlans, err.toString()));
+      }
+    }, transformer: droppable());
   }
 }

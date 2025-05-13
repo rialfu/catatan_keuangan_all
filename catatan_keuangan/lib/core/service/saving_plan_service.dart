@@ -17,7 +17,7 @@ class SavingPlanService {
 
       return data.map((e) => SavingPlanModel.fromJson(e)).toList();
     } on DioException catch (e) {
-      print(e);
+      // print(e);
       if (e.response?.statusCode == HttpStatus.unauthorized) {
         throw Exception('unauthorized');
       }
@@ -26,7 +26,7 @@ class SavingPlanService {
       }
       throw Exception(e.message);
     } catch (err) {
-      print(err);
+      // print(err);
       throw Exception(err);
     }
   }
@@ -51,12 +51,12 @@ class SavingPlanService {
       }
       return null;
     } on DioException catch (e) {
-      print(e.response?.data);
+      // print(e.response?.data);
       if (e.response?.statusCode == HttpStatus.unauthorized) {
         throw Exception('unauthorized');
       }
       if (e.response?.statusCode == HttpStatus.badRequest) {
-        print(e.response?.data);
+        // print(e.response?.data);
         throw CustomExceptionForPost(400, e.response?.data['message']);
       }
       if (e.response?.statusCode == HttpStatus.tooManyRequests) {
@@ -64,7 +64,7 @@ class SavingPlanService {
       }
       throw Exception(e.message);
     } catch (err) {
-      print(err);
+      // print(err);
       throw Exception(err);
     }
   }
@@ -95,22 +95,25 @@ class SavingPlanService {
   Future<void> deleteSavingPlan(String id) async {
     try {
       // print(data.toJsonUpdate());
-      var res = await dioManager.dio.delete(
+      await dioManager.dio.delete(
         'saving-plan/delete/$id',
         // data: data.toJsonUpdate(),
       );
-      print(res);
+      // print(res);
     } on DioException catch (e) {
       if (e.response?.statusCode == HttpStatus.unauthorized) {
         throw Exception('unauthorized');
       }
       if (e.response?.statusCode == HttpStatus.badRequest) {
-        print(e.response?.data);
+        // print(e.response?.data);
         throw CustomExceptionForPost(400, e.response?.data['message']);
       }
       if (e.response?.statusCode == HttpStatus.tooManyRequests) {
         throw CustomExceptionForPost(429, e.response?.data['message']);
       }
+      throw Exception(e.message);
+    } catch (err) {
+      throw Exception(err);
     }
   }
 
@@ -119,7 +122,7 @@ class SavingPlanService {
       var res = await dioManager.dio.get(
         'saving-plan/checkout/$id',
       );
-      print(res.data.toString() + '||' + id);
+      // print(res.data.toString() + '||' + id);
       List data = res.data['data'];
       return data.map((e) => SavingPlanCheckoutModel.fromJson(e)).toList();
     } on DioException catch (e) {
@@ -127,13 +130,76 @@ class SavingPlanService {
         throw Exception('unauthorized');
       }
       if (e.response?.statusCode == HttpStatus.badRequest) {
-        print(e.response?.data);
+        // print(e.response?.data);
         throw CustomExceptionForPost(400, e.response?.data['message']);
       }
       if (e.response?.statusCode == HttpStatus.tooManyRequests) {
         throw CustomExceptionForPost(429, e.response?.data['message']);
       }
+      throw Exception(e.message);
+    } catch (err) {
+      throw Exception(err);
     }
-    return [];
   }
+
+  Future<int?> savingStore(
+    SavingPlanCheckoutModel data,
+    String idSavingPlan,
+  ) async {
+    var saving = data.toJsonSave();
+    saving['id_saving_plan'] = idSavingPlan;
+    try {
+      var res = await dioManager.dio.post(
+        'saving-plan/checkout/create',
+        data: saving,
+      );
+      // print(res.data['result']['id']);
+      if (res.data is Map && (res.data as Map).containsKey('result')) {
+        if ((res.data['result'] as Map).containsKey('id') &&
+            res.data['result']['id'] is int) {
+          return res.data['result']['id'] as int;
+        }
+      }
+      return null;
+    } on DioException catch (e) {
+      if (e.response?.statusCode == HttpStatus.unauthorized) {
+        throw Exception('unauthorized');
+      }
+      if (e.response?.statusCode == HttpStatus.badRequest) {
+        // print(e.response?.data);
+        throw CustomExceptionForPost(400, e.response?.data['message']);
+      }
+      if (e.response?.statusCode == HttpStatus.tooManyRequests) {
+        throw CustomExceptionForPost(429, e.response?.data['message']);
+      }
+      throw Exception(e.message);
+    } catch (err) {
+      print('errsaving:$err');
+      throw Exception(err);
+    }
+  }
+
+  Future<void> deleteStore(int id) async {
+    try {
+      await dioManager.dio.delete(
+        'saving-plan/checkout/delete/$id',
+        // data: saving,
+      );
+    } on DioException catch (e) {
+      if (e.response?.statusCode == HttpStatus.unauthorized) {
+        throw Exception('unauthorized');
+      }
+      if (e.response?.statusCode == HttpStatus.badRequest) {
+        // print(e.response?.data);
+        throw CustomExceptionForPost(400, e.response?.data['message']);
+      }
+      if (e.response?.statusCode == HttpStatus.tooManyRequests) {
+        throw CustomExceptionForPost(429, e.response?.data['message']);
+      }
+      throw Exception(e.message);
+    } catch (err) {
+      throw Exception(err);
+    }
+  }
+  // Future<
 }

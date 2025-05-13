@@ -23,29 +23,29 @@ class SavingPlanScreen extends StatefulWidget {
 
 class _SavingPlanScreenState extends State<SavingPlanScreen> {
   late final SavingPlanBloc savingPlanBloc;
-  late final authBloc;
-  late StreamSubscription spStream;
+  late final AuthBloc authBloc;
+  // late StreamSubscription spStream;
   bool isLoad = false;
   @override
   void initState() {
     // TODO: implement initState
     super.initState();
-    try {
-      savingPlanBloc = context.read<SavingPlanBloc>();
-      savingPlanBloc.add(SavingPlanRequested());
+    // try {
+    savingPlanBloc = context.read<SavingPlanBloc>();
+    savingPlanBloc.add(SavingPlanRequested());
 
-      spStream = savingPlanBloc.stream.listen((state) {
-        if (state.status == AuthStatus.guest) {
-          _showMyDialog();
-        } else if (state.loading == false) {
-          setState(() {
-            isLoad = false;
-          });
-        }
-      });
+    // spStream = savingPlanBloc.stream.listen((state) {
+    //   if (state.status == AuthStatus.guest) {
+    //     _showMyDialog();
+    //   } else if (state.loading == false) {
+    //     setState(() {
+    //       isLoad = false;
+    //     });
+    //   }
+    // });
 
-      authBloc = context.read<AuthBloc>();
-    } catch (err) {}
+    authBloc = context.read<AuthBloc>();
+    // } catch (err) {}
   }
 
   Future<void> _showMyDialog() async {
@@ -78,7 +78,7 @@ class _SavingPlanScreenState extends State<SavingPlanScreen> {
 
   @override
   void dispose() {
-    spStream.cancel();
+    // spStream.cancel();
 
     // TODO: implement dispose
     super.dispose();
@@ -88,12 +88,72 @@ class _SavingPlanScreenState extends State<SavingPlanScreen> {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        // automaticallyImplyLeading: false,
+        iconTheme: IconThemeData(color: Colors.white),
+        titleTextStyle: TextStyle(
+          color: Colors.white,
+          fontSize: 20,
+        ),
+        automaticallyImplyLeading: false,
+        titleSpacing: 0,
         backgroundColor: Colors.red,
-        title: Text(
-          "Saving Plan",
-          style: TextStyle(
-            color: Colors.white,
+        title: Container(
+          padding: EdgeInsets.symmetric(
+            horizontal: 10,
+          ),
+          child: Row(
+            children: [
+              Expanded(
+                flex: 2,
+                child: Text('Saving Plan'),
+              ),
+              Expanded(
+                flex: 3,
+                child: Row(
+                  mainAxisAlignment: MainAxisAlignment.end,
+                  children: [
+                    IconButton(
+                      onPressed: () {
+                        Navigator.push(
+                          context,
+                          MaterialPageRoute(
+                            builder: (context) => ModifySavingPlanScreen(),
+                          ),
+                        );
+                      },
+                      icon: Icon(
+                        Icons.add,
+                      ),
+                    ),
+                    IconButton(
+                      onPressed: isLoad
+                          ? null
+                          : () {
+                              //
+                              setState(() {
+                                isLoad = true;
+                              });
+                              savingPlanBloc.add(SavingPlanRequested());
+                            },
+                      icon: Icon(
+                        Icons.refresh,
+                      ),
+                    ),
+                    Builder(
+                      builder: (context) {
+                        return IconButton(
+                          onPressed: () {
+                            Scaffold.of(context).openDrawer();
+                          },
+                          icon: Icon(
+                            Icons.more_vert,
+                          ),
+                        );
+                      },
+                    ),
+                  ],
+                ),
+              ),
+            ],
           ),
         ),
       ),
@@ -127,6 +187,11 @@ class _SavingPlanScreenState extends State<SavingPlanScreen> {
           if (state.status == AuthStatus.guest) {
             _showMyDialog();
             return;
+          }
+          if (state.loading == false) {
+            setState(() {
+              isLoad = false;
+            });
           }
           if (state.message != null) {
             print(state.message);
@@ -169,70 +234,18 @@ class _SavingPlanScreenState extends State<SavingPlanScreen> {
                 child: Column(
                   children: [
                     Expanded(
-                      flex: 1,
-                      child: Row(
-                        mainAxisAlignment: MainAxisAlignment.center,
-                        children: [
-                          Container(
-                            width: context.dynamicWidth(0.3),
-                            child: ElevatedButton(
-                              style: ElevatedButton.styleFrom(
-                                backgroundColor: Colors.red,
-                                shadowColor: Colors.transparent,
-                              ),
-                              onPressed: isLoad
-                                  ? null
-                                  : () {
-                                      setState(() {
-                                        isLoad = true;
-                                      });
-                                      savingPlanBloc.add(SavingPlanRequested());
-                                    },
-                              child: Text(
-                                "Refresh",
-                                style: TextStyle(
-                                  color: Colors.white,
-                                ),
-                              ),
-                            ),
-                          ),
-                          SizedBox(
-                            width: 20,
-                          ),
-                          Container(
-                            width: context.dynamicWidth(0.3),
-                            child: ElevatedButton(
-                              style: ElevatedButton.styleFrom(
-                                backgroundColor: Colors.red,
-                                shadowColor: Colors.transparent,
-                              ),
-                              onPressed: () {
-                                Navigator.push(
-                                  context,
-                                  MaterialPageRoute(
-                                    builder: (context) =>
-                                        ModifySavingPlanScreen(),
-                                  ),
-                                );
-                              },
-                              child: Text(
-                                "Add",
-                                style: TextStyle(
-                                  color: Colors.white,
-                                ),
-                              ),
-                            ),
-                          )
-                        ],
-                      ),
-                    ),
-                    Expanded(
                       flex: 7,
                       child: ListView.builder(
                         itemCount: stateBloc.savingPlans.length,
                         itemBuilder: (context, index) {
+                          double tm = stateBloc.savingPlans[index].targetMoney;
+                          double ts =
+                              stateBloc.savingPlans[index].totalStored();
                           return Container(
-                            padding: EdgeInsets.symmetric(horizontal: 10),
+                            padding: EdgeInsets.symmetric(
+                              horizontal: 13,
+                              vertical: 10,
+                            ),
                             decoration: BoxDecoration(
                               border: Border(
                                 top: BorderSide(width: index == 0 ? 1 : 0),
@@ -295,29 +308,11 @@ class _SavingPlanScreenState extends State<SavingPlanScreen> {
                                       ),
                                       AutoSizeText(
                                           maxLines: 1,
-                                          'Target Money: ${stateBloc.savingPlans[index].targetMoney.toString().formatMoney()}'),
+                                          'Target Money: ${tm.toString().formatMoney()}'),
                                       AutoSizeText(
                                           maxLines: 1,
-                                          'Remaining: ${(stateBloc.savingPlans[index].targetMoney - stateBloc.savingPlans[index].checkout.fold(0.0, (previous, current) => previous + current.money)).toString().formatMoney()} '),
-
-                                      // Row(
-                                      //   children: [
-                                      //     Expanded(
-                                      //       flex: 4,
-                                      //       child: AutoSizeText(
-                                      //           maxLines: 1,
-                                      //           'Target Money: ${stateBloc.savingPlans[index].targetMoney.toString().formatMoney()}'),
-                                      //     ),
-                                      //     Expanded(
-                                      //       flex: 4,
-                                      //       child: AutoSizeText(
-                                      //           maxLines: 1,
-                                      //           'Remaining: ${(stateBloc.savingPlans[index].targetMoney - stateBloc.savingPlans[index].checkout.fold(0.0, (previous, current) => previous + current.money)).toString().formatMoney()} '),
-                                      //     ),
-                                      //   ],
-                                      // ),
+                                          'Remaining: ${(tm - ts).toString().formatMoney()} '),
                                     ],
-                                    // Text('${stateBloc.savingPlans[index].checkout.fold(0.0, (previous, current) => previous + current.money)}')
                                   ),
                                 ),
                                 Expanded(
@@ -326,16 +321,63 @@ class _SavingPlanScreenState extends State<SavingPlanScreen> {
                                     children: [
                                       IconButton(
                                         onPressed: () {
-                                          if (isLoad == false) {
-                                            setState(() {
-                                              isLoad = true;
-                                            });
-                                            var bloc =
-                                                context.read<SavingPlanBloc>();
-                                            bloc.add(SavingPlanDeleteRequested(
-                                              stateBloc.savingPlans[index].id,
-                                            ));
+                                          var bloc =
+                                              context.read<SavingPlanBloc>();
+                                          if (bloc.state.loading || isLoad) {
+                                            return;
                                           }
+                                          showDialog<void>(
+                                            context: context,
+                                            barrierDismissible:
+                                                false, // user must tap button!
+                                            builder: (BuildContext context) {
+                                              return AlertDialog(
+                                                title:
+                                                    const Text('Confirmation'),
+                                                content:
+                                                    const SingleChildScrollView(
+                                                  child: ListBody(
+                                                    children: <Widget>[
+                                                      Text(
+                                                        'Are You Sure want delete?',
+                                                      ),
+                                                    ],
+                                                  ),
+                                                ),
+                                                actions: <Widget>[
+                                                  TextButton(
+                                                    child: const Text('Ok'),
+                                                    onPressed: () {
+                                                      if (bloc.state.loading ||
+                                                          isLoad) {
+                                                        Navigator.of(context)
+                                                            .pop();
+                                                        return;
+                                                      }
+                                                      setState(() {
+                                                        isLoad = true;
+                                                      });
+                                                      bloc.add(
+                                                          SavingPlanDeleteRequested(
+                                                        stateBloc
+                                                            .savingPlans[index]
+                                                            .id,
+                                                      ));
+                                                      Navigator.of(context)
+                                                          .pop();
+                                                    },
+                                                  ),
+                                                  TextButton(
+                                                    child: const Text('Cancel'),
+                                                    onPressed: () {
+                                                      Navigator.of(context)
+                                                          .pop();
+                                                    },
+                                                  ),
+                                                ],
+                                              );
+                                            },
+                                          );
                                         },
                                         icon: Icon(
                                           Icons.delete,
@@ -371,11 +413,8 @@ class _SavingPlanScreenState extends State<SavingPlanScreen> {
                                         onPressed: () {
                                           var data =
                                               stateBloc.savingPlans[index];
-                                          if (data.targetMoney <
-                                              data.checkout.fold(
-                                                  0.0,
-                                                  (prev, curr) =>
-                                                      prev + curr.money)) {
+                                          var totalStored = data.totalStored();
+                                          if (data.targetMoney < totalStored) {
                                             showDialog<void>(
                                               context: context,
                                               barrierDismissible:
@@ -409,12 +448,14 @@ class _SavingPlanScreenState extends State<SavingPlanScreen> {
                                           var bloc =
                                               context.read<SavingPlanBloc>();
                                           bloc.add(
-                                              SavingPlanNotificationRequested({
-                                            'id': data.id,
-                                            'notification': !data.notification
-                                          }));
-                                          print(stateBloc
-                                              .savingPlans[index].notification);
+                                            SavingPlanNotificationRequested(
+                                              {
+                                                'id': data.id,
+                                                'notification':
+                                                    !data.notification
+                                              },
+                                            ),
+                                          );
                                         },
                                         icon: Icon(
                                           stateBloc.savingPlans[index]

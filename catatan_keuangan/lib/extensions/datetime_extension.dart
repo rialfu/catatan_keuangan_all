@@ -21,7 +21,7 @@ extension CustomDateTime on DateTime {
     return '${dateSplit[0]} $nameMonth ${dateSplit[2]}';
   }
 
-  String MMyyyy() {
+  String formatMMyyyy() {
     return DateFormat('MMMM yyyy').format(this);
   }
 
