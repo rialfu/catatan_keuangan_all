@@ -4,6 +4,7 @@ import { InjectRepository, InjectDataSource, InjectEntityManager } from '@nestjs
 import { SavingPlan } from 'src/model/saving_plan.entity';
 import { SavingPlanCheckout } from 'src/model/saving_plan_checkout_entity';
 import { User } from 'src/model/user.entity';
+import { UserToken } from 'src/model/user_token.entity';
 import { Brackets, DeleteResult, Repository, DataSource, EntityManager } from 'typeorm';
 
 @Injectable()
@@ -218,35 +219,6 @@ export class SavingPlanService {
             let sp : SavingPlan = new SavingPlan()
             sp.id = id_saving_plan
             data.savingPlan = sp
-            // const tx = await queryRunner.manager.findOne(SavingPlan, 
-            //     {
-            //         where:{
-            //             id:id_saving_plan
-            //         }, 
-            //         relations:{
-            //             checkout:true,
-            //             user:true,
-            //         },
-            //         select:{
-            //             target_money:true,
-            //             checkout:{
-            //                 money:true
-            //             },
-            //             user:{
-            //                 id:true
-            //             }
-            //         }
-            //     })
-            // if(tx == null){
-            //     await queryRunner.release()
-            //     return new Promise((resolve)=> resolve({'result':false, 'message':'please use another saving plan before checkout', 'code':422}))
-            // }
-            // let stores : number = tx.checkout.reduce((prev, cur)=> prev + cur.money, 0)
-            // if(stores > tx.target_money){
-            //     await queryRunner.release()
-            //     return new Promise((resolve)=> resolve({'result':false, 'message':'Your savings have exceeded the target.', 'code':403}))
-            // }
-            // data.savingPlan = tx
             
             const result = await queryRunner.manager.insert(SavingPlanCheckout, data);
             if(tx['remain'] - (data?.money ?? 0) <= 0){
@@ -266,9 +238,10 @@ export class SavingPlanService {
     }
     // CRO
     // @Cron( ' * * * * *')
-    async handleCron() {
+    async getDataForNotification() {
         const date = new Date()
         let tanggal = date.toISOString().split('T')[0]
+        console.log(tanggal);
         let defaultValueforSum : string = 'IFNULL(sub.total, 0)'
         if(process.env.TYPE_DB == 'mssql'){
             defaultValueforSum = 'ISNULL(sub.total,0)'
@@ -277,6 +250,10 @@ export class SavingPlanService {
         if(process.env.TYPE_DB == 'mssql'){
             queryWhere1 = '( (EOMONTH(:today)= :today and date_reminder >= day(:today) ) or day(:today) = date_reminder)'
         }
+        let queryWhere2 = 'LOWER(date_reminder) = LOWER(DAYNAME(:today))'
+        if(process.env.TYPE_DB == 'mssql'){
+            queryWhere2 = 'LOWER(date_reminder) = LOWER(DATENAME(WEEKDAY, :today ))'
+        }
 
         let query = this.savingPlanRepo.createQueryBuilder('sp')
         .leftJoin(sub=>{
@@ -284,28 +261,32 @@ export class SavingPlanService {
             .groupBy('spc.savingPlanId')
         },'sub','sub.savingPlanId=sp.id')
         .innerJoin(User,'u','sp.userId=u.id')
+        .leftJoin(UserToken, 'ut', 'u.id = ut.userId')
         .addSelect(`(sp.target_money - ${defaultValueforSum}) as remain`)
-        
         .addSelect(`${defaultValueforSum} as sub_total`)
         .addSelect('u.name as name')
+        .addSelect('ut.fcm_token as token')
         .where('sp.notification = :notif',{notif:true})
         .andWhere(new Brackets((qb1)=>{
             qb1.where('type_reminder = \'daily\'')
             .orWhere(new Brackets((qb2)=>{
                 qb2.where('type_reminder = \'weekly\'')
-                qb2.andWhere('date_reminder = (WEEKDAY(:today) + 1)',{today:tanggal})
+                qb2.andWhere(queryWhere2, {today:tanggal})
+                // qb2.andWhere('date_reminder = (WEEKDAY(:today) + 1)',{today:tanggal})
             }))
             .orWhere(new Brackets((qb3)=>{
                 qb3.where('type_reminder = \'monthly\'')
                 .andWhere(queryWhere1,{today:tanggal} )
             }))
         }))
-        const data= await query.getRawMany()
-        console.log(data)
-        console.log(`called 45s ${date.toISOString()}`);
+        .andWhere(`(sp.target_money - ${defaultValueforSum}) > 0`)
+        return query.getRawMany()
+        // console.log(data)
+        // console.log(`called 45s ${date.toISOString()}`);
         // 'select * from saving_plan as sp left join saving_plan_checkout as spco on spco.savingPlanId = sp.id and spco.id = 
         // (select id from saving_plan_checkout where saving_plan_checkout.savingPlanId = sp.id order by saving_plan_checkout.date desc limit 1)'
     }
+    // select sp.id, target_money, date_reminder,type_reminder,notification,  sum(spc.money) from saving_plan as sp left join saving_plan_checkout as spc on sp.id =spc.savingPlanId group by sp.id, target_money, date_reminder, type_reminder, notification
     save_checkout(data: SavingPlanCheckout): Promise<SavingPlanCheckout>{
         return this.savingPlanCheckoutRepo.save(data);
     }

@@ -8,7 +8,8 @@ import { UserJWT } from 'src/model/user_jwt.dto';
 import { AuthGuard } from '@nestjs/passport';
 import { SavingPlanCheckout } from 'src/model/saving_plan_checkout_entity';
 import { InjectUserToBody } from 'src/config/apply_decorator';
-
+import { Cron } from '@nestjs/schedule';
+import * as admin from "firebase-admin"
 // @SkipThrottle()
 @Controller('saving-plan')
 export class SavingPlanController {
@@ -157,9 +158,9 @@ export class SavingPlanController {
         if(tx ==null){
             throw new HttpException({'message':'please use another saving plan'}, 400);
         }
-        console.log(id)
+        // console.log(id)
         const res = await this.savingPlanService.delete({id});
-        console.log(res);
+        // console.log(res);
         return {'message':'success',"info":res}
     }
     @Get('checkout/:id')
@@ -189,7 +190,7 @@ export class SavingPlanController {
             throw new HttpException({'message':res['message']}, res['code']);
         }
 
-        return {'message':'berhasil', 'result':res['data']}
+        return {'message':'berhasil', 'result':{'id':res['data']['raw']['insertId']}}
         // this.savingPlanService.create(data)
     }
     @Delete('/checkout/delete/:id')
@@ -217,5 +218,36 @@ export class SavingPlanController {
         const res = await this.savingPlanService.delete_checkout({id:idCheckout})
         return { 'message':'berhasil', "info":res }
         // this.savingPlanService.create(data)
+    }
+
+
+    // @Cron(' * * * * *')
+    async runningDaily(){
+        let datas =await this.savingPlanService.getDataForNotification();
+        for(let i=0; i<datas.length;i++){
+            this.sendNotif(datas[i]);
+        }
+        // console.log(data)
+    }
+    async sendNotif(data){
+        const remain = Number(data['remain']).toFixed(2).replace(/\d(?=(\d{3})+\.)/g, '$&,');
+        const message = 'Please store your money for '+data['sp_name']+'\nRemain Target:'+remain;
+        // console.log(message);
+        try{
+            const response = await admin.messaging()
+            .send({
+                token:data['token'],
+                notification:{
+                    title: 'Reminder Notication Saving',
+                    body: 'Please store your money for '+data['sp_name']+'\nRemain Target:'+remain,
+                }
+            
+            });
+            console.log(response)
+        }catch(err){
+
+        }
+        
+        //     response
     }
 }

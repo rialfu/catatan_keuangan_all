@@ -9,7 +9,7 @@ export class InjectUserInterceptor implements NestInterceptor {
   constructor(private type?: any) {}
 
   intercept(context: ExecutionContext, next: CallHandler): Observable<any> {
-    console.log('intercept')
+    // console.log('intercept')
     const request = context.switchToHttp().getRequest();
 
     if (this.type && request[this.type]) {

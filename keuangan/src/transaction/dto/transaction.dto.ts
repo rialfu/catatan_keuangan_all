@@ -1,4 +1,4 @@
-import { IsDateString,  IsIn, IsNotEmpty, IsNumber, IsOptional, IsString, MaxLength, IsNumberString, Validate, } from "class-validator";
+import { IsDateString,  IsIn, IsNotEmpty, IsNumber, IsOptional, IsString, MaxLength, IsNumberString, Validate, Min, } from "class-validator";
 import { CategoryExistsValidation, IsCategoryExist } from "src/validations/category_exists";
 import { IsTranExist } from "src/validations/transaction_exists";
 
@@ -12,6 +12,7 @@ export class CreateTransactionDTO{
 
     @IsNumber()
     @IsNotEmpty()
+    @Min(1)
     harga: number;
 
     @IsIn(['debit','credit'])
@@ -48,6 +49,7 @@ export class UpdateTransactionDTO {
 
     @IsOptional()
     @IsNumber()
+    @Min(1)
     harga?: number;
 
     @IsOptional()

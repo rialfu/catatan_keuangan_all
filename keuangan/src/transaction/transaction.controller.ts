@@ -12,7 +12,7 @@ import { InjectUserToBody } from 'src/config/apply_decorator';
 import { SkipThrottle } from '@nestjs/throttler';
 import { Transaction } from './entities/transaction.entity';
 
-@SkipThrottle()
+// @SkipThrottle()
 @Controller('transaction')
 export class TransactionController {
     constructor(

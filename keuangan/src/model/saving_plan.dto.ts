@@ -1,4 +1,4 @@
-import { IsBoolean, IsDateString, IsIn, IsNotEmpty, IsNumber, IsOptional, IsPositive, IsString, MaxLength } from "class-validator";
+import { IsBoolean, IsDateString, IsIn, IsNotEmpty, IsNumber, IsOptional, IsPositive, IsString, MaxLength, Min } from "class-validator";
 import { IsInDateReminder } from "src/validations/is_in_date_reminder";
 import { IsInTypeReminder } from "src/validations/is_in_type_reminder";
 
@@ -21,7 +21,8 @@ export class CreateSavingPlanDTO{
     @IsNotEmpty()
     target_date: string;
 
-    @IsPositive({'message':'Target Money must more than zero'})
+    @Min(1)
+    @IsNumber()
     @IsNotEmpty()
     target_money: number;
 

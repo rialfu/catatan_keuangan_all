@@ -108,7 +108,7 @@ export class AppController {
           let date = new Date()
           date = new Date(new Date(date).setMonth(date.getMonth() + 8));
           tokenInDb.expired_date = this.formatDate(date)
-          console.log('1')
+          // console.log('1')
           await this.userService.update_token_user(tokenInDb, tokenInDb.id)
         }else{
           userToken = new UserToken()
@@ -117,13 +117,13 @@ export class AppController {
           let date = new Date()
           date = new Date(new Date(date).setMonth(date.getMonth() + 8));
           userToken.expired_date = this.formatDate(date)
-          console.log('2')
+          // console.log('2')
           await this.userService.insert_token_user(userToken)
         }
        
       }else{
         if(tokenInDb == null){
-          console.log('3')
+          // console.log('3')
           userToken.fcm_token = token
           let date = new Date()
           date = new Date(new Date(date).setMonth(date.getMonth() + 8));
@@ -132,13 +132,13 @@ export class AppController {
           
         }else{
           if( userToken.id == tokenInDb.id){
-            console.log('4')
+            // console.log('4')
             let date = new Date()
             date = new Date(new Date(date).setMonth(date.getMonth() + 8));
             userToken.expired_date = this.formatDate(date)
             await this.userService.update_token_user(userToken, userToken.id)
           }else{
-            console.log('5')
+            // console.log('5')
           }
         }
         
