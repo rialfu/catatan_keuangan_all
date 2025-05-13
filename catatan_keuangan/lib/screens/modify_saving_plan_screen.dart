@@ -7,6 +7,7 @@ import 'package:catatan_keuangan/core/bloc/savingPlan/saving_plan_state.dart';
 import 'package:catatan_keuangan/core/enum/auth_enum.dart';
 import 'package:catatan_keuangan/core/model/saving_plan_model.dart';
 import 'package:catatan_keuangan/extensions/datetime_extension.dart';
+import 'package:catatan_keuangan/extensions/double_extension.dart';
 import 'package:catatan_keuangan/extensions/string_extension.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
@@ -80,7 +81,8 @@ class _ModifySavingPlanScreenState extends State<ModifySavingPlanScreen> {
     });
     if (widget.data != null) {
       name.text = widget.data?.name ?? '';
-      money.text = (widget.data?.targetMoney.toString() ?? '0').formatMoney();
+
+      money.text = widget.data!.targetMoney.toFormatMoneyForm();
       String tr = widget.data?.typeReminder ?? 'daily';
       String drw = 'monday';
       String drm = '1';
@@ -259,27 +261,33 @@ class _ModifySavingPlanScreenState extends State<ModifySavingPlanScreen> {
                 TextFormField(
                   controller: money,
                   inputFormatters: <TextInputFormatter>[
-                    FilteringTextInputFormatter.digitsOnly
+                    // FilteringTextInputFormatter.digitsOnly
+                    FilteringTextInputFormatter.allow(RegExp(r'[0-9\.]+'))
                   ],
-                  keyboardType: TextInputType.number,
+                  keyboardType: TextInputType.numberWithOptions(decimal: true),
                   validator: (value) {
-                    if ((value?.moneyToDouble() ?? 0) < 0) {
-                      return 'Please target not zero';
+                    if (value == null || value == '') {
+                      return 'Please input target money';
                     }
                     return null;
                   },
                   onChanged: (String textValue) {
-                    var valueNumber =
-                        double.parse(textValue.replaceAll(RegExp(r"\D"), "")) /
-                            100;
-                    var fomattedValue =
-                        NumberFormat("#,##0.00", "en_US").format(valueNumber);
+                    String value = textValue.fixStringMoney();
+
                     money.value = TextEditingValue(
-                      text: fomattedValue,
-                      selection: TextSelection.collapsed(
-                        offset: fomattedValue.length,
-                      ),
+                      text: value,
                     );
+                    // var valueNumber =
+                    //     double.parse(textValue.replaceAll(RegExp(r"\D"), "")) /
+                    //         100;
+                    // var fomattedValue =
+                    //     NumberFormat("#,##0.00", "en_US").format(valueNumber);
+                    // money.value = TextEditingValue(
+                    //   text: fomattedValue,
+                    //   selection: TextSelection.collapsed(
+                    //     offset: fomattedValue.length,
+                    //   ),
+                    // );
                   },
                 ),
                 SizedBox(
@@ -290,25 +298,20 @@ class _ModifySavingPlanScreenState extends State<ModifySavingPlanScreen> {
                       if (_formKey.currentState!.validate()) {
                         var bloc = context.read<SavingPlanBloc>();
                         var data = SavingPlanModel(
-                            id: widget.data == null
-                                ? ''
-                                : widget.data?.id ?? '',
-                            name: name.text,
-                            typeReminder: typeReminder,
-                            dateReminder: typeReminder == 'monthly'
-                                ? dateReminderMonthly
-                                : dateReminderWeekly,
-                            targetDate: dataDate.yyyymmdd(),
-                            targetMoney: money.text.moneyToDouble(),
-                            notification: setNotification(
-                              widget.data,
-                              money.text.moneyToDouble(),
-                            ),
-                            checkout: widget.data?.checkout ?? []
-                            // notification: widget.data == null
-                            //     ? false
-                            //     : widget.data?.notification ?? false,
-                            );
+                          id: widget.data == null ? '' : widget.data!.id,
+                          name: name.text,
+                          typeReminder: typeReminder,
+                          dateReminder: typeReminder == 'monthly'
+                              ? dateReminderMonthly
+                              : dateReminderWeekly,
+                          targetDate: dataDate.yyyymmdd(),
+                          targetMoney: money.text.moneyToDouble(),
+                          notification: setNotification(
+                            widget.data,
+                            money.text.moneyToDouble(),
+                          ),
+                          checkout: widget.data?.checkout ?? [],
+                        );
                         // print(data.toJsonSave());
                         if (widget.data == null) {
                           bloc.add(SavingPlanSaveRequested(data));

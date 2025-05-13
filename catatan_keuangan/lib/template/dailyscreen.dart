@@ -1,3 +1,4 @@
+import 'package:auto_size_text/auto_size_text.dart';
 import 'package:catatan_keuangan/core/bloc/transaction/transaction_bloc.dart';
 import 'package:catatan_keuangan/core/bloc/transaction/transaction_event.dart';
 import 'package:catatan_keuangan/core/bloc/transaction/transaction_state.dart';
@@ -153,9 +154,10 @@ class _DailyScreenState extends State<DailyScreen> {
                               ),
                               Expanded(
                                 flex: 5,
-                                child: Text(
+                                child: AutoSizeText(
+                                  maxLines: 1,
                                   textAlign: TextAlign.end,
-                                  data[keys[index]]!
+                                  datas
                                       .fold(
                                           0.0,
                                           (p, c) =>
@@ -174,9 +176,11 @@ class _DailyScreenState extends State<DailyScreen> {
                               ),
                               Expanded(
                                 flex: 5,
-                                child: Text(
+                                child: AutoSizeText(
                                   textAlign: TextAlign.end,
-                                  data[keys[index]]!
+                                  maxLines: 1,
+                                  datas
+                                      // data[keys[index]]!
                                       .fold(
                                           0.0,
                                           (p, c) =>

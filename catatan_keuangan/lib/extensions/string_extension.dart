@@ -1,4 +1,5 @@
 import 'package:catatan_keuangan/extensions/datetime_extension.dart';
+import 'package:catatan_keuangan/extensions/double_extension.dart';
 import 'package:intl/intl.dart';
 
 extension StringCustom on String {
@@ -28,30 +29,32 @@ extension StringCustom on String {
       String main = splitStr[0].replaceAll(RegExp(r"\D"), "");
 
       String fraction = splitStr[1];
-      if ((main + fraction).length > 22) {
-        if (main.length > 20) {
-          main = main.substring(0, 20);
-        } else if (main.length == 20 && fraction.length > 2) {
+      if ((main + fraction).length > 17) {
+        if (main.length > 15) {
+          main = main.substring(0, 15);
+        } else if (main.length == 15 && fraction.length > 2) {
           fraction = fraction.substring(0, 2);
         }
       }
       if (fraction.length > 2) {
-        main = main + fraction[1];
+        main = main + fraction[0];
         fraction = fraction.substring(1);
       }
-
-      main = main.formatMoneyWithoutCommaAndSupportLargest();
+      main = double.parse(main).toFormatMoneyForm();
+      // main = main.formatMoneyWithoutCommaAndSupportLargest();
       value = '$main.$fraction';
     } else {
       String main = splitStr[0].replaceAll(RegExp(r"\D"), "");
       if (main == '') {
         value = main;
       } else {
-        if (main.length > 20) {
-          main = main.substring(0, 20);
+        if (main.length > 15) {
+          main = main.substring(0, 15);
         }
-        main = main.formatMoneyWithoutCommaAndSupportLargest();
-        value = main + (countDot > 0 ? '.' : '');
+        value = double.parse(main).toFormatMoneyForm();
+        value = value + (countDot > 0 ? '.' : '');
+        // main = main.formatMoneyWithoutCommaAndSupportLargest();
+        // value = main + (countDot > 0 ? '.' : '');
       }
     }
     return value;
@@ -73,20 +76,13 @@ extension StringCustom on String {
 
   double moneyToDouble() {
     if (this == '') return 0;
-    List<String> data = this.split('.');
-    String newString = data[0].replaceAll(',', '');
-    // newString + '.' + data[1]
-    return double.tryParse('$newString.${data[1]}') ?? 0;
-  }
-
-  String stringDoubleToMoney() {
-    if (this == '') return '';
-    List<String> data = this.split('.');
-    String newString = data[0].replaceAll(',', '');
-    // newString + '.' + data[1]
-    double value = double.tryParse('$newString.${data[1]}') ?? 0;
-    final NumberFormat usCurrency = NumberFormat("#,##0.00", "en_US");
-    return usCurrency.format(value);
+    String value = this;
+    value = value.replaceAll(',', '');
+    List<String> data = value.split('.');
+    if (data.length < 2) {
+      return double.tryParse(value.replaceAll(',', '')) ?? 0;
+    }
+    return double.tryParse('${data[0]}.${data[1] == '' ? '0' : data[1]}') ?? 0;
   }
 
   String formatDateddMMyyyy() {

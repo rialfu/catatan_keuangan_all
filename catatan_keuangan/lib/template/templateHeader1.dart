@@ -14,6 +14,7 @@ Widget templateHeader1(String value1, String value2) {
           ),
           AutoSizeText(
             value2,
+            maxLines: 1,
             style: TextStyle(
               color: value1.toLowerCase() == 'expense'
                   ? Colors.red

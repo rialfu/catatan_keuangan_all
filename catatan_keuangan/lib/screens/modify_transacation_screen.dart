@@ -1,5 +1,4 @@
 import 'dart:async';
-import 'dart:math';
 
 import 'package:catatan_keuangan/components/dropdown_component.dart';
 import 'package:catatan_keuangan/core/bloc/auth/auth_bloc.dart';
@@ -13,14 +12,13 @@ import 'package:catatan_keuangan/core/bloc/transaction/transaction_state.dart';
 import 'package:catatan_keuangan/core/enum/auth_enum.dart';
 import 'package:catatan_keuangan/core/model/transaction_daily_model.dart';
 import 'package:catatan_keuangan/extensions/datetime_extension.dart';
+import 'package:catatan_keuangan/extensions/double_extension.dart';
 import 'package:catatan_keuangan/extensions/string_extension.dart';
 import 'package:catatan_keuangan/template/categoryscreen.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:intl/intl.dart';
-import 'package:flutter/services.dart';
-import 'package:flutter/material.dart';
 
 class ModifyTransactionScreen extends StatefulWidget {
   final TransactionDailyModel? data;
@@ -56,15 +54,7 @@ class _ModifyTransactionScreenState extends State<ModifyTransactionScreen> {
       detail.text = widget.data!.detail!;
     }
     if (widget.data?.harga != null) {
-      double myDouble = widget.data?.harga ?? 0;
-      double fraction = myDouble - (widget.data?.harga ?? 0).truncate();
-      NumberFormat formatter = NumberFormat.decimalPatternDigits(
-        locale: 'en_us',
-        decimalDigits: fraction == 0 ? 0 : 2,
-      );
-      harga.text = formatter.format(myDouble);
-
-      // harga.text = widget.data!.hargaWithFormatMoney();
+      harga.text = widget.data!.harga.toFormatMoneyForm();
     }
     if (widget.data?.debitCredit != null) {
       setState(() {
@@ -233,8 +223,13 @@ class _ModifyTransactionScreenState extends State<ModifyTransactionScreen> {
                   inputFormatters: <TextInputFormatter>[
                     FilteringTextInputFormatter.allow(RegExp(r'[0-9\.]+'))
                     // FilteringTextInputFormatter.digitsOnly,
-                    // DecimalDotInputFormatter(),
                   ],
+                  validator: (value) {
+                    if (value == null || value == '') {
+                      return 'Please input money';
+                    }
+                    return null;
+                  },
                   keyboardType: TextInputType.numberWithOptions(decimal: true),
                   onChanged: (String textValue) {
                     String value = textValue.fixStringMoney();
@@ -242,41 +237,6 @@ class _ModifyTransactionScreenState extends State<ModifyTransactionScreen> {
                     harga.value = TextEditingValue(
                       text: value,
                     );
-                    // if (split_str.length > 2) {
-                    // } else if (split_str.length == 2) {
-                    //   String main = split_str[0].replaceAll(RegExp(r"\D"), "");
-                    //   String fraction = split_str[1];
-                    //   if (fraction.length > 2) {
-                    //     main = main + fraction[1];
-                    //     fraction = fraction.substring(1);
-                    //   }
-                    //   harga.value = TextEditingValue(
-                    //     text: '$main.$fraction',
-                    //   );
-                    // } else {
-                    //   harga.value = TextEditingValue(
-                    //     text: split_str[0].replaceAll(RegExp(r"\D"), ""),
-                    //   );
-                    // }
-                    // NumberFormat formatter = NumberFormat.decimalPatternDigits(
-                    //   locale: 'en_us',
-                    //   decimalDigits: split_str.length < 2 ? 0 : 2,
-                    // );
-                    // harga.value = TextEditingValue(
-                    //   text: formatter.format(money),
-                    // );
-
-                    // var valueNumber =
-                    //     double.parse(textValue.replaceAll(RegExp(r"\D"), "")) /
-                    //         100;
-                    // var fomattedValue =
-                    //     NumberFormat("#,##0.00", "en_US").format(valueNumber);
-                    // harga.value = TextEditingValue(
-                    //   text: fomattedValue,
-                    //   selection: TextSelection.collapsed(
-                    //     offset: fomattedValue.length,
-                    //   ),
-                    // );
                   },
                 ),
                 SizedBox(
@@ -356,21 +316,24 @@ class _ModifyTransactionScreenState extends State<ModifyTransactionScreen> {
                     onPressed: () async {
                       String message = '';
                       // print(harga.text.moneyToDouble());
-                      if (harga.text.moneyToDouble() == 0) {
-                        message = 'The money must fill or not zero';
-                      } else if (category == null) {
-                        message = 'The category must choose';
-                      }
-                      if (message != '') {
-                        return alertDialogCustom(
-                          message: [message],
-                          title: 'Error Message',
-                          callback: () {
-                            Navigator.of(context).pop();
-                          },
-                        );
-                      }
+
                       if (_formKey.currentState!.validate()) {
+                        if (harga.text.moneyToDouble() == 0) {
+                          message = 'The money must fill or not zero';
+                        } else if (category == null) {
+                          message = 'The category must choose';
+                        }
+                        if (message != '') {
+                          return alertDialogCustom(
+                            message: [message],
+                            title: 'Error Message',
+                            callback: () {
+                              Navigator.of(context).pop();
+                            },
+                          );
+                        }
+                        // print(harga.text.moneyToDouble());
+                        // return;
                         String? cat;
                         for (int i = 0;
                             i < catBloc.state.categories.length;
@@ -414,52 +377,6 @@ class _ModifyTransactionScreenState extends State<ModifyTransactionScreen> {
           ),
         );
       }),
-    );
-  }
-}
-
-class DecimalDotInputFormatter extends TextInputFormatter {
-  @override
-  TextEditingValue formatEditUpdate(
-    TextEditingValue oldValue,
-    TextEditingValue newValue,
-  ) {
-    final newText = newValue.text;
-    if (newText.isEmpty) {
-      return newValue;
-    }
-
-    // Allow only digits and at most one dot
-    final validText = RegExp(r'^[0-9]*\.?[0-9]*$').hasMatch(newText)
-        ? newText
-        : oldValue.text;
-
-    return newValue.copyWith(
-      text: validText,
-      selection: updateSelection(oldValue, newValue, validText.length),
-    );
-  }
-
-  TextSelection updateSelection(
-    TextEditingValue oldValue,
-    TextEditingValue newValue,
-    int newTextLength,
-  ) {
-    if (oldValue.selection.baseOffset == 0 &&
-        newValue.selection.baseOffset == 0) {
-      return newValue.selection;
-    } else if (oldValue.selection.baseOffset == oldValue.text.length) {
-      return TextSelection.collapsed(offset: newTextLength);
-    }
-    return newValue.selection.copyWith(
-      baseOffset: min(
-          newValue.selection.baseOffset +
-              (newTextLength - oldValue.text.length),
-          newTextLength),
-      extentOffset: min(
-          newValue.selection.extentOffset +
-              (newTextLength - oldValue.text.length),
-          newTextLength),
     );
   }
 }

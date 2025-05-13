@@ -1,5 +1,4 @@
 import 'package:catatan_keuangan/core/model/transaction_daily_model.dart';
-import 'package:catatan_keuangan/extensions/string_extension.dart';
 import 'package:flutter/material.dart';
 
 class DetailTransactionScreen extends StatefulWidget {
