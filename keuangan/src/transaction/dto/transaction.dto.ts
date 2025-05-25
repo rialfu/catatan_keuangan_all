@@ -1,5 +1,5 @@
 import { IsDateString,  IsIn, IsNotEmpty, IsNumber, IsOptional, IsString, MaxLength, IsNumberString, Validate, Min, } from "class-validator";
-import { CategoryExistsValidation, IsCategoryExist } from "src/validations/category_exists";
+import { IsCategoryExist } from "src/validations/category_exists";
 import { IsTranExist } from "src/validations/transaction_exists";
 
 export class CreateTransactionDTO{

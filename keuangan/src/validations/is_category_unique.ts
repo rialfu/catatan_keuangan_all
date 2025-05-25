@@ -1,4 +1,4 @@
-import { ExecutionContext, Injectable } from '@nestjs/common';
+import {  Injectable } from '@nestjs/common';
 import {
   ValidatorConstraint,
   ValidatorConstraintInterface,
@@ -9,14 +9,15 @@ import {
 import { CategoryService } from '../category/category.service';
 import { ExtendedValidationArguments } from 'src/config/lib';
 import { REQUEST_CONTEXT } from 'src/config/InjectUserIntercept';
+import { Raw } from 'typeorm';
 
 interface IsCategoryExistsOptions {
     isNeed: boolean;
 }
 
-@ValidatorConstraint({ name: 'CategoryExists', async: false })
+@ValidatorConstraint({ name: 'CategoryUnique', async: false })
 @Injectable()
-export class CategoryExistsValidation implements ValidatorConstraintInterface {
+export class CategoryUniqueValidation implements ValidatorConstraintInterface {
     constructor(private catService: CategoryService) {}
 
     async validate(value: number, args: ExtendedValidationArguments): Promise<boolean>  {
@@ -32,36 +33,42 @@ export class CategoryExistsValidation implements ValidatorConstraintInterface {
         if(context != null){
             userId = context.user.userId
         }
-        
-        return this.catService.find({'id':value},{user:true}).then((data)=>{
-            // if(isNeed == false) return true
-            if(data == null) return false
-            if(userId != ''){
-                if(data.canDelete && data.user.id != userId) return false
+        // return false;
+        return this.catService.find(
+            {
+                'category_name':Raw(alias => `lower(${alias}) =  lower(:search)`, {search: value}),
+                // 'user'
+            },
+            {
+                user:true
             }
+        ).then((data)=>{
+            if(data == null) return true;
+            if(data.canDelete ==  false) return false;
+            if(data.canDelete && data.user.id == userId) return false;            
             return true;
         });
     }
     defaultMessage(validationArguments?: ValidationArguments): string {
         // return custom field message
         const field: string = validationArguments?.property ?? 'Category'
-        return `${field} isn't exist in system`
+        return `${field} must unique`
     }
 }
 
 // Register The Decorator
-export function IsCategoryExist(
+export function IsCategoryUnique(
     options?:IsCategoryExistsOptions,
     validationOptions?: ValidationOptions,
 ) {
     return function (object: any, propertyName: string) {
         registerDecorator({
-        name: 'CategoryExists',
-        target: object.constructor,
-        propertyName: propertyName,
-        constraints: [options],
-        options: validationOptions,
-        validator: CategoryExistsValidation,
+            name: 'CategoryUnique',
+            target: object.constructor,
+            propertyName: propertyName,
+            constraints: [options],
+            options: validationOptions,
+            validator: CategoryUniqueValidation,
         });
     };
 }

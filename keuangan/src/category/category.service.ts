@@ -45,21 +45,7 @@ export class CategoryService {
     
     }
     find_all_and_count_relation(search:{[key: string]: any}):Promise<any>{
-        // let query = this.dataSource.createQueryBuilder()
-        // .select(['tab1.id as id', 'tab1.category_name as category_name', 'case when tab1.canDelete = false then false when tab1.canDelete = true and tab1.count_t > 0 then false else true end canDelete',
-        //     'case when tab1.canDelete = false then false else true end canUpdate'
-        // ])
-        // return query.addFrom((sq)=>{
-        //     let subquery = sq.select(['c.id as id', 'category_name', 'canDelete', 'count(t.id) as count_t'])
-        //     .from(Category, 'c')
-        //     .leftJoin(Transaction, 't', 'c.id=t.categoryId')
-        //     subquery= subquery.where('canDelete=false')
-        //     if(search['user_id'] != undefined){
-        //         subquery = subquery.orWhere('c.userId = :userId',{userId:search['user_id']})
-        //     }
-        //     return subquery.groupBy('c.id').addGroupBy('category_name').addGroupBy('canDelete')
-        // }, 'tab1').getRawMany()
-
+        
         let query = this.categoryRepo.createQueryBuilder('c')
         query.select(['c.id as id',' c.category_name as category_name', 
             'c.canDelete as canUpdate',

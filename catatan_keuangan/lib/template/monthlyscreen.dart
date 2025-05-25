@@ -59,70 +59,81 @@ class _MonthlyScreenState extends State<MonthlyScreen> {
             SizedBox(
               height: 10,
             ),
-            ...(stateTrans.monthly.map(
-              (e) => Container(
-                padding: EdgeInsets.symmetric(
-                  horizontal: 10,
-                  vertical: 10,
-                ),
-                decoration: BoxDecoration(
-                  color: Colors.white,
-                  border: Border(
-                    bottom: BorderSide(
-                      width: 1,
-                      color: Colors.black,
-                    ),
-                  ),
-                ),
-                child: Row(
-                  mainAxisAlignment: MainAxisAlignment.spaceAround,
-                  children: [
-                    Expanded(
-                        flex: 1,
-                        child: Container(
-                          color: e.name == now
-                              ? Colors.yellow[800]
-                              : Colors.grey[700],
-                          padding:
-                              EdgeInsets.symmetric(horizontal: 5, vertical: 3),
-                          child: Text(
-                            textAlign: TextAlign.center,
-                            DateTime.parse('${e.name}-01').getNameofMonth(),
-                            style: TextStyle(
-                              fontSize: 16,
-                              color: Colors.white,
+            Expanded(
+              child: SingleChildScrollView(
+                child: Column(
+                  children: stateTrans.monthly
+                      .map(
+                        (e) => Container(
+                          padding: EdgeInsets.symmetric(
+                            horizontal: 10,
+                            vertical: 10,
+                          ),
+                          decoration: BoxDecoration(
+                            color: Colors.white,
+                            border: Border(
+                              bottom: BorderSide(
+                                width: 1,
+                                color: Colors.black,
+                              ),
                             ),
                           ),
-                        )),
-                    Expanded(
-                      flex: 4,
-                      child: Text(
-                        textAlign: TextAlign.end,
-                        e.totalIn.toString().formatMoney(),
-                        style: TextStyle(
-                          color: Colors.green,
-                          fontSize: 16,
+                          child: Row(
+                            mainAxisAlignment: MainAxisAlignment.spaceAround,
+                            children: [
+                              Expanded(
+                                flex: 1,
+                                child: Container(
+                                  // constraints: BoxConstraints(minWidth: ),
+                                  color: e.name == now
+                                      ? Colors.yellow[800]
+                                      : Colors.grey[700],
+                                  padding: EdgeInsets.symmetric(
+                                      horizontal: 5, vertical: 3),
+                                  child: Text(
+                                    textAlign: TextAlign.center,
+                                    DateTime.parse('${e.name}-01')
+                                        .getNameofMonth(),
+                                    style: TextStyle(
+                                      fontSize: 16,
+                                      color: Colors.white,
+                                    ),
+                                  ),
+                                ),
+                              ),
+                              Expanded(
+                                flex: 3,
+                                child: Text(
+                                  textAlign: TextAlign.end,
+                                  e.totalIn.toString().formatMoney(),
+                                  style: TextStyle(
+                                    color: Colors.green,
+                                    fontSize: 16,
+                                  ),
+                                ),
+                              ),
+                              Expanded(
+                                flex: 3,
+                                child: Text(
+                                  textAlign: TextAlign.end,
+                                  e.totalIn.toString().formatMoney(),
+                                  style: TextStyle(
+                                    color: Colors.red,
+                                    fontSize: 16,
+                                  ),
+                                ),
+                              ),
+                              // Text(e.name),
+                              // ,
+                              // Text(e.totalOut.toString()),
+                            ],
+                          ),
                         ),
-                      ),
-                    ),
-                    Expanded(
-                      flex: 4,
-                      child: Text(
-                        textAlign: TextAlign.end,
-                        e.totalIn.toString().formatMoney(),
-                        style: TextStyle(
-                          color: Colors.red,
-                          fontSize: 16,
-                        ),
-                      ),
-                    ),
-                    // Text(e.name),
-                    // ,
-                    // Text(e.totalOut.toString()),
-                  ],
+                      )
+                      .toList(),
                 ),
               ),
-            ))
+            ),
           ],
         ),
       );

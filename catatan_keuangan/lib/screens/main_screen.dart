@@ -1,4 +1,5 @@
 import 'dart:async';
+import 'dart:io';
 
 import 'package:auto_size_text/auto_size_text.dart';
 import 'package:catatan_keuangan/core/bloc/auth/auth_bloc.dart';
@@ -13,12 +14,17 @@ import 'package:catatan_keuangan/core/enum/auth_enum.dart';
 import 'package:catatan_keuangan/extensions/context_entension.dart';
 import 'package:catatan_keuangan/extensions/datetime_extension.dart';
 import 'package:catatan_keuangan/extensions/navigate_extension.dart';
+import 'package:catatan_keuangan/init/network/dio_manager.dart';
 import 'package:catatan_keuangan/screens/modify_transacation_screen.dart';
 import 'package:catatan_keuangan/screens/saving_plan_screen.dart';
+import 'package:catatan_keuangan/template/chart_daily_screen.dart';
 import 'package:catatan_keuangan/template/dailyscreen.dart';
 import 'package:catatan_keuangan/template/monthlyscreen.dart';
+import 'package:device_info_plus/device_info_plus.dart';
+import 'package:dio/dio.dart';
 import 'package:flutter/material.dart';
-// import 'package:provider/provider.dart';
+// import 'package:path_provider/path_provider.dart';
+import 'package:permission_handler/permission_handler.dart';
 
 import 'package:flutter_bloc/flutter_bloc.dart';
 
@@ -38,6 +44,9 @@ class _MainScreenState extends State<MainScreen> with TickerProviderStateMixin {
     {
       "label": "Monthly",
     },
+    {
+      "label": "Chart",
+    }
     // {
     //   "label": "Categories",
     // }
@@ -93,29 +102,10 @@ class _MainScreenState extends State<MainScreen> with TickerProviderStateMixin {
         } else {
           message.add(state.message);
         }
-        showDialog<void>(
-          context: context,
-          barrierDismissible: false, // user must tap button!
-          builder: (BuildContext context) {
-            return AlertDialog(
-              title: const Text('Error'),
-              content: SingleChildScrollView(
-                child: ListBody(
-                  children: message.map((e) => Text(e.toString())).toList(),
-                ),
-              ),
-              actions: <Widget>[
-                TextButton(
-                  child: const Text('Close'),
-                  onPressed: () {
-                    Navigator.of(context).pop();
-                    tranBloc.add(TransactionCleanMessage());
-                  },
-                ),
-              ],
-            );
-          },
-        );
+        alert(message, 'error', callback: () {
+          Navigator.of(context).pop();
+          tranBloc.add(TransactionCleanMessage());
+        });
         return;
       }
       if (state.loading == false) {
@@ -144,6 +134,33 @@ class _MainScreenState extends State<MainScreen> with TickerProviderStateMixin {
     }
 
     // print(authBloc.state.status);
+  }
+
+  void alert(List message, String title, {VoidCallback? callback}) {
+    showDialog<void>(
+      context: context,
+      barrierDismissible: false, // user must tap button!
+      builder: (BuildContext context) {
+        return AlertDialog(
+          title: Text(title),
+          content: SingleChildScrollView(
+            child: ListBody(
+              children: message.map((e) => Text(e.toString())).toList(),
+            ),
+          ),
+          actions: <Widget>[
+            TextButton(
+              child: const Text('Close'),
+              onPressed: callback ??
+                  () {
+                    Navigator.of(context).pop();
+                    tranBloc.add(TransactionCleanMessage());
+                  },
+            ),
+          ],
+        );
+      },
+    );
   }
 
   @override
@@ -388,7 +405,109 @@ class _MainScreenState extends State<MainScreen> with TickerProviderStateMixin {
           '$yearNow-${monthNow.toString().padLeft(2, '0')}-01'));
     } else if (_tabController.index == 1) {
       tranBloc.add(TransactionGetMonthlyData('$yearNow'));
+    } else if (_tabController.index == 2) {
+      setState(() {});
+      // tranBloc.add(TransactionDailyRequested(
+      //     '$yearNow-${monthNow.toString().padLeft(2, '0')}-01'));
     }
+  }
+
+  Future<bool> requestPermissions() async {
+    if (Theme.of(context).platform == TargetPlatform.android) {
+      final plugin = DeviceInfoPlugin();
+      final androidInfo = await plugin.androidInfo;
+      final sdkInt = androidInfo.version.sdkInt;
+
+      if (sdkInt >= 33) {
+        return true;
+      } else {
+        var status = await Permission.storage.status;
+        if (!status.isGranted) {
+          // Permission.storage.request();
+          status = await Permission.storage.request();
+          if (!status.isGranted) {
+            await openAppSettings();
+          }
+        }
+        return status.isGranted;
+      }
+    }
+    return true; // iOS doesn't require explicit storage permission for app's own directory
+  }
+
+  Future<bool> checkFolder() async {
+    // DownloadsPath
+    try {
+      if (Theme.of(context).platform == TargetPlatform.android) {
+        Directory dir = Directory('/storage/emulated/0/Download');
+        if (!dir.existsSync()) {
+          dir.createSync(recursive: true);
+        }
+      }
+      return true;
+    } catch (err) {
+      return false;
+    }
+  }
+
+  void download() async {
+    if (isLoad) return;
+    String st = '$yearNow-${monthNow.toString().padLeft(2, '0')}-01';
+    String ed = DateTime(yearNow, monthNow + 1, 0).yyyymmdd();
+    Map<String, String> queryParams = {'start': st, 'end': ed};
+    bool permission = await requestPermissions();
+    if (permission == false) {
+      return;
+    }
+    bool isFolderAvail = await checkFolder();
+    if (isFolderAvail == false) {
+      return;
+    }
+    setState(() {
+      isLoad = true;
+    });
+    try {
+      await DioManager.instance.dio.download(
+        'transaction/download',
+        '/storage/emulated/0/Download/catatan_keuangan_${st}_${ed}.csv',
+        queryParameters: queryParams,
+      );
+      alert(
+        ['Success save', 'You can check in Download Folder'],
+        'Success',
+      );
+    } on DioException catch (e) {
+      if (e.response?.statusCode == 500 || e.response?.statusCode == 400) {
+        List messageShow = [
+          'Failed Download',
+          'You can check in Download Folder'
+        ];
+        if (e.response?.data != null &&
+            e.response?.data is Map<String, dynamic>) {
+          Map<String, dynamic> message =
+              e.response!.data as Map<String, dynamic>;
+          if (message.containsKey('message')) {
+            if (message['message'] is String) {
+              messageShow = [message['message'] as String];
+            } else if (message['message'] is List) {
+              messageShow = message['message'] as List;
+            }
+          }
+        }
+        alert(
+          messageShow,
+          'Failed',
+        );
+      }
+    } catch (err) {
+      alert(
+        [err],
+        'Failed',
+      );
+    }
+    setState(() {
+      isLoad = false;
+    });
   }
 
   @override
@@ -426,6 +545,11 @@ class _MainScreenState extends State<MainScreen> with TickerProviderStateMixin {
                         child: Row(
                           mainAxisAlignment: MainAxisAlignment.end,
                           children: [
+                            if (_tabController.index == 0)
+                              IconButton(
+                                onPressed: () async {},
+                                icon: Icon(Icons.download),
+                              ),
                             IconButton(
                               onPressed: () {
                                 if (_tabController.index == 0) {
@@ -451,6 +575,8 @@ class _MainScreenState extends State<MainScreen> with TickerProviderStateMixin {
                                         setDaily(monthNow, yearNow);
                                       } else if (_tabController.index == 1) {
                                         setMonth(yearNow);
+                                      } else if (_tabController.index == 2) {
+                                        setDaily(monthNow, yearNow);
                                       }
                                     },
                               icon: Icon(
@@ -490,6 +616,12 @@ class _MainScreenState extends State<MainScreen> with TickerProviderStateMixin {
                             }
                           } else if (_tabController.index == 1) {
                             setMonth(yearNow - 1);
+                          } else if (_tabController.index == 2) {
+                            if ((monthNow - 1) == 0) {
+                              setDaily(12, yearNow - 1);
+                            } else {
+                              setDaily(monthNow - 1, yearNow);
+                            }
                           }
                         },
                         icon: Icon(Icons.chevron_left),
@@ -498,6 +630,8 @@ class _MainScreenState extends State<MainScreen> with TickerProviderStateMixin {
                         onPressed: () {
                           if (isLoad) return;
                           if (_tabController.index == 0) {
+                            startOverlay();
+                          } else if (_tabController.index == 2) {
                             startOverlay();
                           }
                         },
@@ -521,6 +655,12 @@ class _MainScreenState extends State<MainScreen> with TickerProviderStateMixin {
                             }
                           } else if (_tabController.index == 1) {
                             setMonth(yearNow + 1);
+                          } else if (_tabController.index == 2) {
+                            if ((monthNow + 1) == 13) {
+                              setDaily(1, yearNow + 1);
+                            } else {
+                              setDaily(monthNow + 1, yearNow);
+                            }
                           }
                         },
                         icon: Icon(Icons.chevron_right),
@@ -531,6 +671,7 @@ class _MainScreenState extends State<MainScreen> with TickerProviderStateMixin {
               ),
             ),
             bottom: TabBar(
+              // physics: isLoad ? NeverScrollableScrollPhysics() : null,
               unselectedLabelColor: Colors.grey,
               labelColor: Colors.white,
               indicatorColor: Colors.white,
@@ -577,6 +718,7 @@ class _MainScreenState extends State<MainScreen> with TickerProviderStateMixin {
                 children: [
                   DailyScreen(),
                   MonthlyScreen(),
+                  ChartDailyScreen()
                   // CategoryScreen(),
                 ],
               ),

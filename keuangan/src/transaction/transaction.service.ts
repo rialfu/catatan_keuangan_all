@@ -1,89 +1,57 @@
-import { Injectable, Logger } from '@nestjs/common';
-import { InjectRepository } from '@nestjs/typeorm';
+import { Injectable, InternalServerErrorException, Logger } from '@nestjs/common';
+import { InjectDataSource, InjectRepository } from '@nestjs/typeorm';
 import { Category } from 'src/model/category.entity';
 
 import { User } from 'src/model/user.entity';
+import { stringify } from 'csv-stringify'
 // import { User } from 'src/model/user.entity';
-import { Between, Repository,  } from 'typeorm';
+import { Between, DataSource, LessThan, LessThanOrEqual, MoreThanOrEqual, QueryRunner, Repository,  } from 'typeorm';
 import { Transaction } from './entities/transaction.entity';
+import { PassThrough, Readable } from 'stream';
+import { get_first_day_month_string_from_string, get_last_day_month_string_from_string } from 'src/config/support_date';
 
 @Injectable()
 export class TransactionService {
     constructor(
         @InjectRepository(Transaction)
         private readonly transactionRepo: Repository<Transaction>,
+        @InjectDataSource() private dataSource: DataSource,
         
     ) { 
     }
 
-    async get_all_transaction_custom(search: any=null):  Promise<any[]>{
-        let query= this.transactionRepo.createQueryBuilder('t')
-        .select(['t.*','category_name as category'])
-        // .select(['t',]).from(Transaction,'transaction as t')
-        .innerJoin(Category, 'c','c.id = t.categoryId')
-        .where('t.userId = :userId',{ userId:'a858bd9b-7c44-45cf-ac2e-ab0acfa9ef23' })
-        if (search?.tanggal_transaksi != undefined){
-            const newDate = new Date(search['tanggal_transaksi'])
-            const lastDay = new Date(newDate.getFullYear(), newDate.getMonth()+1, 0)
-            query = query.where('tanggal_transaksi >= :tanggal_transaksi', {tanggal_transaksi:newDate.getFullYear()+'-'+(newDate.getMonth()+1)+'01'})
-            query = query.where('tanggal_transaksi <= :tanggal_transaksi', {tanggal_transaksi:newDate.getFullYear()+'-'+(newDate.getMonth()+1)+lastDay.getDate()})
-            search['tanggal_transaksi'] = Between(new Date(newDate.getFullYear(), newDate.getMonth(), 1),new Date(newDate.getFullYear(), newDate.getMonth() + 1, 0))
-        }else{
-           query = query.where('tanggal_transaksi >= :tanggal_transaksi', {tanggal_transaksi:'2025-01-01'})
-           .where('tanggal_transaksi <= :tanggal_transaksi', {tanggal_transaksi:'2025-01-31'}) 
-        }
-        
-        let data = await query
-        .getRawMany()
-        Logger.log(data)
-        return new Promise(function(resolve, reject){
-            return resolve([]);
-        });
-    }
-    last_day(tgl){
-        let str_split = tgl.split('-')
-        let month = parseInt(str_split[1])
-        // console.log(month, )
-        if([1,3,5,7,8,10,12].includes(month)){
-            return '31'
-        }else if([4,6,9,11].includes(month)){
-            return '30'
-        }else if(parseInt(str_split[0]) % 4 === 0 && month === 2){
-            return '29'
-        }else{
-            return '28'
-        }
-    }
+    
     get_all_transaction(user_id: string, search:{[key: string]: any}): Promise<any[]> {
-        // if (search['tanggal_transaksi']!=undefined){
-        //     console.log(search);
-        //     const newDate = new Date(search['tanggal_transaksi'])
-        //     let str_split = search['tanggal_transaksi'].split('-');
-        //     search['tanggal_transaksi'] =Between(
-        //         str_split[0]+'-'+str_split[1]+'-'+'01', str_split[0]+'-'+str_split[1]+'-'+this.last_day(search['tanggal_transaksi'])
-        //     );
-            
-        // }
-        // if(search['start'] != undefined && search['end'] != undefined){
-        //     search['tanggal_transaksi'] = Between(search['start'], search['end'])
-        //     delete search['start']
-        //     delete search['end']
-        // }
-        // console.log(user_id)
+        
         let defaultFormat :string = `DATE_FORMAT(t.tanggal_transaksi,\'%Y-%m-%d\') as tanggal_transaksi`
-        // defaultFormat = 't.tanggal_transaksi as tanggal_transaksi'
+       
         if(process.env.TYPE_DB == 'mssql'){
             defaultFormat = `convert(varchar, t.tanggal, 23)`
         }
         let query = this.transactionRepo.createQueryBuilder('t')
-        .select(['t.id as id', 't.name as name', 't.detail as detail', 't.harga as harga', 't.debcre as debcre', defaultFormat , 'c.category_name as category', 'c.id as category_id', 't.userId'])
+        .select([
+            't.id as id', 
+            't.name as name', 
+            't.detail as detail', 
+            't.harga as harga', 
+            't.debcre as debcre', 
+            defaultFormat , 
+            'c.category_name as category', 
+            'c.id as category_id', 't.userId'
+        ])
         .leftJoin(Category, 'c','c.id=t.categoryId')
         .innerJoin(User, 'u', 'u.id=t.userId')
         .where('t.userId = :userId',{userId:user_id})
 
         if (search['tanggal_transaksi']!=undefined){
-            let str_split = search['tanggal_transaksi'].split('-');
-            query = query.andWhere('tanggal_transaksi >= :tanggal and tanggal_transaksi <= :tanggal_1', {tanggal:str_split[0]+'-'+str_split[1]+'-'+'01', tanggal_1:str_split[0]+'-'+str_split[1]+'-'+this.last_day(search['tanggal_transaksi'])})
+            console.log(get_first_day_month_string_from_string(search['tanggal_transaksi']))
+
+            query = query.andWhere('tanggal_transaksi >= :start and tanggal_transaksi <= :end',{
+                start: get_first_day_month_string_from_string(search['tanggal_transaksi']),
+                end: get_last_day_month_string_from_string(search['tanggal_transaksi'])
+            })
+            // let str_split = search['tanggal_transaksi'].split('-');
+            // query = query.andWhere('tanggal_transaksi >= :tanggal and tanggal_transaksi <= :tanggal_1', {tanggal:str_split[0]+'-'+str_split[1]+'-'+'01', tanggal_1:str_split[0]+'-'+str_split[1]+'-'+this.last_day(search['tanggal_transaksi'])})
             
         }
         if(search['start'] != undefined && search['end'] != undefined){
@@ -94,21 +62,6 @@ export class TransactionService {
         }
         const data = query.orderBy('t.tanggal_transaksi', 'ASC') .getRawMany();
         return data;
-        // return Promise.bind[];
-        // return this.transactionRepo.findAndCount
-        // return this.transactionRepo.find({
-        //     where:{
-        //         ...search,
-        //         user: {
-        //             id:user_id
-        //         }
-        //     },
-        //     relations:{
-        //         user:true,
-        //         category:true,
-        //     },
-        //     order:{tanggal_transaksi:'desc'}
-        // })
     }
 
     
@@ -175,8 +128,113 @@ export class TransactionService {
             .getRawMany();
 
     }
-    // sample():any{
-    //     create
-    //     this.transactionRepo.st
-    // }
+    async stream_load_data(start_date:Date, end_date:Date, userId: string | null) {
+        const queryRunner = this.dataSource.createQueryRunner()
+        await queryRunner.connect()
+        let columns = {
+            name: 'name',
+            detail: 'detail',
+            ie:'Income/Expense',
+            amount:'Amount',
+            category:'Category',
+            tanggal:'Date'
+        }
+        const stream = new PassThrough({objectMode:true})
+        const stringifier = stringify({ header: true, columns:columns });
+        stringifier.pipe(stream)
+        let abortProcess = false;
+        stream.on('close', () => {
+            // this.logger.warn('CSV stream closed prematurely. Aborting database fetch loop.');
+            abortProcess = true;
+            // stringifier.end();
+        });
+        stream.on('error', (err) => {
+            // this.logger.error('Error in CSV stream (UsersService):', err.message);
+            abortProcess = true; // Abort proses jika ada error pada stream CSV
+            // stringifier.end();
+        });
+        let batch_size = 100;
+        (async () => {
+            let offset = 0;
+            let hasMoreData = true;
+            let isFirstBatch = true; // Untuk menentukan kapan header CSV perlu ditulis
+
+            try {
+                while (hasMoreData && !abortProcess) {
+                    
+                    let query = this.transactionRepo.createQueryBuilder('t')
+                    .select([
+                        't.name as name',
+                        'detail',
+                        'case when debcre = \'debit\' then \'Income\' else \'Expense\' end as ie',
+                        'harga as amount',
+                        'c.category_name as category',
+                        'DATE_FORMAT(tanggal_transaksi, \'%Y-%m-%d\') as tanggal'
+                    ])
+                    .leftJoin(Category, 'c', 'c.id = t.categoryId')
+                    .where('tanggal_transaksi >= :start_date',{start_date:start_date.toISOString().split('T')[0]})
+                    .andWhere('tanggal_transaksi <= :end_date',{end_date:end_date.toISOString().split('T')[0]})
+                    if(userId != null){
+                        query = query.andWhere('t.userId = :userId',{userId})
+                    }
+                    const data = await query
+                    .orderBy({
+                        'tanggal_transaksi':'DESC',
+                        't.id':'ASC',
+                    })
+                    .limit(batch_size)
+                    .offset(offset)
+                    .getRawMany()
+                    
+                    // console.log(data)
+                    
+                    if (data.length > 0) {
+                        // if(isFirstBatch){
+                        //     isFirstBatch = false;
+                        //     stringifier.write(data)
+                        // }else{
+                        //     stringifier.options.header = false;
+                        //     stringifier.write(data)
+                        // }
+                        for(let i=0; i<data.length;i++){
+                            stringifier.write(data[i])
+                            if(isFirstBatch){
+                                isFirstBatch = false;
+                                stringifier.options.header = false;
+                            }
+                        }
+                        offset += data.length;
+                        hasMoreData = data.length === batch_size; // Jika jumlah data kurang dari BATCH_SIZE, berarti sudah habis
+                    } else {
+                        hasMoreData = false; // Tidak ada lagi data
+                    }
+                }
+                stringifier.end();
+                stream.end()
+            } catch (error) {
+                //trigger stream error juga
+                stringifier.emit('error', error); // Propagasi error ke 
+                
+                stringifier.end(); // Akhiri stringifier dengan error
+            }
+        })();
+        return stream;
+        
+    }
+    private async checkProcessStatus(processId: number): Promise<boolean> {
+        const queryRunner = this.dataSource.createQueryRunner();
+        await queryRunner.connect()
+        // const processRecord = await queryRunner.manager.findOne(Process, {
+        // where: { id: processId },
+        // select: ['status']
+        // });
+
+        // if (!processRecord) {
+        //     throw new NotFoundException(`Process with ID ${processId} not found.`);
+        // }
+        return Promise.apply((resolve)=>{
+            resolve(true)
+        })
+        // return processRecord.status;
+  }
 }

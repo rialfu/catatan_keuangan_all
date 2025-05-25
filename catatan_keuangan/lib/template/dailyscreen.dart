@@ -126,12 +126,13 @@ class _DailyScreenState extends State<DailyScreen> {
                                 ),
                               ),
                               Expanded(
-                                flex: 3,
+                                flex: 2,
                                 child: Column(
                                   // mainAxisAlignment: MainAxisAlignment.start,
                                   crossAxisAlignment: CrossAxisAlignment.start,
                                   children: [
-                                    Text(
+                                    AutoSizeText(
+                                      maxLines: 1,
                                       keys[index].formatMonthDotYear(),
                                       style: TextStyle(
                                         fontSize: 14,
@@ -141,7 +142,8 @@ class _DailyScreenState extends State<DailyScreen> {
                                       padding: EdgeInsets.symmetric(
                                           vertical: 2, horizontal: 7),
                                       color: Colors.grey[700],
-                                      child: Text(
+                                      child: AutoSizeText(
+                                        maxLines: 1,
                                         keys[index].getNameOfWeek(),
                                         style: TextStyle(
                                           fontSize: 14,
@@ -153,7 +155,7 @@ class _DailyScreenState extends State<DailyScreen> {
                                 ),
                               ),
                               Expanded(
-                                flex: 5,
+                                flex: 4,
                                 child: AutoSizeText(
                                   maxLines: 1,
                                   textAlign: TextAlign.end,
@@ -175,7 +177,7 @@ class _DailyScreenState extends State<DailyScreen> {
                                 ),
                               ),
                               Expanded(
-                                flex: 5,
+                                flex: 4,
                                 child: AutoSizeText(
                                   textAlign: TextAlign.end,
                                   maxLines: 1,

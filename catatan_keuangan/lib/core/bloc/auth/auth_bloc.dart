@@ -19,8 +19,10 @@ class AuthBloc extends Bloc<AuthEvent, AuthState> {
     on<AppStarted>((event, emit) async {
       try {
         if (await authCacheManager.isLoggedIn()) {
+          print('masuk sini 1');
           await authCacheManager.updateTokenFromStorage();
           String? res = await (authService as AuthService).getStatus();
+          print('res:$res');
           if (res == null) {
             await authCacheManager.signOut();
             emit(const AuthState.guest());
@@ -29,13 +31,16 @@ class AuthBloc extends Bloc<AuthEvent, AuthState> {
           emit(LoginState(newName: res));
           // emit(AuthState.authenticated(newName: res));
         } else {
+          print('masuk sini 2');
           emit((await authCacheManager.isFirstEntry())
               ? const AuthState.firstEntry()
               : const AuthState.guest());
         }
-      } on SocketException {
+      } on SocketException catch (err) {
+        print(err);
         emit(const AuthState.error(error: AuthError.hostUnreachable));
       } catch (e) {
+        print(e);
         emit(const AuthState.error());
       }
     });

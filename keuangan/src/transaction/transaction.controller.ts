@@ -1,4 +1,4 @@
-import { Controller, Get, Post, Request, Delete, Put, UseGuards, Param, Logger, Body, Res, HttpException, HttpCode, Query, UsePipes, UseInterceptors } from '@nestjs/common';
+import { Controller, Get, Post, Request, Delete, Put, UseGuards, Param, Logger, Body, Res, HttpException, HttpCode, Query, UsePipes, UseInterceptors, HttpStatus } from '@nestjs/common';
 import { TransactionService } from './transaction.service';
 import { AuthGuard } from '@nestjs/passport';
 import { CategoryService } from 'src/category/category.service';
@@ -7,12 +7,13 @@ import {Response}  from 'express'
 import { UserJWT } from 'src/model/user_jwt.dto';
 import { CreateTransactionDTO, TransactionGet, UpdateTransactionDTO } from 'src/transaction/dto/transaction.dto';
 import { Category } from 'src/model/category.entity';
-import * as ExcelJS from 'exceljs';
 import { InjectUserToBody } from 'src/config/apply_decorator';
 import { SkipThrottle } from '@nestjs/throttler';
 import { Transaction } from './entities/transaction.entity';
+import { Readable } from 'stream';
+import { get_first_day_month_from_date, get_first_day_month_string_from_date, get_first_day_month_string_from_string, isStringDate, isStringDateYYYYMMDD } from 'src/config/support_date';
 
-// @SkipThrottle()
+@SkipThrottle()
 @Controller('transaction')
 export class TransactionController {
     constructor(
@@ -21,77 +22,124 @@ export class TransactionController {
         
     ) {}
     
+    @Get('/test')
+    async get_test(){
+        
+    }
     @Get('/')
-    
     @UseGuards(AuthGuard('jwt'))
     async get_list_all_transaction(@Request() req, @Query('date') filter_date: string) : Promise<any>{
         // console.log(req);
         // const regex = /^d{4}-\d{2}-\d{2}/g
-        const regex = new RegExp(/^\d{4}\-(0[1-9]|1[0-2])\-(0[1-9]{1})$/)
+        // const regex = new RegExp(/^\d{4}\-(0[1-9]|1[0-2])\-(0[1-9]{1})$/)
         filter_date = (filter_date ?? '').replace(/\'/g,'')
-        if(filter_date==undefined || filter_date == ''){
-            const newDate = new Date()
-            filter_date = newDate.getFullYear()+'-'+(newDate.getMonth()+1)+'-'+'01'
-        }else if(regex.test(filter_date) === false){
-            const newDate = new Date()
-            filter_date = newDate.getFullYear()+'-'+(newDate.getMonth()+1)+'-'+'01'
+        if(isStringDateYYYYMMDD(filter_date) === false){
+            filter_date = get_first_day_month_string_from_date(new Date())
         }
-        const data = {tanggal_transaksi:filter_date}
+        const data = { tanggal_transaksi: filter_date}
         // console.log(data);
         const result = await this.transactionService.get_all_transaction(req.user.userId, data)
-        // console.log(result);
+        console.log(result);
         return {'data':result};
     }
+    
     @Get('/download')
-    async download_file(@Request() req,  @Query('date') filter_date?: string, @Query('start') start_date?: string, @Query('end') end_date?: string){
-        if(start_date ==undefined){
-            throw new HttpException({'message':'Please choose start date'}, 400);
-        }
-        const format_date_start = new Date(start_date)
-        if(!isNaN(format_date_start.getDate()) == false){
-            throw new HttpException({'message':'Please choose start date'}, 500);
-        }
-        if(end_date ==undefined){
-            throw new HttpException({'message':'Please choose end date'}, 400);
-        }
-        const format_date_end = new Date(end_date)
-        if(!isNaN(format_date_end.getDate()) == false){
-            throw new HttpException({'message':'Please choose end date'}, 500);
-        }
-        if(format_date_start > format_date_end){
-            throw new HttpException({'message':'Please choose end date is newer than start or same'}, 500);
-        }
-        // if(filter_date==undefined || filter_date == ''){
-        //     const newDate = new Date()
-        //     filter_date = newDate.getFullYear()+'-'+(newDate.getMonth()+1)+'-'+'01'
-        // }
-        // const regex = /^\d{4}-\d{2}-\d{2}$/;
-        // if(regex.test(filter_date) === false){
-        //     const newDate = new Date()
-        //     filter_date = newDate.getFullYear()+'-'+(newDate.getMonth()+1)+'-'+'01'
-        // }
-        // const data = {tanggal_transaksi:filter_date}
-        // // const data = {}
-        // // this.transactionService.get_all_transaction_custom()
-        // const result = await this.transactionService.get_all_transaction(req.user.userId, data)
-
-        // const Workbook =new ExcelJS.Workbook()
-        // const worksheet = Workbook.addWorksheet('TestExportXLS');
+    @UseGuards(AuthGuard('jwt'))
+    async download_file(@Request() req, @Res() res: Response,  @Query('date') filter_date?: string, @Query('start') start_date?: string, @Query('end') end_date?: string){
+        const userData: UserJWT = req.user
         
-        // worksheet.columns = [
-        //     { header: 'name', key: 'name' },
-        //     { header: 'age', key: 'age' }
-        // ];
+        if(end_date == null){
+            res.status(HttpStatus.BAD_REQUEST).send({'message':'Please fill End of Date'});
+            return;
+        }
+        if(start_date == null){
+            res.status(HttpStatus.BAD_REQUEST).send({'message':'Please fill Start of Date'});
+            return;
+        }
+        if(isStringDate(start_date) == false){
+            res.status(HttpStatus.BAD_REQUEST).send({'message':'Please fill Start of Date'});
+            return;
+        }
+        if(isStringDate(end_date) == false){
+            res.status(HttpStatus.BAD_REQUEST).send({'message':'Please fill End of Date'});
+            return;
+        }
+        let sd =  new Date(start_date)
+        let ed = new Date(end_date);
+        const originalDay = ed.getDate();
+        const originalMonth = ed.getMonth();
+        const originalYear = ed.getFullYear();
 
-        // worksheet.addRow({
-        //     name: 'Neo Luo',
-        //     age: 18
-        // });
-        // const buffer = await Workbook.csv.writeBuffer()
-        // res.set('Content-Disposition', 'attachment; filename=anlikodullendirme.csv');
-        // res.set('Content-Type', 'application/octet-stream');
-        // res.send(buffer)
-        return {'message':'success please wait creating file'};
+        const lastDayOfOriginalMonth = new Date(originalYear, originalMonth + 1, 0).getDate();
+        const isOriginalDateLastDay = originalDay === lastDayOfOriginalMonth;
+        const monthsToSubtract = 1;
+        const newDate = new Date(ed);
+        newDate.setMonth(originalMonth - monthsToSubtract);
+        if(originalMonth == sd.getMonth() && originalYear == sd.getFullYear()){
+
+        }else{
+            if (isOriginalDateLastDay) {
+                const newMonth = newDate.getMonth();
+                const newYear = newDate.getFullYear();
+                const lastDayOfNewMonth = new Date(newYear, newMonth + 1, 0).getDate();
+                newDate.setDate(lastDayOfNewMonth);
+            } else {
+                const expectedNewMonth = (originalMonth - monthsToSubtract + 12) % 12;
+                if (newDate.getMonth() !== expectedNewMonth) {// jika perhitungan perbedaan jumlah misal 28 feb 31 maret gk bs dikurang 1 bulan harus disesuaikan
+                    const newMonth = newDate.getMonth(); // Ini akan menjadi bulan yang "salah" (misal Maret)
+                    const newYear = newDate.getFullYear();
+                    const lastDayOfCorrectNewMonth = new Date(newYear, newMonth, 0).getDate(); 
+                    newDate.setDate(lastDayOfCorrectNewMonth);
+                }
+            }
+            if(sd < newDate){
+                res.status(HttpStatus.BAD_REQUEST).send({'message':'Please maximum '+monthsToSubtract+' month'});
+                return;
+                // throw new HttpException({'message':'Please maximum 3 month'}, HttpStatus.BAD_REQUEST);
+            }
+        }
+        
+        // console.log('d')
+        //jika melebihi 3bulan     
+        
+        try{
+            
+            const csvStream : Readable = await this.transactionService.stream_load_data(sd, ed, userData.userId);
+            res.setHeader('Content-Type', 'text/csv; charset=utf-8');
+            res.setHeader('Content-Disposition', 'attachment; filename="data_export_'+sd.toISOString().split('T')[0]+'_'+ed.toISOString().split('T')[0]+'.csv"');
+            csvStream.pipe(res);
+            // jika response selesai, tutup manual stream
+            res.on('close', ()=>{
+                if(!csvStream.destroyed){
+                    csvStream.destroy()
+                }
+            })
+            // res.on('')
+            res.on('error', (err) => {
+                // this.logger.error('Error writing to client response stream:', err.message, err.stack);
+                if (!csvStream.destroyed) {
+                    csvStream.destroy();
+                }
+                if (!res.headersSent) {
+                    res.status(HttpStatus.INTERNAL_SERVER_ERROR).send('Error during file transfer.');
+                }
+            });
+            //jika terjadi error pada stream, paksa end response
+            csvStream.on('error', (err) => {
+                // this.logger.error('Error from CSV stream (Controller):', err.message, err.stack);
+                if (!res.headersSent) {
+                    res.status(HttpStatus.INTERNAL_SERVER_ERROR).send('Error generating CSV data.');
+                } else {
+                    res.end();
+                }
+            });
+        }catch(err){
+            if(!res.headersSent){
+                res.status(HttpStatus.INTERNAL_SERVER_ERROR).send({message:err})
+            }else{
+                res.end()
+            }
+        }
   
     }
     
@@ -149,7 +197,7 @@ export class TransactionController {
     async update_transaction(@Request() req, @Body() body:UpdateTransactionDTO): Promise<any>{
         
         const userData: UserJWT = req.user
-        console.log({data:body});
+        // console.log({data:body});
         // const tx = await this.transactionService.find_transaction({id:body.id})
         
         // if(tx ==null){

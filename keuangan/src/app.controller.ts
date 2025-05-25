@@ -1,4 +1,4 @@
-import { Body, Controller, Get, HttpCode, HttpException, HttpStatus, Logger, Post, Request, Res, UseGuards, UseInterceptors } from '@nestjs/common';
+import { Body, Controller, Get, HttpCode, HttpException, HttpStatus, Ip, Logger, Post, Request, Res, UseGuards, UseInterceptors } from '@nestjs/common';
 import { AppService } from './app.service';
 import { AuthGuard } from '@nestjs/passport';
 import { UsersService } from './users/users.service';
@@ -23,21 +23,23 @@ export class AppController {
   ) {}
 
   @Get('/')
-  getHello(): any[] {
-    return ['gak ', parseInt(process.env.PORT_DB || '3306') ||'gk nemu prot', process.env.USERNAME_DB||'asdads', process.env.PASS_DB || 'adas',process.env.DB||'db'];return ['gak ', parseInt(process.env.PORT_DB || '3306') ||'gk nemu prot', process.env.USERNAME_DB||'asdads', process.env.PASS_DB || 'adas',process.env.DB||'db'];
+  getHello(@Request() req, @Ip() ip){
+    // console.log(req.headers['x-forwarded-for']);
+    return {'message':req['headers']['x-forwarded-for'], 'request':req['headers']};
+    // return ['gak ', parseInt(process.env.PORT_DB || '3306') ||'gk nemu prot', process.env.USERNAME_DB||'asdads', process.env.PASS_DB || 'adas',process.env.DB||'db'];return ['gak ', parseInt(process.env.PORT_DB || '3306') ||'gk nemu prot', process.env.USERNAME_DB||'asdads', process.env.PASS_DB || 'adas',process.env.DB||'db'];
   }
-  @Post('/test')
+  // @Post('/test')
   // @Throttle({ default: { limit: 1, ttl: 30000 } })
   async test(): Promise<any> {
-    const response = await admin.messaging().send({
-      token:'eLNUb75sTwKv5vIeRtZY1b:APA91bE-GXIKTPWVTTtDwqDyGpvet0FFKcp_YY9uhUxWETKH36vyVe4wVBLF9ZM8yOPmPaYgUN0XNKdJMh9o_dbbyQ4rvTYcuNCUZNWJUJX_AWXofI9mu2E',
-      notification:{
-        title: 'Notification Title',
-        body: 'Notification body',
-      }
+    // const response = await admin.messaging().send({
+    //   token:'eLNUb75sTwKv5vIeRtZY1b:APA91bE-GXIK3TPWVTTtDwqDyGpvet0FFKcp_YY9uhUxWETKH36vyVe4wVBLF9ZM8yOPmPaYgUN0XNKdJMh9o_dbbyQ4rvTYcuNCUZNWJUJX_AWXofI9mu2E',
+    //   notification:{
+    //     title: 'Notification Title',
+    //     body: 'Notification body',
+    //   }
       
-    });
-    console.log(response)
+    // });
+    // console.log(response)
     return {'message':'success1'};
     // try{
     //   const RoleAdmin = await this.roleService.findRole('admin')

@@ -6,7 +6,7 @@ export const REQUEST_CONTEXT = '_requestContext';
 
 @Injectable()
 export class InjectUserInterceptor implements NestInterceptor {
-  constructor(private type?: any) {}
+  constructor(private type?: 'query' | 'body' | 'params') {}
 
   intercept(context: ExecutionContext, next: CallHandler): Observable<any> {
     // console.log('intercept')

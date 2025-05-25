@@ -18,7 +18,6 @@ import 'package:catatan_keuangan/template/categoryscreen.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
-import 'package:intl/intl.dart';
 
 class ModifyTransactionScreen extends StatefulWidget {
   final TransactionDailyModel? data;
@@ -33,7 +32,6 @@ class _ModifyTransactionScreenState extends State<ModifyTransactionScreen> {
   TextEditingController name = TextEditingController();
   TextEditingController detail = TextEditingController();
   TextEditingController harga = TextEditingController();
-  // TextEditingController debcre = TextEditingController();
   String debCre = 'debit';
   DateTime tanggal = DateTime.now();
   int? category;
@@ -42,6 +40,7 @@ class _ModifyTransactionScreenState extends State<ModifyTransactionScreen> {
   late final AuthBloc authBloc;
   late final CategoryBloc catBloc;
   late StreamSubscription tranStream;
+  bool isLoad = false;
 
   @override
   void initState() {
@@ -77,12 +76,12 @@ class _ModifyTransactionScreenState extends State<ModifyTransactionScreen> {
     authBloc = context.read<AuthBloc>();
     tranBloc = context.read<TransactionBloc>();
     tranStream = tranBloc.stream.listen((state) async {
+      setState(() {
+        isLoad = state.loading;
+      });
       if (state is TransactionStateFinishLoad) {
-        // print('finish');
-        // return;
         return alertDialogCustom(
           callback: () {
-            print('enter');
             Navigator.of(context).popUntil((r) => r.isFirst);
             tranBloc.add(TransactionCleanMessage());
           },
@@ -111,28 +110,32 @@ class _ModifyTransactionScreenState extends State<ModifyTransactionScreen> {
     // tranBloc.state.categories.forEach((e) => print('${e.id} ${e.name}'));
   }
 
-  Future alertDialogCustom(
-      {String title = 'Error',
-      required VoidCallback callback,
-      List message = const [],
-      String textClose = 'Close'}) {
+  Future alertDialogCustom({
+    String title = 'Error',
+    required VoidCallback callback,
+    List message = const [],
+    String textClose = 'Close',
+  }) {
     return showDialog<void>(
       context: context,
       barrierDismissible: false, // user must tap button!
       builder: (BuildContext context) {
-        return AlertDialog(
-          title: Text(title),
-          content: SingleChildScrollView(
-            child: ListBody(
-              children: message.map((e) => Text(e.toString())).toList(),
+        return PopScope(
+          canPop: false,
+          child: AlertDialog(
+            title: Text(title),
+            content: SingleChildScrollView(
+              child: ListBody(
+                children: message.map((e) => Text(e.toString())).toList(),
+              ),
             ),
+            actions: <Widget>[
+              TextButton(
+                onPressed: callback,
+                child: Text(textClose),
+              ),
+            ],
           ),
-          actions: <Widget>[
-            TextButton(
-              child: Text(textClose),
-              onPressed: callback,
-            ),
-          ],
         );
       },
     );
@@ -150,233 +153,267 @@ class _ModifyTransactionScreenState extends State<ModifyTransactionScreen> {
 
   @override
   Widget build(BuildContext context) {
-    return Scaffold(
-      resizeToAvoidBottomInset: false,
-      appBar: AppBar(
-        backgroundColor: Colors.red,
-        iconTheme: IconThemeData(
-          color: Colors.white, //change your color here
-        ),
-        title: Text(
-          widget.data == null ? 'Form Add' : 'Form Edit',
-          style: TextStyle(
-            color: Colors.white,
-          ),
-        ),
-      ),
-      body: BlocBuilder<CategoryBloc, CategoryState>(builder: (context, state) {
+    return BlocBuilder<TransactionBloc, TransactionState>(
+        builder: (context, stateTran) {
+      return BlocBuilder<CategoryBloc, CategoryState>(
+          builder: (context, stateCat) {
         List<Map<String, String>> dropdownCategory = [];
-        dropdownCategory = state.categories
+        dropdownCategory = stateCat.categories
             .map((e) => {'value': e.id.toString(), 'name': e.name})
             .toList();
 
         dropdownCategory.sort((a, b) => a['name']!.compareTo(b['name']!));
-        // dropdownCategory.insert(0, {'value': '', 'name': 'Please Select'});
-        return Container(
-          padding: EdgeInsets.symmetric(horizontal: 12, vertical: 10),
-          child: Form(
-            key: _formKey,
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                // GridView(gridDelegate: gridDelegate,c)
-                Text('Nama', textAlign: TextAlign.left),
-                TextFormField(
-                  controller: name,
-                  validator: (value) {
-                    if (value == null || value.isEmpty) {
-                      return 'Please enter some text';
-                    }
-                    return null;
-                  },
+        return PopScope(
+          canPop: !(isLoad || stateCat.loading),
+          child: Scaffold(
+            resizeToAvoidBottomInset: false,
+            appBar: AppBar(
+              backgroundColor: Colors.red,
+              iconTheme: IconThemeData(
+                color: Colors.white, //change your color here
+              ),
+              title: Text(
+                widget.data == null ? 'Form Add' : 'Form Edit',
+                style: TextStyle(
+                  color: Colors.white,
                 ),
-                SizedBox(
-                  height: 15,
-                ),
-                Text('Detail', textAlign: TextAlign.left),
-                TextFormField(
-                  controller: detail,
-                ),
-                SizedBox(
-                  height: 15,
-                ),
-                Text('Type', textAlign: TextAlign.left),
-                DropDownComponent(
-                  position: AlignmentDirectional.centerStart,
-                  callback: (String? val) {
-                    setState(() {
-                      debCre = val ?? debCre;
-                    });
-                  },
-                  listData: [
-                    {'value': 'debit', 'name': 'Income'},
-                    {'value': 'credit', 'name': 'Expense'}
-                  ],
-                  setValue: debCre,
-                ),
-                SizedBox(
-                  height: 15,
-                ),
-                Text('Money', textAlign: TextAlign.left),
-                TextFormField(
-                  controller: harga,
-                  inputFormatters: <TextInputFormatter>[
-                    FilteringTextInputFormatter.allow(RegExp(r'[0-9\.]+'))
-                    // FilteringTextInputFormatter.digitsOnly,
-                  ],
-                  validator: (value) {
-                    if (value == null || value == '') {
-                      return 'Please input money';
-                    }
-                    return null;
-                  },
-                  keyboardType: TextInputType.numberWithOptions(decimal: true),
-                  onChanged: (String textValue) {
-                    String value = textValue.fixStringMoney();
-
-                    harga.value = TextEditingValue(
-                      text: value,
-                    );
-                  },
-                ),
-                SizedBox(
-                  height: 15,
-                ),
-                Text('Category', textAlign: TextAlign.left),
-                Row(
+              ),
+            ),
+            body: Container(
+              padding: EdgeInsets.symmetric(horizontal: 12, vertical: 10),
+              child: Form(
+                key: _formKey,
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
+                    Text('Nama', textAlign: TextAlign.left),
+                    TextFormField(
+                      controller: name,
+                      inputFormatters: [
+                        LengthLimitingTextInputFormatter(20),
+                      ],
+                      validator: (value) {
+                        if (value == null || value.isEmpty) {
+                          return 'Please enter some text';
+                        }
+                        if (value.length > 20) {
+                          return 'Input max 20 character';
+                        }
+                        return null;
+                      },
+                    ),
+                    SizedBox(
+                      height: 15,
+                    ),
+                    Text(
+                      'Detail',
+                      textAlign: TextAlign.left,
+                    ),
+                    TextFormField(
+                      controller: detail,
+                      inputFormatters: [
+                        LengthLimitingTextInputFormatter(300),
+                      ],
+                      validator: (value) {
+                        if ((value?.length ?? 0) > 300) {
+                          return 'Input max 300 character';
+                        }
+                        return null;
+                      },
+                    ),
+                    SizedBox(
+                      height: 15,
+                    ),
+                    Text('Type', textAlign: TextAlign.left),
                     DropDownComponent(
                       position: AlignmentDirectional.centerStart,
                       callback: (String? val) {
                         setState(() {
-                          category = int.tryParse(val ?? '');
+                          debCre = val ?? debCre;
                         });
                       },
-                      listData: dropdownCategory,
-                      setValue: category?.toString(),
+                      listData: [
+                        {'value': 'debit', 'name': 'Income'},
+                        {'value': 'credit', 'name': 'Expense'}
+                      ],
+                      setValue: debCre,
                     ),
-                    IconButton(
-                      onPressed: () {
-                        var bloc = context.read<CategoryBloc>();
-                        if (bloc.state.loading) return;
-                        bloc.add(CategoryRequested());
+                    SizedBox(
+                      height: 15,
+                    ),
+                    Text('Money', textAlign: TextAlign.left),
+                    TextFormField(
+                      controller: harga,
+                      inputFormatters: <TextInputFormatter>[
+                        FilteringTextInputFormatter.allow(RegExp(r'[0-9\.]+'))
+                        // FilteringTextInputFormatter.digitsOnly,
+                      ],
+                      validator: (value) {
+                        if (value == null || value == '') {
+                          return 'Please input money';
+                        }
+                        return null;
                       },
-                      icon: Icon(
-                        Icons.refresh,
-                      ),
-                    ),
-                    IconButton(
-                      onPressed: () {
-                        Navigator.push(
-                          context,
-                          MaterialPageRoute(
-                            builder: (context) => CategoryScreen(),
-                          ),
+                      keyboardType:
+                          TextInputType.numberWithOptions(decimal: true),
+                      onChanged: (String textValue) {
+                        String value = textValue.fixStringMoney();
+
+                        harga.value = TextEditingValue(
+                          text: value,
                         );
                       },
-                      icon: Icon(
-                        Icons.remove_red_eye,
+                    ),
+                    SizedBox(
+                      height: 15,
+                    ),
+                    Text('Category', textAlign: TextAlign.left),
+                    Row(
+                      children: [
+                        DropDownComponent(
+                          position: AlignmentDirectional.centerStart,
+                          callback: (String? val) {
+                            setState(() {
+                              category = int.tryParse(val ?? '');
+                            });
+                          },
+                          listData: dropdownCategory,
+                          setValue: category?.toString(),
+                        ),
+                        IconButton(
+                          onPressed: () {
+                            // var bloc = context.read<CategoryBloc>();
+                            if (catBloc.state.loading) return;
+                            catBloc.add(CategoryRequested());
+                          },
+                          icon: Icon(
+                            Icons.refresh,
+                          ),
+                        ),
+                        IconButton(
+                          onPressed: () {
+                            Navigator.push(
+                              context,
+                              MaterialPageRoute(
+                                builder: (context) => CategoryScreen(),
+                              ),
+                            );
+                          },
+                          icon: Icon(
+                            Icons.remove_red_eye,
+                          ),
+                        )
+                      ],
+                    ),
+                    SizedBox(
+                      height: 15,
+                    ),
+                    Text('Date', textAlign: TextAlign.left),
+                    TextButton(
+                        onPressed: () async {
+                          final DateTime? picked = await showDatePicker(
+                            context: context,
+                            initialDate: tanggal, // Refer step 1
+                            firstDate: DateTime(2000),
+                            lastDate: DateTime.now().add(Duration(days: 365)),
+                          );
+                          if (picked != null) {
+                            setState(() {
+                              tanggal = picked;
+                            });
+                          }
+                        },
+                        child: Text(tanggal.ddMMyyyy())),
+                    SizedBox(
+                      height: 15,
+                    ),
+                    SizedBox(
+                      width: 100,
+                      child: ElevatedButton(
+                        style: ElevatedButton.styleFrom(
+                          backgroundColor: Colors.red,
+                          foregroundColor: Colors.white,
+                          shape: RoundedRectangleBorder(
+                            borderRadius:
+                                BorderRadius.circular(12), // <-- Radius
+                          ),
+                        ),
+                        onPressed: () async {
+                          FocusManager.instance.primaryFocus?.unfocus();
+                          if (isLoad || stateCat.loading || stateTran.loading) {
+                            return;
+                          }
+
+                          String message = '';
+                          // print(harga.text.moneyToDouble());
+
+                          if (_formKey.currentState!.validate()) {
+                            if (harga.text.moneyToDouble() == 0) {
+                              message = 'The money must fill or not zero';
+                            } else if (category == null) {
+                              message = 'The category must choose';
+                            }
+                            if (message != '') {
+                              return alertDialogCustom(
+                                message: [message],
+                                title: 'Error Message',
+                                callback: () {
+                                  Navigator.of(context).pop();
+                                },
+                              );
+                            }
+                            // print(harga.text.moneyToDouble());
+                            // return;
+                            String? cat;
+                            for (int i = 0;
+                                i < catBloc.state.categories.length;
+                                i++) {
+                              if (catBloc.state.categories[i].id ==
+                                  (category ?? 0)) {
+                                cat = catBloc.state.categories[i].name;
+                                break;
+                              }
+                            }
+                            var data = TransactionDailyModel(
+                              id: widget.data?.id ?? 0,
+                              name: name.text,
+                              detail: detail.text,
+                              categoryId: category ?? 0,
+                              harga: harga.text.moneyToDouble(),
+                              debitCredit: debCre,
+                              category: cat,
+                              tanggal: tanggal.yyyymmdd(),
+                            );
+                            if (widget.data == null) {
+                              tranBloc.add(
+                                TransactionSaveRequested(
+                                  data,
+                                ),
+                              );
+                            } else {
+                              tranBloc.add(
+                                TransactionUpdateRequested(
+                                  data,
+                                ),
+                              );
+                            }
+                          }
+                        },
+                        child: stateCat.loading || isLoad
+                            ? Transform.scale(
+                                scale: 0.5,
+                                child: CircularProgressIndicator(),
+                              )
+                            : Text(widget.data == null ? 'Save' : 'Update'),
                       ),
                     )
                   ],
                 ),
-
-                SizedBox(
-                  height: 15,
-                ),
-                Text('Date', textAlign: TextAlign.left),
-                TextButton(
-                    onPressed: () async {
-                      final DateTime? picked = await showDatePicker(
-                        context: context,
-                        initialDate: tanggal, // Refer step 1
-                        firstDate: DateTime(2000),
-                        lastDate: DateTime.now().add(Duration(days: 365)),
-                      );
-                      if (picked != null) {
-                        setState(() {
-                          tanggal = picked;
-                        });
-                      }
-                    },
-                    child: Text(tanggal.ddMMyyyy())),
-                SizedBox(
-                  height: 15,
-                ),
-                SizedBox(
-                  width: 100,
-                  child: ElevatedButton(
-                    style: ElevatedButton.styleFrom(
-                      backgroundColor: Colors.red,
-                      foregroundColor: Colors.white,
-                      shape: RoundedRectangleBorder(
-                        borderRadius: BorderRadius.circular(12), // <-- Radius
-                      ),
-                    ),
-                    onPressed: () async {
-                      String message = '';
-                      // print(harga.text.moneyToDouble());
-
-                      if (_formKey.currentState!.validate()) {
-                        if (harga.text.moneyToDouble() == 0) {
-                          message = 'The money must fill or not zero';
-                        } else if (category == null) {
-                          message = 'The category must choose';
-                        }
-                        if (message != '') {
-                          return alertDialogCustom(
-                            message: [message],
-                            title: 'Error Message',
-                            callback: () {
-                              Navigator.of(context).pop();
-                            },
-                          );
-                        }
-                        // print(harga.text.moneyToDouble());
-                        // return;
-                        String? cat;
-                        for (int i = 0;
-                            i < catBloc.state.categories.length;
-                            i++) {
-                          if (catBloc.state.categories[i].id ==
-                              (category ?? 0)) {
-                            cat = catBloc.state.categories[i].name;
-                            break;
-                          }
-                        }
-                        var data = TransactionDailyModel(
-                          id: widget.data?.id ?? 0,
-                          name: name.text,
-                          detail: detail.text,
-                          categoryId: category ?? 0,
-                          harga: harga.text.moneyToDouble(),
-                          debitCredit: debCre,
-                          category: cat,
-                          tanggal: tanggal.yyyymmdd(),
-                        );
-                        if (widget.data == null) {
-                          tranBloc.add(
-                            TransactionSaveRequested(
-                              data,
-                            ),
-                          );
-                        } else {
-                          tranBloc.add(
-                            TransactionUpdateRequested(
-                              data,
-                            ),
-                          );
-                        }
-                      }
-                    },
-                    child: Text(widget.data == null ? 'Save' : 'Update'),
-                  ),
-                )
-              ],
+              ),
             ),
           ),
         );
-      }),
-    );
+      });
+    });
   }
 }

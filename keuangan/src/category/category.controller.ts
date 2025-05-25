@@ -35,12 +35,10 @@ export class CategoryController {
         const userData: UserJWT = req.user
         const cat = new Category()
         cat.category_name = data.category_name
-        console.log(cat);
         const user = new User()
         user.id = userData.userId
 
         cat.user = user
-        // cat.canDelete
         const res = await this.categoryService.create_category(cat);
         return {'message':'success', 'result':cat}
     }

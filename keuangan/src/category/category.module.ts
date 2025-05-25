@@ -3,10 +3,11 @@ import { CategoryService } from './category.service';
 import { TypeOrmModule } from '@nestjs/typeorm';
 import { Category } from 'src/model/category.entity';
 import { CategoryController } from './category.controller';
+import { CategoryUniqueValidation } from 'src/validations/is_category_unique';
 
 @Module({
   imports:[TypeOrmModule.forFeature([Category]),],
-  providers: [CategoryService,],
+  providers: [CategoryService, CategoryUniqueValidation],
   exports:[CategoryService],
   controllers: [CategoryController],
 })
