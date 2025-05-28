@@ -230,275 +230,265 @@ class _SavingPlanScreenState extends State<SavingPlanScreen> {
             builder: (context, stateBloc) {
           return Stack(
             children: [
-              Container(
-                child: Column(
-                  children: [
-                    Expanded(
-                      flex: 7,
-                      child: ListView.builder(
-                        itemCount: stateBloc.savingPlans.length,
-                        itemBuilder: (context, index) {
-                          double tm = stateBloc.savingPlans[index].targetMoney;
-                          double ts =
-                              stateBloc.savingPlans[index].totalStored();
-                          return Container(
-                            padding: EdgeInsets.symmetric(
-                              horizontal: 13,
-                              vertical: 10,
+              Column(
+                children: [
+                  Expanded(
+                    flex: 7,
+                    child: ListView.builder(
+                      itemCount: stateBloc.savingPlans.length,
+                      itemBuilder: (context, index) {
+                        double tm = stateBloc.savingPlans[index].targetMoney;
+                        double ts = stateBloc.savingPlans[index].totalStored();
+                        return Container(
+                          padding: EdgeInsets.symmetric(
+                            horizontal: 13,
+                            vertical: 10,
+                          ),
+                          decoration: BoxDecoration(
+                            border: Border(
+                              top: BorderSide(width: index == 0 ? 1 : 0),
+                              bottom: BorderSide(width: 1),
                             ),
-                            decoration: BoxDecoration(
-                              border: Border(
-                                top: BorderSide(width: index == 0 ? 1 : 0),
-                                bottom: BorderSide(width: 1),
-                              ),
-                            ),
-                            child: Row(
-                              mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-                              children: [
-                                Expanded(
-                                  flex: 6,
-                                  child: Column(
-                                    mainAxisAlignment: MainAxisAlignment.start,
-                                    crossAxisAlignment:
-                                        CrossAxisAlignment.start,
-                                    children: [
-                                      Text(
-                                        stateBloc.savingPlans[index].name,
-                                        style: TextStyle(
-                                          fontSize: 20,
-                                        ),
+                          ),
+                          child: Row(
+                            mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+                            children: [
+                              Expanded(
+                                flex: 6,
+                                child: Column(
+                                  mainAxisAlignment: MainAxisAlignment.start,
+                                  crossAxisAlignment: CrossAxisAlignment.start,
+                                  children: [
+                                    Text(
+                                      stateBloc.savingPlans[index].name,
+                                      style: TextStyle(
+                                        fontSize: 20,
                                       ),
-                                      Row(
-                                        mainAxisAlignment:
-                                            MainAxisAlignment.start,
-                                        // ${stateBloc.savingPlans[index].typeReminder == 'monthly' || stateBloc.savingPlans[index].typeReminder == 'weekly' ? stateBloc.savingPlans[index].dateReminder : ''}
-                                        children: [
-                                          Expanded(
-                                            flex: 3,
-                                            child: Text(
-                                              'Reminder: ${stateBloc.savingPlans[index].typeReminder}',
-                                              style: TextStyle(
-                                                fontSize: 15,
-                                              ),
+                                    ),
+                                    Row(
+                                      mainAxisAlignment:
+                                          MainAxisAlignment.start,
+                                      // ${stateBloc.savingPlans[index].typeReminder == 'monthly' || stateBloc.savingPlans[index].typeReminder == 'weekly' ? stateBloc.savingPlans[index].dateReminder : ''}
+                                      children: [
+                                        Expanded(
+                                          flex: 3,
+                                          child: Text(
+                                            'Reminder: ${stateBloc.savingPlans[index].typeReminder}',
+                                            style: TextStyle(
+                                              fontSize: 15,
                                             ),
                                           ),
-                                          stateBloc.savingPlans[index]
-                                                      .dateReminder !=
-                                                  null
-                                              ? Expanded(
-                                                  flex: 3,
-                                                  child: Text(
-                                                    'set: ${stateBloc.savingPlans[index].dateReminder ?? ''}',
-                                                    style: TextStyle(
-                                                      fontSize: 15,
-                                                    ),
-                                                  ))
-                                              : SizedBox(),
-
-                                          Expanded(child: Container()),
-                                          // Text(
-                                          //     ': ${stateBloc.savingPlans[index].targetMoney},'),
-                                        ],
-                                      ),
-                                      Text(
-                                        'Target Date: ${stateBloc.savingPlans[index].targetDate}',
-                                        style: TextStyle(
-                                          fontSize: 15,
                                         ),
+                                        stateBloc.savingPlans[index]
+                                                    .dateReminder !=
+                                                null
+                                            ? Expanded(
+                                                flex: 3,
+                                                child: Text(
+                                                  'set: ${stateBloc.savingPlans[index].dateReminder ?? ''}',
+                                                  style: TextStyle(
+                                                    fontSize: 15,
+                                                  ),
+                                                ))
+                                            : SizedBox(),
+
+                                        Expanded(child: Container()),
+                                        // Text(
+                                        //     ': ${stateBloc.savingPlans[index].targetMoney},'),
+                                      ],
+                                    ),
+                                    Text(
+                                      'Target Date: ${stateBloc.savingPlans[index].targetDate}',
+                                      style: TextStyle(
+                                        fontSize: 15,
                                       ),
-                                      AutoSizeText(
-                                          maxLines: 1,
-                                          'Target Money: ${tm.toString().formatMoney()}'),
-                                      AutoSizeText(
-                                          maxLines: 1,
-                                          'Remaining: ${(tm - ts).toString().formatMoney()} '),
-                                    ],
-                                  ),
+                                    ),
+                                    AutoSizeText(
+                                        maxLines: 1,
+                                        'Target Money: ${tm.toString().formatMoney()}'),
+                                    AutoSizeText(
+                                        maxLines: 1,
+                                        'Remaining: ${(tm - ts).toString().formatMoney()} '),
+                                  ],
                                 ),
-                                Expanded(
-                                  flex: 1,
-                                  child: Column(
-                                    children: [
-                                      IconButton(
-                                        onPressed: () {
-                                          var bloc =
-                                              context.read<SavingPlanBloc>();
-                                          if (bloc.state.loading || isLoad) {
-                                            return;
-                                          }
+                              ),
+                              Expanded(
+                                flex: 1,
+                                child: Column(
+                                  children: [
+                                    IconButton(
+                                      onPressed: () {
+                                        var bloc =
+                                            context.read<SavingPlanBloc>();
+                                        if (bloc.state.loading || isLoad) {
+                                          return;
+                                        }
+                                        showDialog<void>(
+                                          context: context,
+                                          barrierDismissible:
+                                              false, // user must tap button!
+                                          builder: (BuildContext context) {
+                                            return AlertDialog(
+                                              title: const Text('Confirmation'),
+                                              content:
+                                                  const SingleChildScrollView(
+                                                child: ListBody(
+                                                  children: <Widget>[
+                                                    Text(
+                                                      'Are You Sure want delete?',
+                                                    ),
+                                                  ],
+                                                ),
+                                              ),
+                                              actions: <Widget>[
+                                                TextButton(
+                                                  child: const Text('Ok'),
+                                                  onPressed: () {
+                                                    if (bloc.state.loading ||
+                                                        isLoad) {
+                                                      Navigator.of(context)
+                                                          .pop();
+                                                      return;
+                                                    }
+                                                    setState(() {
+                                                      isLoad = true;
+                                                    });
+                                                    bloc.add(
+                                                        SavingPlanDeleteRequested(
+                                                      stateBloc
+                                                          .savingPlans[index]
+                                                          .id,
+                                                    ));
+                                                    Navigator.of(context).pop();
+                                                  },
+                                                ),
+                                                TextButton(
+                                                  child: const Text('Cancel'),
+                                                  onPressed: () {
+                                                    Navigator.of(context).pop();
+                                                  },
+                                                ),
+                                              ],
+                                            );
+                                          },
+                                        );
+                                      },
+                                      icon: Icon(
+                                        Icons.delete,
+                                        size: 20,
+                                      ),
+                                    ),
+                                    IconButton(
+                                      onPressed: () {
+                                        Navigator.push(
+                                          context,
+                                          MaterialPageRoute(
+                                            builder: (context) =>
+                                                ModifySavingPlanScreen(
+                                              data:
+                                                  stateBloc.savingPlans[index],
+                                            ),
+                                          ),
+                                        );
+                                      },
+                                      icon: Icon(
+                                        Icons.edit,
+                                        size: 20,
+                                      ),
+                                    ),
+                                  ],
+                                ),
+                              ),
+                              Expanded(
+                                flex: 1,
+                                child: Column(
+                                  children: [
+                                    IconButton(
+                                      onPressed: () {
+                                        var data = stateBloc.savingPlans[index];
+                                        var totalStored = data.totalStored();
+                                        if (data.targetMoney < totalStored) {
                                           showDialog<void>(
                                             context: context,
                                             barrierDismissible:
                                                 false, // user must tap button!
                                             builder: (BuildContext context) {
                                               return AlertDialog(
-                                                title:
-                                                    const Text('Confirmation'),
+                                                title: const Text('Info'),
                                                 content:
                                                     const SingleChildScrollView(
                                                   child: ListBody(
                                                     children: <Widget>[
                                                       Text(
-                                                        'Are You Sure want delete?',
-                                                      ),
+                                                          'You achive the target, notification cant active'),
                                                     ],
                                                   ),
                                                 ),
                                                 actions: <Widget>[
                                                   TextButton(
-                                                    child: const Text('Ok'),
+                                                    child: const Text('Close'),
                                                     onPressed: () {
-                                                      if (bloc.state.loading ||
-                                                          isLoad) {
-                                                        Navigator.of(context)
-                                                            .pop();
-                                                        return;
-                                                      }
-                                                      setState(() {
-                                                        isLoad = true;
-                                                      });
-                                                      bloc.add(
-                                                          SavingPlanDeleteRequested(
-                                                        stateBloc
-                                                            .savingPlans[index]
-                                                            .id,
-                                                      ));
-                                                      Navigator.of(context)
-                                                          .pop();
-                                                    },
-                                                  ),
-                                                  TextButton(
-                                                    child: const Text('Cancel'),
-                                                    onPressed: () {
-                                                      Navigator.of(context)
-                                                          .pop();
+                                                      Navigator.pop(context);
                                                     },
                                                   ),
                                                 ],
                                               );
                                             },
                                           );
-                                        },
-                                        icon: Icon(
-                                          Icons.delete,
-                                          size: 20,
-                                        ),
+                                          return;
+                                        }
+                                        var bloc =
+                                            context.read<SavingPlanBloc>();
+                                        bloc.add(
+                                          SavingPlanNotificationRequested(
+                                            {
+                                              'id': data.id,
+                                              'notification': !data.notification
+                                            },
+                                          ),
+                                        );
+                                      },
+                                      icon: Icon(
+                                        stateBloc
+                                                .savingPlans[index].notification
+                                            ? Icons.notifications_active
+                                            : Icons.notifications_none,
+                                        size: 20,
+                                        color: stateBloc
+                                                .savingPlans[index].notification
+                                            ? Colors.green
+                                            : Colors.red,
                                       ),
-                                      IconButton(
-                                        onPressed: () {
-                                          Navigator.push(
-                                            context,
-                                            MaterialPageRoute(
-                                              builder: (context) =>
-                                                  ModifySavingPlanScreen(
-                                                data: stateBloc
-                                                    .savingPlans[index],
-                                              ),
+                                    ),
+                                    IconButton(
+                                      onPressed: () {
+                                        Navigator.push(
+                                          context,
+                                          MaterialPageRoute(
+                                            builder: (context) =>
+                                                DetailSavingScreen(
+                                              index: index,
+                                              id: stateBloc
+                                                  .savingPlans[index].id,
                                             ),
-                                          );
-                                        },
-                                        icon: Icon(
-                                          Icons.edit,
-                                          size: 20,
-                                        ),
+                                          ),
+                                        );
+                                      },
+                                      icon: Icon(
+                                        Icons.remove_red_eye,
+                                        size: 20,
                                       ),
-                                    ],
-                                  ),
+                                    )
+                                  ],
                                 ),
-                                Expanded(
-                                  flex: 1,
-                                  child: Column(
-                                    children: [
-                                      IconButton(
-                                        onPressed: () {
-                                          var data =
-                                              stateBloc.savingPlans[index];
-                                          var totalStored = data.totalStored();
-                                          if (data.targetMoney < totalStored) {
-                                            showDialog<void>(
-                                              context: context,
-                                              barrierDismissible:
-                                                  false, // user must tap button!
-                                              builder: (BuildContext context) {
-                                                return AlertDialog(
-                                                  title: const Text('Info'),
-                                                  content:
-                                                      const SingleChildScrollView(
-                                                    child: ListBody(
-                                                      children: <Widget>[
-                                                        Text(
-                                                            'You achive the target, notification cant active'),
-                                                      ],
-                                                    ),
-                                                  ),
-                                                  actions: <Widget>[
-                                                    TextButton(
-                                                      child:
-                                                          const Text('Close'),
-                                                      onPressed: () {
-                                                        Navigator.pop(context);
-                                                      },
-                                                    ),
-                                                  ],
-                                                );
-                                              },
-                                            );
-                                            return;
-                                          }
-                                          var bloc =
-                                              context.read<SavingPlanBloc>();
-                                          bloc.add(
-                                            SavingPlanNotificationRequested(
-                                              {
-                                                'id': data.id,
-                                                'notification':
-                                                    !data.notification
-                                              },
-                                            ),
-                                          );
-                                        },
-                                        icon: Icon(
-                                          stateBloc.savingPlans[index]
-                                                  .notification
-                                              ? Icons.notifications_active
-                                              : Icons.notifications_none,
-                                          size: 20,
-                                          color: stateBloc.savingPlans[index]
-                                                  .notification
-                                              ? Colors.green
-                                              : Colors.red,
-                                        ),
-                                      ),
-                                      IconButton(
-                                        onPressed: () {
-                                          Navigator.push(
-                                            context,
-                                            MaterialPageRoute(
-                                              builder: (context) =>
-                                                  DetailSavingScreen(
-                                                index: index,
-                                                id: stateBloc
-                                                    .savingPlans[index].id,
-                                              ),
-                                            ),
-                                          );
-                                        },
-                                        icon: Icon(
-                                          Icons.remove_red_eye,
-                                          size: 20,
-                                        ),
-                                      )
-                                    ],
-                                  ),
-                                )
-                              ],
-                            ),
-                          );
-                        },
-                      ),
-                    )
-                  ],
-                ),
+                              )
+                            ],
+                          ),
+                        );
+                      },
+                    ),
+                  )
+                ],
               ),
               stateBloc.loading
                   ? Container(

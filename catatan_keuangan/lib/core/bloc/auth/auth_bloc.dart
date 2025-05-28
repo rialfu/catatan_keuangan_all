@@ -1,11 +1,13 @@
-import 'dart:io';
+// import 'dart:io';
 
 import 'package:catatan_keuangan/core/model/auth_model.dart';
+import 'package:catatan_keuangan/customClass/custom_exception.dart';
+import 'package:catatan_keuangan/extensions/datetime_extension.dart';
 
 import 'auth_event.dart';
 import 'auth_state.dart';
 import '../../enum/auth_enum.dart';
-import '../../service/auth_service.dart';
+// import '../../service/auth_service.dart';
 import '../../service/interface_auth_service.dart';
 import '../../../init/cache/auth_cache_manager.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
@@ -15,58 +17,118 @@ class AuthBloc extends Bloc<AuthEvent, AuthState> {
   final AuthCacheManager authCacheManager;
 
   AuthBloc(this.authService, this.authCacheManager)
-      : super(const AuthState.unknown()) {
+      : super(AuthState()
+            // const AuthState.unknown()
+
+            ) {
     on<AppStarted>((event, emit) async {
+      bool isFirstEntry = await authCacheManager.isFirstEntry();
       try {
+        emit(AuthState(
+          status: AuthStatus.unknown,
+          isLoad: true,
+          isFirstEntry: true,
+        ));
+
         if (await authCacheManager.isLoggedIn()) {
-          print('masuk sini 1');
+          // print('masuk sini 1');
           await authCacheManager.updateTokenFromStorage();
-          String? res = await (authService as AuthService).getStatus();
-          print('res:$res');
+          String? res = await authService.getStatus();
+          // print('res:$res');
           if (res == null) {
             await authCacheManager.signOut();
-            emit(const AuthState.guest());
+            emit(AuthStateGuest(setLoad: false));
+            // emit(const AuthState.guest());
             return;
           }
-          emit(LoginState(newName: res));
+          emit(AuthStateLogin(
+            setName: res,
+            setDate: DateTime.now().yyyymmdd(),
+            setLoad: false,
+          ));
+          return;
+          // emit(LoginState(newName: res));
           // emit(AuthState.authenticated(newName: res));
         } else {
-          print('masuk sini 2');
-          emit((await authCacheManager.isFirstEntry())
-              ? const AuthState.firstEntry()
-              : const AuthState.guest());
+          // print('masuk sini 2');
+          if (await authCacheManager.isFirstEntry()) {
+            emit(AuthStateGuest(
+              setLoad: false,
+              setIsFirstEntry: true,
+            ));
+          } else {
+            emit(AuthStateGuest(
+              setLoad: false,
+              setIsFirstEntry: false,
+            ));
+          }
+          // emit((await authCacheManager.isFirstEntry())
+          //     ? const AuthState.firstEntry()
+          //     : const AuthState.guest());
         }
-      } on SocketException catch (err) {
-        print(err);
-        emit(const AuthState.error(error: AuthError.hostUnreachable));
       } catch (e) {
-        print(e);
-        emit(const AuthState.error());
+        emit(AuthStateGuest(
+          setLoad: false,
+          setIsFirstEntry: isFirstEntry,
+        ));
+        // emit(const AuthState.error());
       }
     });
 
     on<LoginRequested>(
       (event, emit) async {
         try {
+          emit(AuthStateGuest(
+            setLoad: true,
+            setIsFirstEntry: false,
+          ));
+          // emit(const AuthState.load());
           final AuthModel? result = await authService.login(
               email: event.email, password: event.password);
-          // print(result);
-          // print(result?.token ?? 'tidak ada');
+
           if (result != null && result.token != null) {
             await authCacheManager.updateToken(
               result.token,
               refreshToken: result.refreshToken,
             );
             await authCacheManager.updateLoggedIn(true);
-
-            emit(LoginState(newName: result.name));
+            emit(AuthStateLogin(
+              setDate: DateTime.now().yyyymmdd(),
+              setLoad: false,
+            ));
+            // emit(LoginState(newName: result.name));
           } else {
             // add(LogoutRequested());
-            emit(const AuthState.error(error: AuthError.wrongEmailOrPassword));
+            emit(AuthStateGuest(
+              setLoad: false,
+              setError: AuthError.wrongEmailOrPassword,
+              setIsFirstEntry: false,
+            ));
+            // emit(const AuthState.error(error: AuthError.wrongEmailOrPassword));
+          }
+        } on CustomExceptionForPost catch (err) {
+          if (err.codeError == 0) {
+            emit(AuthStateGuest(
+              setLoad: false,
+              setError: AuthError.hostUnreachable,
+              setIsFirstEntry: false,
+            ));
+            // emit(const AuthState.error(error: AuthError.hostUnreachable));
+          } else {
+            emit(AuthStateGuest(
+              setLoad: false,
+              setError: AuthError.wrongEmailOrPassword,
+              setIsFirstEntry: false,
+            ));
           }
         } catch (err) {
-          print('error:${err.toString()}');
-          emit(const AuthState.error(error: AuthError.wrongEmailOrPassword));
+          // print('error:${err.toString()}');
+          emit(AuthStateGuest(
+            setLoad: false,
+            setError: AuthError.unknown,
+            setIsFirstEntry: false,
+          ));
+          // emit(const AuthState.error(error: AuthError.wrongEmailOrPassword));
         }
       },
     );
@@ -74,12 +136,19 @@ class AuthBloc extends Bloc<AuthEvent, AuthState> {
     on<LogoutRequested>((event, emit) async {
       try {
         await authCacheManager.signOut();
-        emit(const AuthState.guest());
+        emit(AuthStateGuest(
+          setLoad: false,
+          setIsFirstEntry: false,
+        ));
       } catch (_) {}
     });
     on<CleanAuthRequest>(
       (event, emit) {
-        emit(AuthState.guest());
+        emit(AuthStateGuest(
+          setLoad: false,
+          setIsFirstEntry: false,
+        ));
+        // emit(AuthState.guest());
       },
     );
     // on<RegisterRequested>(

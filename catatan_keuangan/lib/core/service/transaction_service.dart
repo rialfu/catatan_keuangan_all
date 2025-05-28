@@ -131,8 +131,7 @@ class TransactionService {
     }
   }
 
-  Future<TransactionDailyModel?> saveTransaction(
-      TransactionDailyModel data) async {
+  Future<int?> saveTransaction(TransactionDailyModel data) async {
     try {
       // print(data.toJsonSave());
       var res = await dioManager.dio.post(
@@ -142,8 +141,15 @@ class TransactionService {
       if ((res.data as Map).containsKey('result')) {
         Map dataRes = (res.data as Map)['result'];
         if (dataRes.containsKey('id') == false) return null;
-        int id = dataRes['id'] as int;
-        return data.addId(id);
+        if (dataRes['id'] is String) {
+          return int.tryParse(dataRes['id'] as String) ?? 0;
+        } else if (dataRes['id'] is int) {
+          return dataRes['id'] as int;
+        } else {
+          return null;
+        }
+        // int id = dataRes['id'] as int;
+        // return data.addId(id);
       }
     } on DioException catch (e) {
       if (e.response?.statusCode == HttpStatus.unauthorized) {

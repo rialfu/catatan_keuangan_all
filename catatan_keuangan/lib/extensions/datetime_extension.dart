@@ -25,7 +25,7 @@ extension CustomDateTime on DateTime {
     return DateFormat('MMMM yyyy').format(this);
   }
 
-  String MM3chyyyy() {
+  String formatMM3chyyyy() {
     List<String> split_str = DateFormat('MMMM yyyy').format(this).split(' ');
     if (split_str[0].toLowerCase().startsWith('sept')) {
       return '${split_str[0].substring(0, 4)} ${split_str[1]}';

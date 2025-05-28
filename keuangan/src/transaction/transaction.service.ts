@@ -44,8 +44,6 @@ export class TransactionService {
         .where('t.userId = :userId',{userId:user_id})
 
         if (search['tanggal_transaksi']!=undefined){
-            console.log(get_first_day_month_string_from_string(search['tanggal_transaksi']))
-
             query = query.andWhere('tanggal_transaksi >= :start and tanggal_transaksi <= :end',{
                 start: get_first_day_month_string_from_string(search['tanggal_transaksi']),
                 end: get_last_day_month_string_from_string(search['tanggal_transaksi'])

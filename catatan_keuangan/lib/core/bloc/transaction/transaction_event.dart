@@ -21,14 +21,16 @@ class TransactionDailyRequested extends TransactionEvent {
 
 class TransactionSaveRequested extends TransactionEvent {
   final TransactionDailyModel data;
-  const TransactionSaveRequested(this.data);
+  final String? date;
+  const TransactionSaveRequested(this.data, {this.date});
   @override
-  List<Object?> get props => [data];
+  List<Object?> get props => [data, date];
 }
 
 class TransactionUpdateRequested extends TransactionEvent {
   final TransactionDailyModel data;
-  const TransactionUpdateRequested(this.data);
+  final String? date;
+  const TransactionUpdateRequested(this.data, {this.date});
 
   @override
   List<Object?> get props => [data];

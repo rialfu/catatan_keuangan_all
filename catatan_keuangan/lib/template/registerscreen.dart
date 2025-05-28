@@ -19,6 +19,7 @@ class _RegisterScreenState extends State<RegisterScreen> {
   TextEditingController emailController = TextEditingController();
   TextEditingController nameController = TextEditingController();
   bool hidePass = true;
+  bool isLoad = false;
   // String pattern = r'[a-z0-9A-Z\.]+@[a-zA-Z]+\.(com|co.id|go.id)';
   String pattern = r"(?:[a-z0-9!#$%&'*+/=?^_`{|}~-]+(?:\.[a-z0-9!#$%&'"
       r'*+/=?^_`{|}~-]+)*|"(?:[\x01-\x08\x0b\x0c\x0e-\x1f\x21\x23-\x5b\x5d-'
@@ -29,7 +30,9 @@ class _RegisterScreenState extends State<RegisterScreen> {
       r'x21-\x5a\x53-\x7f]|\\[\x01-\x09\x0b\x0c\x0e-\x7f])+)\])';
 
   Future<void> register(BuildContext contextD) async {
-    print('da');
+    setState(() {
+      isLoad = true;
+    });
     // var dio = Dio();
     try {
       await DioManager.instance.dio.post('create-account', data: {
@@ -56,9 +59,11 @@ class _RegisterScreenState extends State<RegisterScreen> {
         }
       }
     } catch (err) {
-      print('error');
-      print(err);
+      showMessage(contextD, [err.toString()], 'error');
     }
+    setState(() {
+      isLoad = false;
+    });
   }
 
   void showMessage(BuildContext contextD, List message, String title) {
@@ -270,6 +275,7 @@ class _RegisterScreenState extends State<RegisterScreen> {
                     ),
                     child: ElevatedButton(
                       onPressed: () {
+                        if (isLoad) return;
                         if (_signInGlobalKey.currentState?.validate() ??
                             false) {
                           register(context);
@@ -279,13 +285,15 @@ class _RegisterScreenState extends State<RegisterScreen> {
                         backgroundColor: Colors.transparent,
                         shadowColor: Colors.transparent,
                       ),
-                      child: Text(
-                        "SIGN UP",
-                        style: TextStyle(
-                          color: Colors.white,
-                          fontSize: context.dynamicHeight(0.02),
-                        ),
-                      ),
+                      child: isLoad
+                          ? CircularProgressIndicator()
+                          : Text(
+                              "SIGN UP",
+                              style: TextStyle(
+                                color: Colors.white,
+                                fontSize: context.dynamicHeight(0.02),
+                              ),
+                            ),
                     ),
                   )
                 ],

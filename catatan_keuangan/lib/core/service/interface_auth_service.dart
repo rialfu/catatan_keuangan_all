@@ -11,4 +11,5 @@ abstract class IAuthService {
     required String email,
     required String password,
   });
+  Future<String?> getStatus();
 }

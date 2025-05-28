@@ -14,9 +14,9 @@ extension NavigateExtension on AuthStatus {
         // return const LoginView();
         return FirstScreen();
       case AuthStatus.unknown:
-
-        /// MARK: It can be IntroView.
+        // return SplashView();
         break;
+      // return FirstScreen();
     }
     return FirstScreen();
     // return const LoginView();

@@ -1,3 +1,5 @@
+import 'dart:async';
+
 import 'package:catatan_keuangan/core/bloc/auth/auth_bloc.dart';
 import 'package:catatan_keuangan/core/bloc/auth/auth_event.dart';
 import 'package:catatan_keuangan/core/bloc/auth/auth_state.dart';
@@ -20,6 +22,55 @@ class _LoginScreenState extends State<LoginScreen> {
   TextEditingController passwordController = TextEditingController(text: '');
   TextEditingController emailController = TextEditingController(text: '');
   bool hidePass = true;
+  late StreamSubscription stream;
+
+  @override
+  void initState() {
+    // TODO: implement initState
+    super.initState();
+    var bloc = context.read<AuthBloc>();
+    stream = bloc.stream.listen(listening);
+  }
+
+  Future<void> listening(state) async {
+    String titleMessage = "Error";
+    String message = "App couldnt connect to server";
+    if (state.error == AuthError.hostUnreachable) {
+    } else if (state.error == AuthError.wrongEmailOrPassword) {
+      message = "Username or Password is wrong";
+    } else if (state.error == AuthError.unknown) {
+      message = "App crash, please reinstall or call developer";
+    }
+    if (state.error == AuthError.wrongEmailOrPassword ||
+        state.error == AuthError.hostUnreachable) {
+      showDialog<void>(
+        context: context,
+        barrierDismissible: false, // user must tap button!
+        builder: (BuildContext context) {
+          return AlertDialog(
+            title: Text(titleMessage),
+            content: SingleChildScrollView(
+              child: ListBody(
+                children: [Text(message)],
+              ),
+            ),
+            actions: <Widget>[
+              TextButton(
+                child: const Text('Close'),
+                onPressed: () {
+                  var bloc = context.read<AuthBloc>();
+                  bloc.add(CleanAuthRequest());
+                  Navigator.of(context).pop();
+
+                  // authBloc.add(LogoutRequested());
+                },
+              ),
+            ],
+          );
+        },
+      );
+    }
+  }
 
   @override
   void dispose() {
@@ -31,38 +82,10 @@ class _LoginScreenState extends State<LoginScreen> {
 
   @override
   Widget build(BuildContext context) {
-    return BlocListener<AuthBloc, AuthState>(
-      listener: (context, state) async {
-        if (state.error == AuthError.wrongEmailOrPassword) {
-          return showDialog<void>(
-            context: context,
-            barrierDismissible: false, // user must tap button!
-            builder: (BuildContext context) {
-              return AlertDialog(
-                title: const Text('Error'),
-                content: SingleChildScrollView(
-                  child: ListBody(
-                    children: [Text("Username or Password is wrong")],
-                  ),
-                ),
-                actions: <Widget>[
-                  TextButton(
-                    child: const Text('Close'),
-                    onPressed: () {
-                      var bloc = context.read<AuthBloc>();
-                      bloc.add(CleanAuthRequest());
-                      Navigator.of(context).pop();
-
-                      // authBloc.add(LogoutRequested());
-                    },
-                  ),
-                ],
-              );
-            },
-          );
-        }
-      },
-      child: Stack(
+    return BlocBuilder<AuthBloc, AuthState>(
+        // stream: null,
+        builder: (context, stateBloc) {
+      return Stack(
         children: [
           SingleChildScrollView(
             child: Form(
@@ -140,6 +163,7 @@ class _LoginScreenState extends State<LoginScreen> {
                     ),
                     child: ElevatedButton(
                       onPressed: () {
+                        if (stateBloc.isLoad) return;
                         if (_signInGlobalKey.currentState!.validate()) {
                           context.read<AuthBloc>().add(
                                 LoginRequested(
@@ -153,13 +177,15 @@ class _LoginScreenState extends State<LoginScreen> {
                         backgroundColor: Colors.transparent,
                         shadowColor: Colors.transparent,
                       ),
-                      child: Text(
-                        "Sign In",
-                        style: TextStyle(
-                          color: Colors.white,
-                          fontSize: context.dynamicHeight(0.02),
-                        ),
-                      ),
+                      child: stateBloc.isLoad
+                          ? CircularProgressIndicator()
+                          : Text(
+                              "Sign In",
+                              style: TextStyle(
+                                color: Colors.white,
+                                fontSize: context.dynamicHeight(0.02),
+                              ),
+                            ),
                     ),
                   )
                 ],
@@ -194,7 +220,7 @@ class _LoginScreenState extends State<LoginScreen> {
             ),
           )
         ],
-      ),
-    );
+      );
+    });
   }
 }

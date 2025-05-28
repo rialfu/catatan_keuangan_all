@@ -21,7 +21,8 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 
 class ModifyTransactionScreen extends StatefulWidget {
   final TransactionDailyModel? data;
-  const ModifyTransactionScreen({super.key, this.data});
+  final String? date;
+  const ModifyTransactionScreen({super.key, this.data, this.date});
 
   @override
   State<ModifyTransactionScreen> createState() =>
@@ -388,12 +389,14 @@ class _ModifyTransactionScreenState extends State<ModifyTransactionScreen> {
                               tranBloc.add(
                                 TransactionSaveRequested(
                                   data,
+                                  date: widget.date,
                                 ),
                               );
                             } else {
                               tranBloc.add(
                                 TransactionUpdateRequested(
                                   data,
+                                  date: widget.date,
                                 ),
                               );
                             }

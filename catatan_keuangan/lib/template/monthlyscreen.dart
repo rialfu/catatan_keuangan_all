@@ -2,7 +2,7 @@ import 'package:catatan_keuangan/core/bloc/transaction/transaction_bloc.dart';
 import 'package:catatan_keuangan/core/bloc/transaction/transaction_state.dart';
 import 'package:catatan_keuangan/extensions/datetime_extension.dart';
 import 'package:catatan_keuangan/extensions/string_extension.dart';
-import 'package:catatan_keuangan/template/templateHeader1.dart';
+import 'package:catatan_keuangan/template/template_header1.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 
@@ -116,7 +116,7 @@ class _MonthlyScreenState extends State<MonthlyScreen> {
                                 flex: 3,
                                 child: Text(
                                   textAlign: TextAlign.end,
-                                  e.totalIn.toString().formatMoney(),
+                                  e.totalOut.toString().formatMoney(),
                                   style: TextStyle(
                                     color: Colors.red,
                                     fontSize: 16,

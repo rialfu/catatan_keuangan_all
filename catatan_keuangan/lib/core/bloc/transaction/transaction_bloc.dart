@@ -121,8 +121,29 @@ class TransactionBloc extends Bloc<TransactionEvent, TransactionState> {
             newMonthly: state.monthly,
           ));
           int start = DateTime.now().millisecondsSinceEpoch;
-          await transactionService.saveTransaction(event.data);
+          int? resultId = await transactionService.saveTransaction(event.data);
           var copyArr = [...state.daily];
+          if (resultId != null) {
+            TransactionDailyModel? data;
+            if (event.date != null) {
+              List<String> date = event.date!.split('-');
+              if (date.length >= 2) {
+                List<String> dataSplitDate = event.data.tanggal.split('-');
+                if (dataSplitDate.length >= 2) {
+                  if (dataSplitDate[0] == date[0] &&
+                      dataSplitDate[1] == date[1].padLeft(2, '0')) {
+                    data = event.data.addId(resultId);
+                  }
+                }
+              }
+            } else {
+              data = event.data.addId(resultId);
+            }
+            if (data != null) {
+              copyArr.add(data);
+            }
+          }
+
           int finish = DateTime.now().millisecondsSinceEpoch;
           if (finish - start <= 1200) {
             await Future.delayed(
@@ -174,18 +195,43 @@ class TransactionBloc extends Bloc<TransactionEvent, TransactionState> {
           int start = DateTime.now().millisecondsSinceEpoch;
           await transactionService.updateTransaction(event.data);
           List<TransactionDailyModel> data = [...state.daily];
-          for (int i = 0; i < data.length; i++) {
-            if (data[i].id == event.data.id) {
-              data[i].name = event.data.name;
-              data[i].detail = event.data.detail;
-              data[i].debitCredit = event.data.debitCredit;
-              data[i].harga = event.data.harga;
-              data[i].tanggal = event.data.tanggal;
-              data[i].category = event.data.category;
-              data[i].categoryId = event.data.categoryId;
-              break;
+          // TransactionDailyModel? cache;
+          bool add = false;
+          if (event.date != null) {
+            List<String> date = event.date!.split('-');
+            if (date.length >= 2) {
+              List<String> dataSplitDate = event.data.tanggal.split('-');
+              if (dataSplitDate.length >= 2) {
+                print('${event.date} || ${event.data.tanggal}');
+                print(
+                    '${dataSplitDate[0] == date[0]} || ${dataSplitDate[1] == date[1].padLeft(2, '0')}');
+                if (dataSplitDate[0] == date[0] &&
+                    dataSplitDate[1] == date[1].padLeft(2, '0')) {
+                  // cache = event.data;
+                  add = true;
+                }
+              }
             }
+          } else {
+            add = true;
           }
+          if (add) {
+            for (int i = 0; i < data.length; i++) {
+              if (data[i].id == event.data.id) {
+                data[i].name = event.data.name;
+                data[i].detail = event.data.detail;
+                data[i].debitCredit = event.data.debitCredit;
+                data[i].harga = event.data.harga;
+                data[i].tanggal = event.data.tanggal;
+                data[i].category = event.data.category;
+                data[i].categoryId = event.data.categoryId;
+                break;
+              }
+            }
+          } else {
+            data = data.where((e) => e.id != event.data.id).toList();
+          }
+
           int finish = DateTime.now().millisecondsSinceEpoch;
           if (finish - start <= 1200) {
             await Future.delayed(

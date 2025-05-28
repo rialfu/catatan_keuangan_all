@@ -8,7 +8,7 @@ import { UserJWT } from 'src/model/user_jwt.dto';
 import { AuthGuard } from '@nestjs/passport';
 import { SavingPlanCheckout } from 'src/model/saving_plan_checkout_entity';
 import { InjectUserToBody } from 'src/config/apply_decorator';
-import { Cron } from '@nestjs/schedule';
+import { Cron, CronExpression } from '@nestjs/schedule';
 import * as admin from "firebase-admin"
 // @SkipThrottle()
 @Controller('saving-plan')
@@ -221,7 +221,8 @@ export class SavingPlanController {
     }
 
 
-    // @Cron(' * * * * *')
+    @Cron('0 9 * * *')
+    // @Cron(CronExpression.EVERY_30_SECONDS)
     async runningDaily(){
         let datas =await this.savingPlanService.getDataForNotification();
         for(let i=0; i<datas.length;i++){
@@ -232,7 +233,6 @@ export class SavingPlanController {
     async sendNotif(data){
         const remain = Number(data['remain']).toFixed(2).replace(/\d(?=(\d{3})+\.)/g, '$&,');
         const message = 'Please store your money for '+data['sp_name']+'\nRemain Target:'+remain;
-        // console.log(message);
         try{
             const response = await admin.messaging()
             .send({
@@ -245,7 +245,7 @@ export class SavingPlanController {
             });
             console.log(response)
         }catch(err){
-
+            console.log(err)
         }
         
         //     response

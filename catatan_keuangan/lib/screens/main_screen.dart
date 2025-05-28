@@ -150,12 +150,12 @@ class _MainScreenState extends State<MainScreen> with TickerProviderStateMixin {
           ),
           actions: <Widget>[
             TextButton(
-              child: const Text('Close'),
               onPressed: callback ??
                   () {
                     Navigator.of(context).pop();
                     tranBloc.add(TransactionCleanMessage());
                   },
+              child: const Text('Close'),
             ),
           ],
         );
@@ -417,7 +417,7 @@ class _MainScreenState extends State<MainScreen> with TickerProviderStateMixin {
       final plugin = DeviceInfoPlugin();
       final androidInfo = await plugin.androidInfo;
       final sdkInt = androidInfo.version.sdkInt;
-
+      // print(sdkInt);
       if (sdkInt >= 33) {
         return true;
       } else {
@@ -425,6 +425,7 @@ class _MainScreenState extends State<MainScreen> with TickerProviderStateMixin {
         if (!status.isGranted) {
           // Permission.storage.request();
           status = await Permission.storage.request();
+
           if (!status.isGranted) {
             await openAppSettings();
           }
@@ -450,26 +451,56 @@ class _MainScreenState extends State<MainScreen> with TickerProviderStateMixin {
     }
   }
 
+  Future<String?> checkNamingFile(String nameFile) async {
+    int i = 0;
+    if (Theme.of(context).platform == TargetPlatform.android) {
+      Directory dir = Directory(path);
+      if (!dir.existsSync()) {
+        dir.createSync(recursive: true);
+      }
+      while (true) {
+        File file = File('$path/$nameFile ${i == 0 ? '' : '($i)'}.csv');
+        if (i == 100) return null;
+        if (file.existsSync()) {
+          i = i + 1;
+        } else {
+          return '$nameFile ${i == 0 ? '' : '($i)'}.csv';
+        }
+      }
+    }
+    return null;
+  }
+
+  String path = '/storage/emulated/0/Download';
   void download() async {
     if (isLoad) return;
     String st = '$yearNow-${monthNow.toString().padLeft(2, '0')}-01';
     String ed = DateTime(yearNow, monthNow + 1, 0).yyyymmdd();
     Map<String, String> queryParams = {'start': st, 'end': ed};
     bool permission = await requestPermissions();
+    print(permission);
     if (permission == false) {
+      alert(
+        ['Please open Permission'],
+        'Failed',
+      );
       return;
     }
     bool isFolderAvail = await checkFolder();
     if (isFolderAvail == false) {
       return;
     }
+    String? nameFile = await checkNamingFile('catatan_keuangan_${st}_$ed');
+    nameFile = nameFile ??
+        'catatan_keuangan_${st}_${ed}_${DateTime.now().millisecondsSinceEpoch}.csv';
+
     setState(() {
       isLoad = true;
     });
     try {
       await DioManager.instance.dio.download(
         'transaction/download',
-        '/storage/emulated/0/Download/catatan_keuangan_${st}_${ed}.csv',
+        '$path/$nameFile',
         queryParameters: queryParams,
       );
       alert(
@@ -500,6 +531,7 @@ class _MainScreenState extends State<MainScreen> with TickerProviderStateMixin {
         );
       }
     } catch (err) {
+      // print(err);
       alert(
         [err],
         'Failed',
@@ -547,7 +579,9 @@ class _MainScreenState extends State<MainScreen> with TickerProviderStateMixin {
                           children: [
                             if (_tabController.index == 0)
                               IconButton(
-                                onPressed: () async {},
+                                onPressed: () async {
+                                  download();
+                                },
                                 icon: Icon(Icons.download),
                               ),
                             IconButton(
@@ -557,7 +591,9 @@ class _MainScreenState extends State<MainScreen> with TickerProviderStateMixin {
                                     context,
                                     MaterialPageRoute(
                                       builder: (context) =>
-                                          ModifyTransactionScreen(),
+                                          ModifyTransactionScreen(
+                                        date: '$yearNow-$monthNow',
+                                      ),
                                     ),
                                   );
                                 }
@@ -640,7 +676,7 @@ class _MainScreenState extends State<MainScreen> with TickerProviderStateMixin {
                               ? yearNow.toString()
                               : DateTime.parse(
                                       '$yearNow-${monthNow.toString().padLeft(2, '0')}-01')
-                                  .MM3chyyyy(),
+                                  .formatMM3chyyyy(),
                           style: TextStyle(color: Colors.white, fontSize: 18),
                         ),
                       ),

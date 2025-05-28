@@ -39,7 +39,7 @@ export class TransactionController {
         const data = { tanggal_transaksi: filter_date}
         // console.log(data);
         const result = await this.transactionService.get_all_transaction(req.user.userId, data)
-        console.log(result);
+        // console.log(result);
         return {'data':result};
     }
     

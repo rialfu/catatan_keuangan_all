@@ -24,7 +24,7 @@ import { SavingGoldOwner } from './saving-gold/entities/saving-gold-owner.entity
 import { SavingGold } from './saving-gold/entities/saving-gold.entity';
 import * as admin from "firebase-admin";
 import { UserToken } from './model/user_token.entity';
-
+// const  serviceAccount = require("../firebase.json")
 
 @Module({
   imports: [
@@ -68,6 +68,8 @@ export class AppModule {
   constructor(){
     if(!admin.apps.length){
       admin.initializeApp({
+        // credential:admin.credential.cert(serviceAccount)
+        
         credential:admin.credential.cert({
           projectId: process.env.FIREBASE_PROJECT_ID,
           clientEmail: process.env.FIREBASE_CLIENT_EMAIL,

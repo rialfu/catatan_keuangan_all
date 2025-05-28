@@ -101,7 +101,7 @@ export class SavingPlanService {
         })
     }
     get_single_data_with_custom(search:{[key: string]: any}) : Promise<any>{
-        console.log(search)
+        // console.log(search)
         let defaultValueforSum : string = 'IFNULL(sub.total, 0)'
         if(process.env.TYPE_DB == 'mssql'){
             defaultValueforSum = 'ISNULL(sub.total,0)'

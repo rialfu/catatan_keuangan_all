@@ -83,7 +83,7 @@ class FirebaseMsg {
       await _localNotifications.show(
         notification.hashCode,
         notification.title,
-        (notification.body ?? '') + '|' + varadd,
+        (notification.body ?? ''),
         NotificationDetails(
           android: channelAndroidDetails,
           iOS: const DarwinNotificationDetails(

@@ -11,7 +11,10 @@ export function get_last_day_month_string_from_string(date: string): string{
 
 
 export function get_first_day_month_from_date(date: Date): Date{
-    return new Date(date.getFullYear(), date.getMonth(), 1)
+    let newDate = new Date(date.getFullYear(), date.getMonth(), 1)
+    const offset = newDate.getTimezoneOffset()
+    return new Date(newDate.getTime() - (offset * 60 * 1000))
+    // return new Date(date.getFullYear(), date.getMonth(), 1)
 }
 
 export function get_first_day_month_string_from_date(date: Date): string{

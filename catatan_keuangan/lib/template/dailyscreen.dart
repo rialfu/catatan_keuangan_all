@@ -6,7 +6,7 @@ import 'package:catatan_keuangan/core/model/transaction_daily_model.dart';
 import 'package:catatan_keuangan/extensions/context_entension.dart';
 import 'package:catatan_keuangan/extensions/string_extension.dart';
 import 'package:catatan_keuangan/screens/modify_transacation_screen.dart';
-import 'package:catatan_keuangan/template/templateHeader1.dart';
+import 'package:catatan_keuangan/template/template_header1.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 // import 'package:flutter_bloc/flutter_bloc.dart';
@@ -209,6 +209,7 @@ class _DailyScreenState extends State<DailyScreen> {
                                 MaterialPageRoute(
                                   builder: (context) => ModifyTransactionScreen(
                                     data: e,
+                                    date: e.tanggal,
                                   ),
                                 ),
                               );
