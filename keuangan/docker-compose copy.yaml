@@ -26,6 +26,10 @@ services:
       FIREBASE_PROJECT_ID: sample
       FIREBASE_CLIENT_EMAIL: sample
       FIREBASE_PRIVATE_KEY: sample
+      smtp_host : sample
+      smtp_user : sample
+      smtp_pass : sample
+      smtp_auth : '1'
     deploy:
       resources:
         limits:

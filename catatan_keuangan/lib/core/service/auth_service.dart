@@ -69,4 +69,53 @@ class AuthService extends IAuthService {
     }
     return null;
   }
+
+  Future<Map<String, dynamic>> verifyPassword(String password) async {
+    Map<String, dynamic> data = {};
+    try {
+      var res = await dioManager.dio
+          .post('auth/verify_password', data: {'password': password});
+      data = res.data as Map<String, dynamic>;
+
+      // return data;
+    } on DioException catch (err) {
+      if (err.type == DioExceptionType.connectionTimeout) {
+        throw CustomExceptionForPost(0, 'Server not active');
+      }
+      if (err.response?.statusCode == HttpStatus.unauthorized) {
+        throw CustomExceptionForPost(401, 'unauthorized');
+      }
+      if (err.response?.statusCode == HttpStatus.badRequest) {
+        // print(e.response?.data);
+        throw CustomExceptionForPost(
+            400,
+            err.response?.data['message'] ??
+                ['Bad Request, Please message to adminitrator']);
+      }
+      if (err.response?.statusCode == HttpStatus.tooManyRequests) {
+        throw CustomExceptionForPost(
+          429,
+          err.response?.data['message'] ??
+              ['Too Many Request, Please message to adminitrator'],
+        );
+      }
+      if (err.response?.statusCode == HttpStatus.forbidden) {
+        // print(e.response?.data);
+        throw CustomExceptionForPost(
+            403,
+            err.response?.data['message'] ??
+                ['Forbidden, Please message to adminitrator']);
+      }
+    } catch (err) {
+      throw CustomExceptionForPost(
+        0,
+        'Feature has problem',
+      );
+    }
+    if (!data.containsKey('email')) {
+      throw CustomExceptionForPost(
+          0, 'The server has problem, please call administrator');
+    }
+    return data;
+  }
 }

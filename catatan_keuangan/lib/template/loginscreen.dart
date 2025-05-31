@@ -1,13 +1,20 @@
 import 'dart:async';
 
+import 'package:catatan_keuangan/components/component_custom.dart';
 import 'package:catatan_keuangan/core/bloc/auth/auth_bloc.dart';
 import 'package:catatan_keuangan/core/bloc/auth/auth_event.dart';
 import 'package:catatan_keuangan/core/bloc/auth/auth_state.dart';
 import 'package:catatan_keuangan/core/enum/auth_enum.dart';
+import 'package:catatan_keuangan/core/enum/biometric_enum.dart';
 import 'package:catatan_keuangan/extensions/string_extension.dart';
+import 'package:catatan_keuangan/init/cache/auth_cache_manager.dart';
 import 'package:catatan_keuangan/screens/notifier/first_screen_notifier.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:local_auth/local_auth.dart';
+import 'package:local_auth/error_codes.dart' as auth_error;
+import 'package:local_auth_android/local_auth_android.dart';
 import '../extensions/context_entension.dart';
 
 class LoginScreen extends StatefulWidget {
@@ -23,23 +30,42 @@ class _LoginScreenState extends State<LoginScreen> {
   TextEditingController emailController = TextEditingController(text: '');
   bool hidePass = true;
   late StreamSubscription stream;
+  final LocalAuthentication auth = LocalAuthentication();
+  BiometricSupportState isDeviceSupport = BiometricSupportState.unknown;
 
   @override
   void initState() {
     // TODO: implement initState
     super.initState();
     var bloc = context.read<AuthBloc>();
+    setIsDeviceSupport();
     stream = bloc.stream.listen(listening);
   }
 
-  Future<void> listening(state) async {
+  Future<void> setIsDeviceSupport({bool initial = false}) async {
+    // auth.authenticate(localizedReason: localizedReason)
+    bool res = await auth.isDeviceSupported();
+    setState(() {
+      isDeviceSupport = res
+          ? BiometricSupportState.supported
+          : BiometricSupportState.unsupported;
+    });
+  }
+
+  Future<void> listening(AuthState state) async {
     String titleMessage = "Error";
-    String message = "App couldnt connect to server";
+    List<String> message = ["App couldnt connect to server"];
+    // String message = "App couldnt connect to server";
     if (state.error == AuthError.hostUnreachable) {
     } else if (state.error == AuthError.wrongEmailOrPassword) {
-      message = "Username or Password is wrong";
+      message = ["Username or Password is wrong"];
     } else if (state.error == AuthError.unknown) {
-      message = "App crash, please reinstall or call developer";
+      message = ["App crash, please reinstall or call developer"];
+    } else if (state.error == AuthError.wrongEmailOrPasswordBiometric) {
+      message = [
+        "Username or Password is not match",
+        "Please use standart login"
+      ];
     }
     if (state.error == AuthError.wrongEmailOrPassword ||
         state.error == AuthError.hostUnreachable) {
@@ -51,7 +77,7 @@ class _LoginScreenState extends State<LoginScreen> {
             title: Text(titleMessage),
             content: SingleChildScrollView(
               child: ListBody(
-                children: [Text(message)],
+                children: message.map((e) => Text(e)).toList(),
               ),
             ),
             actions: <Widget>[
@@ -147,46 +173,143 @@ class _LoginScreenState extends State<LoginScreen> {
                   SizedBox(
                     height: context.dynamicHeight(0.05),
                   ),
-                  Container(
-                    width: context.dynamicWidth(1),
-                    decoration: BoxDecoration(
-                      gradient: LinearGradient(
-                        colors: [
-                          Colors.red,
-                          Colors.red.shade800,
-                          Colors.black54
-                        ],
-                        begin: Alignment.centerLeft,
-                        end: Alignment.centerRight,
-                      ),
-                      borderRadius: BorderRadius.circular(20),
-                    ),
-                    child: ElevatedButton(
-                      onPressed: () {
-                        if (stateBloc.isLoad) return;
-                        if (_signInGlobalKey.currentState!.validate()) {
-                          context.read<AuthBloc>().add(
-                                LoginRequested(
-                                  emailController.text,
-                                  passwordController.text,
-                                ),
-                              );
-                        }
-                      },
-                      style: ElevatedButton.styleFrom(
-                        backgroundColor: Colors.transparent,
-                        shadowColor: Colors.transparent,
-                      ),
-                      child: stateBloc.isLoad
-                          ? CircularProgressIndicator()
-                          : Text(
-                              "Sign In",
-                              style: TextStyle(
-                                color: Colors.white,
-                                fontSize: context.dynamicHeight(0.02),
-                              ),
+                  Row(
+                    children: [
+                      Expanded(
+                        child: Container(
+                          // width: context.dynamicWidth(1),
+                          decoration: BoxDecoration(
+                            gradient: LinearGradient(
+                              colors: [
+                                Colors.red,
+                                Colors.red.shade800,
+                                Colors.black54
+                              ],
+                              begin: Alignment.centerLeft,
+                              end: Alignment.centerRight,
                             ),
-                    ),
+                            borderRadius: BorderRadius.circular(20),
+                          ),
+                          child: ElevatedButton(
+                            onPressed: () {
+                              if (stateBloc.isLoad) return;
+                              if (_signInGlobalKey.currentState!.validate()) {
+                                context.read<AuthBloc>().add(
+                                      LoginRequested(
+                                        emailController.text,
+                                        passwordController.text,
+                                      ),
+                                    );
+                              }
+                            },
+                            style: ElevatedButton.styleFrom(
+                              backgroundColor: Colors.transparent,
+                              shadowColor: Colors.transparent,
+                            ),
+                            child: stateBloc.isLoad
+                                ? CircularProgressIndicator()
+                                : Text(
+                                    "Sign In",
+                                    style: TextStyle(
+                                      color: Colors.white,
+                                      fontSize: context.dynamicHeight(0.02),
+                                    ),
+                                  ),
+                          ),
+                        ),
+                      ),
+                      SizedBox(
+                        width: 5,
+                      ),
+                      Container(
+                        decoration: BoxDecoration(
+                          gradient: LinearGradient(
+                            colors: [
+                              Colors.red,
+                              Colors.red.shade800,
+                              Colors.black54
+                            ],
+                            begin: Alignment.centerLeft,
+                            end: Alignment.centerRight,
+                          ),
+                          borderRadius: BorderRadius.circular(20),
+                        ),
+                        child: IconButton(
+                          onPressed: () async {
+                            if (stateBloc.isLoad) return;
+                            if (isDeviceSupport ==
+                                BiometricSupportState.unsupported) {
+                              ComponentCustom.alert(
+                                context,
+                                ['Your device is not support biometric'],
+                                'Alert',
+                              );
+
+                              return;
+                            } else if (isDeviceSupport ==
+                                BiometricSupportState.unknown) {
+                              setIsDeviceSupport();
+                              return;
+                            }
+                            bool isAuthenticate = false;
+                            try {
+                              isAuthenticate = await auth.authenticate(
+                                localizedReason: 'Please put your biometric',
+                                options: AuthenticationOptions(
+                                  useErrorDialogs: false,
+                                  biometricOnly: true,
+                                ),
+                                authMessages: [
+                                  AndroidAuthMessages(
+                                    signInTitle:
+                                        'Biometric authentication required!',
+                                    cancelButton: 'No thanks',
+                                  )
+                                ],
+                              );
+                            } on PlatformException catch (e) {
+                              String message = e.toString();
+                              if (e.code == auth_error.passcodeNotSet) {
+                                message = 'Your device not configure';
+                              } else if (e.code == auth_error.notAvailable) {
+                                message = 'Your device not support';
+                              }
+                              ComponentCustom.alert(
+                                context,
+                                [message],
+                                'Alert',
+                              );
+                              return;
+                            } catch (err) {
+                              ComponentCustom.alert(
+                                context,
+                                ["Something is wrong"],
+                                'Alert',
+                              );
+                              return;
+                            }
+
+                            if (isAuthenticate == false) return;
+                            var acm = AuthCacheManager();
+                            var data = await acm.getAuth();
+
+                            if (data == null) return;
+                            if (!data.containsKey('email')) return;
+                            if (!data.containsKey('password')) return;
+                            context.read<AuthBloc>().add(
+                                  LoginRequestedWithBiometric(
+                                    data['email'],
+                                    data['password'],
+                                  ),
+                                );
+                          },
+                          icon: Icon(
+                            Icons.fingerprint,
+                            color: Colors.white,
+                          ),
+                        ),
+                      )
+                    ],
                   )
                 ],
               ),

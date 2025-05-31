@@ -1,7 +1,7 @@
 node_modules
 dist
 Dockerfile
-docker-compose.yml
+docker-compose.yaml
 *.log
 *.md
 .git
@@ -9,3 +9,4 @@ docker-compose.yml
 .env copy
 latihan-60ea4-firebase-adminsdk-fbsvc-b9ef930382
 firebase.json
+*.yaml

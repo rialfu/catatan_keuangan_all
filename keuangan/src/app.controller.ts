@@ -8,11 +8,16 @@ import { AuthService } from './auth/auth.service';
 import { HasRoles } from './auth/roles.decorator';
 import { Role, RoleType } from './model/role.entity';
 import { RolesGuard } from './auth/roles.guard';
-import { CreateUserDTO } from './model/user.dto';
+import { CreateUserDTO, VerifyPasswordDTO } from './model/user.dto';
 import { UserJWT } from './model/user_jwt.dto';
 import { SkipThrottle, Throttle, ThrottlerGuard, ThrottlerStorageService } from '@nestjs/throttler';
 import * as admin from "firebase-admin"
 import { UserToken } from './model/user_token.entity';
+import { CodeReset } from './users/entities/code_reset.entity';
+import { generate_text } from './config/support_string';
+import { after } from 'node:test';
+import { MailService } from './mail/mail.service';
+import { ResetPasswordDTO, SendEmailDTO } from './users/dto/reset_password.dto';
 @Controller()
 export class AppController {
   constructor(
@@ -20,6 +25,7 @@ export class AppController {
     private readonly userService: UsersService, 
     private readonly roleService: RolesService,
     private readonly authService: AuthService,
+    private readonly mailService: MailService,
   ) {}
 
   @Get('/')
@@ -70,7 +76,7 @@ export class AppController {
     console.log('create-')
     const exist = await this.userService.findOne(body.email)
     if(exist != null){
-      throw new HttpException({'message':['Email has used']}, 400);
+      throw new HttpException({'message':['Email has used']}, HttpStatus.BAD_REQUEST);
     }
     // const role = await this.roleService.findRole('user')
     // if(role == null){
@@ -188,5 +194,93 @@ export class AppController {
     return {'message':'gagal', 'data':{}}
     
   }
+  @UseGuards(AuthGuard('jwt'))
+  @Post('auth/verify_password')
+  async verify_password(@Request() req, @Body() body:VerifyPasswordDTO){
+    const userData: UserJWT = req.user
+    
+    const user_res = await this.userService.findOneById(userData.userId)
+    if(user_res == null){
+      throw new HttpException({'message':['Your account not found, you can message to admin']}, HttpStatus.FORBIDDEN);
+    }
+    if(user_res!.password != body.password){
+      throw new HttpException({'message':['Your Password is not match']}, HttpStatus.FORBIDDEN);
+    }
+    return {'message':'berhasil','email':user_res.email}
+
+  }
+  // @Throttle({default:{limit:3, ttl:30000}})
+  @Post('auth/send-email')
+  async send_email(@Request() req,@Body() body:SendEmailDTO){
+    const email = body.email;
+    const resUser = await this.userService.find_code_reset_from_user(email);
+    if(resUser == null){
+      return {'message':'Please wait, email will send'}
+    }
+    if(resUser.code_reset == null || resUser.code_reset == undefined){
+      let now = new Date()
+      let afterTwo = new Date(now)
+      afterTwo.setMinutes(now.getMinutes() +2)
+      const data = new CodeReset()
+      data.code = '123456',
+      data.expired_date = afterTwo;
+      const res = await this.userService.save_code_reset(data)
+      const user:Partial<User> = new User()
+      user.code_reset = res
+      await this.userService.update_user(user, resUser.id)
+      // return {'message':'email will send'}
+      return {'message':'Please wait, email will send'}
+    }
+    let now = new Date()
+    // if(resUser.code_reset.expired_date.getTime() > now.getTime()){
+    //   return {'please wait second': (resUser.code_reset.expired_date.getTime() -now.getTime()  ) / 1000}
+    // }
+    let conditionBefore = new Date(resUser.code_reset.expired_date)
+    conditionBefore.setMinutes(conditionBefore.getMinutes() - 2)
+    if(((now.getTime() - conditionBefore.getTime()) / 1000 )< 30){
+      // return {'message':'Please wait, email will send'}
+      return {'message':'please wait '+(30 - (now.getTime() - conditionBefore.getTime()  ) / 1000).toFixed(2)+ 's for resend code' }
+    }
+    now = new Date()
+    const dataUpdate : Partial<CodeReset> = new CodeReset()
+    dataUpdate.code = generate_text(6)
+    now.setMinutes(now.getMinutes() + 2)
+    dataUpdate.valid = true;
+    dataUpdate.expired_date = now;
+    await this.userService.update_code_reset(dataUpdate, resUser.code_reset.id)
+    this.mailService.example(resUser.email, dataUpdate.code)
+    return {'message':'Please wait, email will send'}
+    
+  }
   
+  @Post('auth/reset-password')
+  async reset_password(@Request() req,@Body() body:ResetPasswordDTO){
+    let now = new Date()
+    let pass = body.password.trim()
+    const email = body.email;
+    const resUser = await this.userService.find_code_reset_from_user(email);
+    if(resUser == null){
+      throw new HttpException({'message':'Fail change password, You don\'t have access'}, 403)
+    }
+    if(resUser.code_reset == null || resUser.code_reset == undefined){
+      throw new HttpException({'message':'Fail change password, You don\'t have access'}, 403)
+    }
+    if(resUser.code_reset.expired_date.getTime() < now.getTime() ){
+      throw new HttpException({'message':'Fail change password, The code is Expired or wrong'}, 403)
+    }
+    if(resUser.code_reset.code != body.code){
+      throw new HttpException({'message':'Fail change password, The code is Expired or wrong'}, 403)
+    }
+    if(resUser.code_reset.valid == false){
+      throw new HttpException({'message':'Fail change password, The code is Expired or wrong'}, 403)
+    }
+    const user:Partial<User> = new User()
+    user.password = pass
+    await this.userService.update_user(user, resUser.id)
+    const dataUpdate : Partial<CodeReset> = new CodeReset()
+    dataUpdate.valid =false;
+    await this.userService.update_code_reset(dataUpdate, resUser.code_reset.id)
+    return {'messsage':'Success change password'}
+  }
+
 }

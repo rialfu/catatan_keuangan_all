@@ -145,7 +145,6 @@ export class TransactionController {
     
 
     @Post('/create')
-    
     @UseGuards(AuthGuard('jwt'))
     @InjectUserToBody()
     @HttpCode(200)
@@ -176,7 +175,7 @@ export class TransactionController {
         const user = new User()
         user.id = userData.userId
         data.user = user
-
+        
         const res = await this.transactionService.create_transaction(data)
         return {'message':'success', 'result':res}
     }

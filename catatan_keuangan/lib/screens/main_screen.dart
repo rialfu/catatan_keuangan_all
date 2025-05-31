@@ -2,11 +2,13 @@ import 'dart:async';
 import 'dart:io';
 
 import 'package:auto_size_text/auto_size_text.dart';
+import 'package:catatan_keuangan/components/component_custom.dart';
 import 'package:catatan_keuangan/core/bloc/auth/auth_bloc.dart';
 import 'package:catatan_keuangan/core/bloc/auth/auth_event.dart';
 import 'package:catatan_keuangan/core/bloc/auth/auth_state.dart';
 import 'package:catatan_keuangan/core/bloc/category/category_bloc.dart';
 import 'package:catatan_keuangan/core/bloc/category/category_event.dart';
+import 'package:catatan_keuangan/core/bloc/category/category_state.dart';
 import 'package:catatan_keuangan/core/bloc/transaction/transaction_bloc.dart';
 import 'package:catatan_keuangan/core/bloc/transaction/transaction_event.dart';
 import 'package:catatan_keuangan/core/bloc/transaction/transaction_state.dart';
@@ -16,7 +18,6 @@ import 'package:catatan_keuangan/extensions/datetime_extension.dart';
 import 'package:catatan_keuangan/extensions/navigate_extension.dart';
 import 'package:catatan_keuangan/init/network/dio_manager.dart';
 import 'package:catatan_keuangan/screens/modify_transacation_screen.dart';
-import 'package:catatan_keuangan/screens/saving_plan_screen.dart';
 import 'package:catatan_keuangan/template/chart_daily_screen.dart';
 import 'package:catatan_keuangan/template/dailyscreen.dart';
 import 'package:catatan_keuangan/template/monthlyscreen.dart';
@@ -94,40 +95,16 @@ class _MainScreenState extends State<MainScreen> with TickerProviderStateMixin {
     setState(() {
       isLoad = true;
     });
-    tranStream = tranBloc.stream.listen((state) {
-      if (state.message != null) {
-        List message = [];
-        if (state.message is List) {
-          message.addAll(state.message as List);
-        } else {
-          message.add(state.message);
-        }
-        alert(message, 'error', callback: () {
-          Navigator.of(context).pop();
-          tranBloc.add(TransactionCleanMessage());
-        });
-        return;
-      }
-      if (state.loading == false) {
-        setState(() {
-          isLoad = false;
-        });
-      } else {
-        setState(() {
-          isLoad = true;
-        });
-      }
-      if (state.status == AuthStatus.guest) {
-        _showMyDialog();
-      }
-    });
+    tranStream = tranBloc.stream.listen(listenTrans);
+
     catBloc = context.read<CategoryBloc>();
     catBloc.add(CategoryStarted());
-    catStream = catBloc.stream.listen((state) {
-      if (state.status == AuthStatus.guest) {
-        _showMyDialog();
-      }
-    });
+    // catStream = catBloc.stream.listen((state) {
+    //   if (state.status == AuthStatus.guest) {
+    //     _showMyDialog();
+    //   }
+    // });
+    catStream = catBloc.stream.listen(listenCat);
     // } catch (err) {}
     if (_tabController.index == 0) {
       setDaily(monthNow, yearNow);
@@ -136,35 +113,98 @@ class _MainScreenState extends State<MainScreen> with TickerProviderStateMixin {
     // print(authBloc.state.status);
   }
 
-  void alert(List message, String title, {VoidCallback? callback}) {
-    showDialog<void>(
-      context: context,
-      barrierDismissible: false, // user must tap button!
-      builder: (BuildContext context) {
-        return AlertDialog(
-          title: Text(title),
-          content: SingleChildScrollView(
-            child: ListBody(
-              children: message.map((e) => Text(e.toString())).toList(),
-            ),
-          ),
-          actions: <Widget>[
-            TextButton(
-              onPressed: callback ??
-                  () {
-                    Navigator.of(context).pop();
-                    tranBloc.add(TransactionCleanMessage());
-                  },
-              child: const Text('Close'),
-            ),
-          ],
+  void listenTrans(TransactionState state) {
+    if (state.message != null) {
+      List message = [];
+      if (state.message is List) {
+        message.addAll(state.message as List);
+      } else {
+        message.add(state.message);
+      }
+      if (context.mounted) {
+        ComponentCustom.alert(
+          context,
+          message,
+          'error',
+          callback: () {
+            Navigator.of(context).pop();
+            tranBloc.add(TransactionCleanMessage());
+          },
         );
-      },
-    );
+      }
+
+      // alert(message, 'error', callback: () {
+      //   Navigator.of(context).pop();
+      //   tranBloc.add(TransactionCleanMessage());
+      // });
+      return;
+    }
+    if (state.loading == false) {
+      setState(() {
+        isLoad = false;
+      });
+    } else {
+      setState(() {
+        isLoad = true;
+      });
+    }
+    if (state.status == AuthStatus.guest) {
+      ComponentCustom.alert(
+        context,
+        ComponentCustom.messageSessionOut,
+        'Session Timeout',
+        buttonClose: 'Logout',
+        callback: () {
+          authBloc.add(LogoutRequested());
+        },
+      );
+    }
   }
+
+  void listenCat(CategoryState state) {
+    if (state.status == AuthStatus.guest) {
+      ComponentCustom.alert(
+        context,
+        ComponentCustom.messageSessionOut,
+        'Session Timeout',
+        buttonClose: 'Logout',
+        callback: () {
+          authBloc.add(LogoutRequested());
+        },
+      );
+    }
+  }
+
+  // void alert(List message, String title, {VoidCallback? callback}) {
+  //   showDialog<void>(
+  //     context: context,
+  //     barrierDismissible: false, // user must tap button!
+  //     builder: (BuildContext context) {
+  //       return AlertDialog(
+  //         title: Text(title),
+  //         content: SingleChildScrollView(
+  //           child: ListBody(
+  //             children: message.map((e) => Text(e.toString())).toList(),
+  //           ),
+  //         ),
+  //         actions: <Widget>[
+  //           TextButton(
+  //             onPressed: callback ??
+  //                 () {
+  //                   Navigator.of(context).pop();
+  //                   tranBloc.add(TransactionCleanMessage());
+  //                 },
+  //             child: const Text('Close'),
+  //           ),
+  //         ],
+  //       );
+  //     },
+  //   );
+  // }
 
   @override
   void dispose() {
+    removeHighlightOverlay();
     tranStream.cancel();
     authStream.cancel();
     catStream.cancel();
@@ -180,33 +220,33 @@ class _MainScreenState extends State<MainScreen> with TickerProviderStateMixin {
     }).toList();
   }
 
-  Future<void> _showMyDialog() async {
-    return showDialog<void>(
-      context: context,
-      barrierDismissible: false, // user must tap button!
-      builder: (BuildContext context) {
-        return AlertDialog(
-          title: const Text('Session Timeout'),
-          content: const SingleChildScrollView(
-            child: ListBody(
-              children: <Widget>[
-                Text('Your session is gone.'),
-                Text('You must login again'),
-              ],
-            ),
-          ),
-          actions: <Widget>[
-            TextButton(
-              child: const Text('Logout'),
-              onPressed: () {
-                authBloc.add(LogoutRequested());
-              },
-            ),
-          ],
-        );
-      },
-    );
-  }
+  // Future<void> _showMyDialog() async {
+  //   return showDialog<void>(
+  //     context: context,
+  //     barrierDismissible: false, // user must tap button!
+  //     builder: (BuildContext context) {
+  //       return AlertDialog(
+  //         title: const Text('Session Timeout'),
+  //         content: const SingleChildScrollView(
+  //           child: ListBody(
+  //             children: <Widget>[
+  //               Text('Your session is gone.'),
+  //               Text('You must login again'),
+  //             ],
+  //           ),
+  //         ),
+  //         actions: <Widget>[
+  //           TextButton(
+  //             child: const Text('Logout'),
+  //             onPressed: () {
+  //               authBloc.add(LogoutRequested());
+  //             },
+  //           ),
+  //         ],
+  //       );
+  //     },
+  //   );
+  // }
 
   int cacheYear = 0;
   Future<void> startOverlay() async {
@@ -478,12 +518,14 @@ class _MainScreenState extends State<MainScreen> with TickerProviderStateMixin {
     String ed = DateTime(yearNow, monthNow + 1, 0).yyyymmdd();
     Map<String, String> queryParams = {'start': st, 'end': ed};
     bool permission = await requestPermissions();
-    print(permission);
+    // print(permission);
     if (permission == false) {
-      alert(
-        ['Please open Permission'],
-        'Failed',
-      );
+      // ignore: use_build_context_synchronously
+      ComponentCustom.alert(context, ['Please open Permission'], 'Failed');
+      // alert(
+      //   ['Please open Permission'],
+      //   'Failed',
+      // );
       return;
     }
     bool isFolderAvail = await checkFolder();
@@ -503,16 +545,19 @@ class _MainScreenState extends State<MainScreen> with TickerProviderStateMixin {
         '$path/$nameFile',
         queryParameters: queryParams,
       );
-      alert(
+      ComponentCustom.alert(
+        // ignore: use_build_context_synchronously
+        context,
         ['Success save', 'You can check in Download Folder'],
         'Success',
       );
+      // alert(
+      //   ['Success save', 'You can check in Download Folder'],
+      //   'Success',
+      // );
     } on DioException catch (e) {
       if (e.response?.statusCode == 500 || e.response?.statusCode == 400) {
-        List messageShow = [
-          'Failed Download',
-          'You can check in Download Folder'
-        ];
+        List messageShow = [];
         if (e.response?.data != null &&
             e.response?.data is Map<String, dynamic>) {
           Map<String, dynamic> message =
@@ -525,17 +570,28 @@ class _MainScreenState extends State<MainScreen> with TickerProviderStateMixin {
             }
           }
         }
-        alert(
+        ComponentCustom.alert(
+          // ignore: use_build_context_synchronously
+          context,
           messageShow,
           'Failed',
         );
+        // alert(
+        //   messageShow,
+        //   'Failed',
+        // );
       }
     } catch (err) {
-      // print(err);
-      alert(
+      ComponentCustom.alert(
+        // ignore: use_build_context_synchronously
+        context,
         [err],
         'Failed',
       );
+      // alert(
+      //   [err],
+      //   'Failed',
+      // );
     }
     setState(() {
       isLoad = false;
@@ -715,37 +771,7 @@ class _MainScreenState extends State<MainScreen> with TickerProviderStateMixin {
               controller: _tabController,
             ),
           ),
-          drawer: Drawer(
-            child: ListView(
-              children: [
-                ListTile(
-                  title: Text("Home / Catatan"),
-                  onTap: () {
-                    print(isLoad);
-                    // Navigator.of(context, rootNavigator: true).pop();
-                  },
-                ),
-                ListTile(
-                  title: Text("Saving Plan"),
-                  onTap: () {
-                    Navigator.pop(context);
-                    Navigator.push(
-                      context,
-                      MaterialPageRoute(
-                        builder: (context) => SavingPlanScreen(),
-                      ),
-                    );
-                  },
-                ),
-                ListTile(
-                  title: Text("Log out"),
-                  onTap: () {
-                    authBloc.add(LogoutRequested());
-                  },
-                )
-              ],
-            ),
-          ),
+          drawer: ComponentCustom.drawerCustom(context, 0, bloc: authBloc),
           body: Stack(
             children: [
               TabBarView(

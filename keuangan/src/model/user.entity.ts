@@ -7,13 +7,14 @@ import { Role } from './role.entity';
 //     roles: Role[];
 // }
 
-import { Column, CreateDateColumn, Entity, PrimaryColumn, UpdateDateColumn, ManyToOne, OneToMany } from "typeorm";
+import { Column, CreateDateColumn, Entity, PrimaryColumn, UpdateDateColumn, ManyToOne, OneToMany, OneToOne, JoinColumn } from "typeorm";
 
 import { Category } from './category.entity';
 import { SavingPlan } from './saving_plan.entity';
 import { SavingGoldOwner } from 'src/saving-gold/entities/saving-gold-owner.entity';
 import { Transaction } from 'src/transaction/entities/transaction.entity';
 import { UserToken } from './user_token.entity';
+import { CodeReset } from 'src/users/entities/code_reset.entity';
 
 @Entity()
 export class User {
@@ -43,6 +44,10 @@ export class User {
 
     @OneToMany(() => UserToken, (data) => data.user, )
     userTokens: UserToken[];
+
+    @OneToOne(()=>CodeReset, codeReset=> codeReset.user)
+    @JoinColumn()
+    code_reset: CodeReset;
 
     @Column()
     name: string;

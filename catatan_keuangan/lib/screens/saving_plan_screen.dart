@@ -1,6 +1,7 @@
 import 'dart:async';
 
 import 'package:auto_size_text/auto_size_text.dart';
+import 'package:catatan_keuangan/components/component_custom.dart';
 import 'package:catatan_keuangan/core/bloc/auth/auth_bloc.dart';
 import 'package:catatan_keuangan/core/bloc/auth/auth_event.dart';
 import 'package:catatan_keuangan/core/bloc/savingPlan/saving_plan_bloc.dart';
@@ -157,31 +158,7 @@ class _SavingPlanScreenState extends State<SavingPlanScreen> {
           ),
         ),
       ),
-      drawer: Drawer(
-        child: ListView(
-          children: [
-            ListTile(
-              title: Text("Home / Catatan"),
-              onTap: () {
-                Navigator.popUntil(context, (r) => r.isFirst);
-                // Navigator.of(context, rootNavigator: true).pop();
-              },
-            ),
-            ListTile(
-              title: Text("Saving Plan"),
-              onTap: () {
-                Navigator.pop(context);
-              },
-            ),
-            ListTile(
-              title: Text("Log out"),
-              onTap: () {
-                authBloc.add(LogoutRequested());
-              },
-            )
-          ],
-        ),
-      ),
+      drawer: ComponentCustom.drawerCustom(context, 1, bloc: authBloc),
       body: BlocListener<SavingPlanBloc, SavingPlanState>(
         listener: (context, state) async {
           if (state.status == AuthStatus.guest) {

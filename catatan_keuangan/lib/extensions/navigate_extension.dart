@@ -1,3 +1,4 @@
+import 'package:catatan_keuangan/screens/authenticate.dart';
 import 'package:catatan_keuangan/screens/main_screen.dart';
 
 import '../../core/enum/auth_enum.dart';
@@ -12,13 +13,15 @@ extension NavigateExtension on AuthStatus {
       // return const HomeView();
       case AuthStatus.guest:
         // return const LoginView();
-        return FirstScreen();
+        // return FirstScreen();
+        return AuthenticateScreen();
       case AuthStatus.unknown:
         // return SplashView();
         break;
       // return FirstScreen();
     }
-    return FirstScreen();
+    return AuthenticateScreen();
+    // return FirstScreen();
     // return const LoginView();
   }
 }

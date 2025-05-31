@@ -11,8 +11,12 @@ class AuthCacheManager {
     return (await CacheManager.getBool('login')) ?? false;
   }
 
+  Future<void> savePassword() async {}
   Future<void> signOut() async {
-    await CacheManager.clearAll();
+    await CacheManager.setBool('login', false);
+    await CacheManager.remove('token');
+    await CacheManager.remove('refresh_token');
+    // await CacheManager.clearAll();
   }
 
   Future<void> updateFirstEntry() async {
@@ -21,6 +25,26 @@ class AuthCacheManager {
 
   Future<void> updateLoggedIn(bool isLoggedIn) async {
     await CacheManager.setBool('login', isLoggedIn);
+  }
+
+  Future<void> setAuth(Map<String, dynamic> data) async {
+    await CacheManager.setMap('auth', data);
+  }
+
+  Future<Map<String, dynamic>?> getAuth() async {
+    return await CacheManager.getMap('auth');
+  }
+
+  Future<void> clearAuth() async {
+    await CacheManager.remove('auth');
+  }
+
+  Future<void> setEmail(String email) async {
+    await CacheManager.setString('email', email);
+  }
+
+  Future<String?> getEmail() async {
+    return await CacheManager.getString('email');
   }
 
   Future<void> updateToken(String? token, {String? refreshToken}) async {

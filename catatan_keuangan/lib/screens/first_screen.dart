@@ -42,9 +42,8 @@ class _FirstScreenState extends State<FirstScreen> {
     authStream = authBloc.stream.listen((state) {
       /// statements after async gap without warning
       if (state is AuthStateLogin) {
-        print('masuk sini');
         // if (state is LoginState) {
-        Future.delayed(Duration(seconds: 2), () {
+        Future.delayed(Duration(milliseconds: 500), () {
           Navigator.pushReplacement(
             context,
             MaterialPageRoute(builder: (context) => state.status.firstView),

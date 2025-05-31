@@ -18,3 +18,8 @@ export class CreateUserDTO{
     password: string;
 
 }
+export class VerifyPasswordDTO{
+    @IsString()
+    @IsNotEmpty()
+    password: string;
+}

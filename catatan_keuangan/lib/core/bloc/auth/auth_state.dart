@@ -79,14 +79,14 @@ class AuthState extends Equatable {
   final bool isFirstEntry;
   final AuthError? error;
   final String? name;
-  final String dateNow;
+  final String email;
   const AuthState({
     this.status = AuthStatus.guest,
     this.isLoad = false,
     this.isFirstEntry = false,
     this.name,
     this.error,
-    this.dateNow = '',
+    this.email = '',
   });
   @override
   List<Object?> get props => [
@@ -94,26 +94,26 @@ class AuthState extends Equatable {
         isLoad,
         isFirstEntry,
         error,
-        dateNow,
+        email,
         name,
       ];
 }
 
 class AuthStateLogin extends AuthState {
   const AuthStateLogin({
-    required String setDate,
+    required String setEmail,
     String? setName,
     required bool setLoad,
   }) : super(
-          dateNow: setDate,
+          email: setEmail,
           name: setName,
           isLoad: setLoad,
           status: AuthStatus.authenticated,
           isFirstEntry: false,
         );
-  AuthStateLogin changeValue({String? setDate, String? name, bool? isLoad}) {
+  AuthStateLogin changeValue({String? setEmail, String? name, bool? isLoad}) {
     return AuthStateLogin(
-      setDate: setDate ?? dateNow,
+      setEmail: setEmail ?? email,
       setName: name,
       setLoad: isLoad ?? this.isLoad,
     );

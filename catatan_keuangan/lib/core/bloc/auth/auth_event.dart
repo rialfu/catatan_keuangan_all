@@ -20,6 +20,16 @@ class LoginRequested extends AuthEvent {
   List<Object?> get props => [email, password];
 }
 
+class LoginRequestedWithBiometric extends AuthEvent {
+  final String email;
+  final String password;
+
+  const LoginRequestedWithBiometric(this.email, this.password);
+
+  @override
+  List<Object?> get props => [email, password];
+}
+
 class LogoutRequested extends AuthEvent {}
 
 class CleanAuthRequest extends AuthEvent {}

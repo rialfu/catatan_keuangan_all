@@ -24,6 +24,8 @@ import { SavingGoldOwner } from './saving-gold/entities/saving-gold-owner.entity
 import { SavingGold } from './saving-gold/entities/saving-gold.entity';
 import * as admin from "firebase-admin";
 import { UserToken } from './model/user_token.entity';
+import { CodeReset } from './users/entities/code_reset.entity';
+import { MailModule } from './mail/mail.module';
 // const  serviceAccount = require("../firebase.json")
 
 @Module({
@@ -42,7 +44,7 @@ import { UserToken } from './model/user_token.entity';
       // supportBigNumbers:true,
       bigNumberStrings:false,
       
-      entities: [User, Role, Transaction, Category, SavingPlan, SavingPlanCheckout, SavingGoldOwner, SavingGold, UserToken,],
+      entities: [User, Role, Transaction, Category, SavingPlan, SavingPlanCheckout, SavingGoldOwner, SavingGold, UserToken,CodeReset,],
       synchronize: true,
     }),
     ThrottlerModule.forRoot({
@@ -54,7 +56,7 @@ import { UserToken } from './model/user_token.entity';
       ],
     }),
     ScheduleModule.forRoot(),
-    AuthModule, UsersModule, RolesModule, TransactionModule, CategoryModule, SavingPlanModule, SavingGoldModule,  
+    AuthModule, UsersModule, RolesModule, TransactionModule, CategoryModule, SavingPlanModule, SavingGoldModule, MailModule,  
     // RolesModule
   ],
  
