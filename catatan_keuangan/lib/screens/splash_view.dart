@@ -72,6 +72,8 @@ class _SplashViewState extends State<SplashView> with TickerProviderStateMixin {
               'https://www.freepnglogos.com/uploads/logo-3d-png/3d-company-logos-design-logo-online-2.png',
               height: context.dynamicHeight(0.2),
               width: context.dynamicWidth(0.9),
+              errorBuilder: (context, error, stackTrace) =>
+                  new Icon(Icons.error),
             ),
             // child: Image.asset(
             //   IconEnums.appLogo.iconName.toPng,

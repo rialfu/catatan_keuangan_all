@@ -1,0 +1,258 @@
+{
+    "clientName": "Thunder Client",
+    "collectionName": "inventory",
+    "collectionId": "6393c85b-35e1-4ae3-b253-7d8bddd258f0",
+    "dateExported": "2025-06-05T16:36:42.171Z",
+    "version": "1.2",
+    "folders": [],
+    "requests": [
+        {
+            "_id": "f7d502d1-7be2-44f4-acde-341ebcb440a0",
+            "colId": "6393c85b-35e1-4ae3-b253-7d8bddd258f0",
+            "containerId": "",
+            "name": "get attribute",
+            "url": "http://localhost:4000/attribute",
+            "method": "GET",
+            "sortNum": 10000,
+            "created": "2025-06-05T15:36:25.868Z",
+            "modified": "2025-06-05T15:36:43.860Z",
+            "headers": []
+        },
+        {
+            "_id": "e3b8637f-1228-4bb8-be67-f9eabe6081de",
+            "colId": "6393c85b-35e1-4ae3-b253-7d8bddd258f0",
+            "containerId": "",
+            "name": "update act attribute",
+            "url": "http://localhost:4000/attribute/active",
+            "method": "POST",
+            "sortNum": 15000,
+            "created": "2025-06-05T15:49:55.298Z",
+            "modified": "2025-06-05T15:49:55.298Z",
+            "headers": [],
+            "body": {
+                "type": "json",
+                "raw": "{\n  \"id\":1,\n  \"active\":false\n}",
+                "form": []
+            }
+        },
+        {
+            "_id": "a10c1bd3-562a-435f-a3e0-43cf3a438025",
+            "colId": "6393c85b-35e1-4ae3-b253-7d8bddd258f0",
+            "containerId": "",
+            "name": "save attribute",
+            "url": "http://localhost:4000/attribute",
+            "method": "POST",
+            "sortNum": 20000,
+            "created": "2025-06-05T15:40:48.759Z",
+            "modified": "2025-06-05T15:41:36.720Z",
+            "headers": [],
+            "body": {
+                "type": "json",
+                "raw": "{\n  \"name\":\"color\"\n}",
+                "form": []
+            }
+        },
+        {
+            "_id": "b5563b84-2b4d-47fb-bc6d-54c0bd74a4fe",
+            "colId": "6393c85b-35e1-4ae3-b253-7d8bddd258f0",
+            "containerId": "",
+            "name": "update attribute",
+            "url": "http://localhost:4000/attribute",
+            "method": "PUT",
+            "sortNum": 30000,
+            "created": "2025-06-05T15:42:05.177Z",
+            "modified": "2025-06-05T15:50:39.177Z",
+            "headers": [],
+            "body": {
+                "type": "json",
+                "raw": "{\n  \"id\":1,\n  \"name\":\"color\"\n}",
+                "form": []
+            }
+        },
+        {
+            "_id": "048125c4-b8f2-40af-98bd-1637eea92f58",
+            "colId": "6393c85b-35e1-4ae3-b253-7d8bddd258f0",
+            "containerId": "",
+            "name": "get attribute value",
+            "url": "http://localhost:4000/attribute/attribute-value",
+            "method": "GET",
+            "sortNum": 40000,
+            "created": "2025-06-05T15:51:09.492Z",
+            "modified": "2025-06-05T15:51:41.902Z",
+            "headers": []
+        },
+        {
+            "_id": "7c877df5-3cfa-4d35-a3ed-a98f21a6c500",
+            "colId": "6393c85b-35e1-4ae3-b253-7d8bddd258f0",
+            "containerId": "",
+            "name": "save attribute value",
+            "url": "http://localhost:4000/attribute/attribute-value",
+            "method": "POST",
+            "sortNum": 50000,
+            "created": "2025-06-05T15:51:58.827Z",
+            "modified": "2025-06-05T15:52:48.771Z",
+            "headers": [],
+            "body": {
+                "type": "json",
+                "raw": "{\n  \"name\":\"white\",\n  \"attributeId\":1\n}",
+                "form": []
+            }
+        },
+        {
+            "_id": "2f9f64de-b1ef-49da-bd65-3221935e7dba",
+            "colId": "6393c85b-35e1-4ae3-b253-7d8bddd258f0",
+            "containerId": "",
+            "name": "update attribute value",
+            "url": "http://localhost:4000/attribute/attribute-value",
+            "method": "PUT",
+            "sortNum": 60000,
+            "created": "2025-06-05T15:52:54.155Z",
+            "modified": "2025-06-05T15:54:59.322Z",
+            "headers": [],
+            "body": {
+                "type": "json",
+                "raw": "{\n  \"name\":\"yellow\",\n  \"id\":1,\n  \"attributeId\":\"1\"\n}",
+                "form": []
+            }
+        },
+        {
+            "_id": "e9b1696f-1a10-4f49-a1fa-1c727436e4aa",
+            "colId": "6393c85b-35e1-4ae3-b253-7d8bddd258f0",
+            "containerId": "",
+            "name": "get category",
+            "url": "http://localhost:4000/category",
+            "method": "GET",
+            "sortNum": 70000,
+            "created": "2025-06-05T15:55:23.622Z",
+            "modified": "2025-06-05T15:55:32.826Z",
+            "headers": []
+        },
+        {
+            "_id": "d969528b-0ae3-4d7f-bc5a-5a6b317f1cc9",
+            "colId": "6393c85b-35e1-4ae3-b253-7d8bddd258f0",
+            "containerId": "",
+            "name": "save category",
+            "url": "http://localhost:4000/category",
+            "method": "POST",
+            "sortNum": 80000,
+            "created": "2025-06-05T15:56:07.686Z",
+            "modified": "2025-06-05T16:04:32.411Z",
+            "headers": [],
+            "body": {
+                "type": "json",
+                "raw": "{\n  \"parent\":10,\n  \"name\":\"tidak tau\"\n}",
+                "form": []
+            }
+        },
+        {
+            "_id": "605d2b3c-fb6a-4ad4-acc7-d90fde10e988",
+            "colId": "6393c85b-35e1-4ae3-b253-7d8bddd258f0",
+            "containerId": "",
+            "name": "update category",
+            "url": "http://localhost:4000/category",
+            "method": "PUT",
+            "sortNum": 90000,
+            "created": "2025-06-05T16:04:11.916Z",
+            "modified": "2025-06-05T16:07:16.741Z",
+            "headers": [],
+            "body": {
+                "type": "json",
+                "raw": "{\n  \"parent\":10,\n  \"id\":21,\n  \"name\":\"kaus kaki\"\n}",
+                "form": []
+            }
+        },
+        {
+            "_id": "02133df7-c1ff-443b-9ef3-c2b5830c0131",
+            "colId": "6393c85b-35e1-4ae3-b253-7d8bddd258f0",
+            "containerId": "",
+            "name": "get merk",
+            "url": "http://localhost:4000/generic-product/merk",
+            "method": "GET",
+            "sortNum": 100000,
+            "created": "2025-06-05T16:08:19.536Z",
+            "modified": "2025-06-05T16:08:55.303Z",
+            "headers": []
+        },
+        {
+            "_id": "81bcdd12-1bf5-45bd-9f19-03b898814bdf",
+            "colId": "6393c85b-35e1-4ae3-b253-7d8bddd258f0",
+            "containerId": "",
+            "name": "save merk",
+            "url": "http://localhost:4000/generic-product/merk",
+            "method": "POST",
+            "sortNum": 110000,
+            "created": "2025-06-05T16:09:05.818Z",
+            "modified": "2025-06-05T16:13:31.020Z",
+            "headers": [],
+            "body": {
+                "type": "json",
+                "raw": "{\n  \"name\":\"Green Heart\"\n}",
+                "form": []
+            }
+        },
+        {
+            "_id": "89aafab2-bde8-47fb-83f8-1aad512347bb",
+            "colId": "6393c85b-35e1-4ae3-b253-7d8bddd258f0",
+            "containerId": "",
+            "name": "update merk ",
+            "url": "http://localhost:4000/generic-product/merk",
+            "method": "PUT",
+            "sortNum": 120000,
+            "created": "2025-06-05T16:13:41.278Z",
+            "modified": "2025-06-05T16:18:57.380Z",
+            "headers": [],
+            "body": {
+                "type": "json",
+                "raw": "{\n  \"name\":\"Kira queen\",\n  \"id\":1\n}",
+                "form": []
+            }
+        },
+        {
+            "_id": "75b9cb22-5848-4dc1-bc7b-1e664ef172ad",
+            "colId": "6393c85b-35e1-4ae3-b253-7d8bddd258f0",
+            "containerId": "",
+            "name": "get general product",
+            "url": "http://localhost:4000/generic-product",
+            "method": "GET",
+            "sortNum": 130000,
+            "created": "2025-06-05T16:21:29.723Z",
+            "modified": "2025-06-05T16:22:25.024Z",
+            "headers": []
+        },
+        {
+            "_id": "3b7a7875-44db-467e-80a9-9acd2bbf4495",
+            "colId": "6393c85b-35e1-4ae3-b253-7d8bddd258f0",
+            "containerId": "",
+            "name": "save general product",
+            "url": "http://localhost:4000/generic-product",
+            "method": "POST",
+            "sortNum": 140000,
+            "created": "2025-06-05T16:21:56.645Z",
+            "modified": "2025-06-05T16:35:33.307Z",
+            "headers": [],
+            "body": {
+                "type": "json",
+                "raw": "{\n  \"merk\":\"1\",\n  \"name\":\"\",\n  \"category\":8\n}",
+                "form": []
+            }
+        },
+        {
+            "_id": "021af908-d6fa-490d-afde-f1dee44e2f01",
+            "colId": "6393c85b-35e1-4ae3-b253-7d8bddd258f0",
+            "containerId": "",
+            "name": "update general product",
+            "url": "http://localhost:4000/generic-product",
+            "method": "POST",
+            "sortNum": 150000,
+            "created": "2025-06-05T16:31:11.849Z",
+            "modified": "2025-06-05T16:31:11.849Z",
+            "headers": [],
+            "body": {
+                "type": "json",
+                "raw": "{\n  \"merk\":null,\n  \"name\":\"TV\",\n  \"category\":8\n}",
+                "form": []
+            }
+        }
+    ],
+    "ref": "nVc4Jo01I6a0WypZ1pdsQna4_9KxKljY2DZF4ioCPzYHUIC0AjH90Rir8tTY9kXvsMw1yLU1YOe0Gk5PwCthgQ"
+}

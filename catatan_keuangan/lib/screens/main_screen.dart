@@ -99,11 +99,7 @@ class _MainScreenState extends State<MainScreen> with TickerProviderStateMixin {
 
     catBloc = context.read<CategoryBloc>();
     catBloc.add(CategoryStarted());
-    // catStream = catBloc.stream.listen((state) {
-    //   if (state.status == AuthStatus.guest) {
-    //     _showMyDialog();
-    //   }
-    // });
+
     catStream = catBloc.stream.listen(listenCat);
     // } catch (err) {}
     if (_tabController.index == 0) {
@@ -125,7 +121,7 @@ class _MainScreenState extends State<MainScreen> with TickerProviderStateMixin {
         ComponentCustom.alert(
           context,
           message,
-          'error',
+          'Error',
           callback: () {
             Navigator.of(context).pop();
             tranBloc.add(TransactionCleanMessage());
@@ -133,7 +129,7 @@ class _MainScreenState extends State<MainScreen> with TickerProviderStateMixin {
         );
       }
 
-      // alert(message, 'error', callback: () {
+      // alert(message, 'Error', callback: () {
       //   Navigator.of(context).pop();
       //   tranBloc.add(TransactionCleanMessage());
       // });

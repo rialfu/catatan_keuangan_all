@@ -35,11 +35,11 @@ class SavingPlanBloc extends Bloc<SavingPlanEvent, SavingPlanState> {
         }
         emit(SavingPlanStateFinishLoad(data: res));
       } on CustomExceptionForPost catch (e) {
-        if (e.codeError == 400 || e.codeError == 429) {
-          emit(SavingPlanState.error(state.savingPlans, e.cause));
-          return;
-        }
-        emit(SavingPlanStateFinishLoad(data: state.savingPlans));
+        // if (e.codeError == 400 || e.codeError == 429) {
+        emit(SavingPlanState.error(state.savingPlans, e.cause));
+        return;
+        // }
+        // emit(SavingPlanStateFinishLoad(data: state.savingPlans));
       } catch (err) {
         if (err.toString().contains('unauthorized')) {
           emit(SavingPlanState.sessionLost());
@@ -70,11 +70,9 @@ class SavingPlanBloc extends Bloc<SavingPlanEvent, SavingPlanState> {
         }
         emit(SavingPlanStateFinishLoad(data: data));
       } on CustomExceptionForPost catch (e) {
-        if (e.codeError == 400 || e.codeError == 429) {
-          emit(SavingPlanState.error(state.savingPlans, e.cause));
-          return;
-        }
-        emit(SavingPlanStateFinishLoad(data: state.savingPlans));
+        // if (e.codeError == 400 || e.codeError == 429) {
+        emit(SavingPlanState.error(state.savingPlans, e.cause));
+        return;
       } catch (err) {
         if (err.toString().contains('unauthorized')) {
           emit(SavingPlanState.sessionLost());
@@ -103,11 +101,11 @@ class SavingPlanBloc extends Bloc<SavingPlanEvent, SavingPlanState> {
         }
         emit(SavingPlanStateFinishLoad(data: data));
       } on CustomExceptionForPost catch (e) {
-        if (e.codeError == 400 || e.codeError == 429 || e.codeError == 422) {
-          emit(SavingPlanState.error(state.savingPlans, e.cause));
-          return;
-        }
-        emit(SavingPlanStateFinishLoad(data: state.savingPlans));
+        // if (e.codeError == 400 || e.codeError == 429 || e.codeError == 422) {
+        emit(SavingPlanState.error(state.savingPlans, e.cause));
+        return;
+        // }
+        // emit(SavingPlanStateFinishLoad(data: state.savingPlans));
       } catch (err) {
         if (err.toString().contains('unauthorized')) {
           emit(SavingPlanState.sessionLost());
@@ -137,11 +135,11 @@ class SavingPlanBloc extends Bloc<SavingPlanEvent, SavingPlanState> {
         }
         emit(SavingPlanStateFinishLoad(data: data));
       } on CustomExceptionForPost catch (e) {
-        if (e.codeError == 400 || e.codeError == 429) {
-          emit(SavingPlanState.error(state.savingPlans, e.cause));
-          return;
-        }
-        emit(SavingPlanStateFinishLoad(data: state.savingPlans));
+        // if (e.codeError == 400 || e.codeError == 429) {
+        emit(SavingPlanState.error(state.savingPlans, e.cause));
+        return;
+        // }
+        // emit(SavingPlanStateFinishLoad(data: state.savingPlans));
       } catch (err) {
         if (err.toString().contains('unauthorized')) {
           emit(SavingPlanState.sessionLost());
@@ -164,11 +162,11 @@ class SavingPlanBloc extends Bloc<SavingPlanEvent, SavingPlanState> {
         }
         emit(SavingPlanStateFinishLoad(data: data));
       } on CustomExceptionForPost catch (e) {
-        if (e.codeError == 400 || e.codeError == 429) {
-          emit(SavingPlanState.error(state.savingPlans, e.cause));
-          return;
-        }
-        emit(SavingPlanStateFinishLoad(data: state.savingPlans));
+        // if (e.codeError == 400 || e.codeError == 429) {
+        emit(SavingPlanState.error(state.savingPlans, e.cause));
+        return;
+        // }
+        // emit(SavingPlanStateFinishLoad(data: state.savingPlans));
       } catch (err) {
         if (err.toString().contains('unauthorized')) {
           emit(SavingPlanState.sessionLost());
@@ -197,11 +195,11 @@ class SavingPlanBloc extends Bloc<SavingPlanEvent, SavingPlanState> {
         }
         emit(SavingPlanStateFinishLoad(data: newData));
       } on CustomExceptionForPost catch (e) {
-        if (e.codeError == 400 || e.codeError == 429) {
-          emit(SavingPlanState.error(state.savingPlans, e.cause));
-          return;
-        }
-        emit(SavingPlanStateFinishLoad(data: state.savingPlans));
+        // if (e.codeError == 400 || e.codeError == 429) {
+        emit(SavingPlanState.error(state.savingPlans, e.cause));
+        return;
+        // }
+        // emit(SavingPlanStateFinishLoad(data: state.savingPlans));
       } catch (err) {
         if (err.toString().contains('unauthorized')) {
           emit(SavingPlanState.sessionLost());
@@ -242,11 +240,11 @@ class SavingPlanBloc extends Bloc<SavingPlanEvent, SavingPlanState> {
         }
         emit(SavingPlanStateFinishLoad(data: data));
       } on CustomExceptionForPost catch (e) {
-        if (e.codeError == 400 || e.codeError == 429) {
-          emit(SavingPlanState.error(state.savingPlans, e.cause));
-          return;
-        }
-        emit(SavingPlanStateFinishLoad(data: state.savingPlans));
+        // if (e.codeError == 400 || e.codeError == 429) {
+        emit(SavingPlanState.error(state.savingPlans, e.cause));
+        return;
+        // }
+        // emit(SavingPlanStateFinishLoad(data: state.savingPlans));
       } catch (err) {
         if (err.toString().contains('unauthorized')) {
           emit(SavingPlanState.sessionLost());
@@ -278,11 +276,11 @@ class SavingPlanBloc extends Bloc<SavingPlanEvent, SavingPlanState> {
         }
         emit(SavingPlanStateFinishLoad(data: data));
       } on CustomExceptionForPost catch (e) {
-        if (e.codeError == 400 || e.codeError == 429) {
-          emit(SavingPlanState.error(state.savingPlans, e.cause));
-          return;
-        }
-        emit(SavingPlanStateFinishLoad(data: state.savingPlans));
+        // if (e.codeError == 400 || e.codeError == 429) {
+        emit(SavingPlanState.error(state.savingPlans, e.cause));
+        return;
+        // }
+        // emit(SavingPlanStateFinishLoad(data: state.savingPlans));
       } catch (err) {
         if (err.toString().contains('unauthorized')) {
           emit(SavingPlanState.sessionLost());

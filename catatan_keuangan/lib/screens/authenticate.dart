@@ -1,7 +1,4 @@
-// import 'package:catatan_app/components/button.dart';
 import 'dart:async';
-
-// import 'package:catatan_keuangan/core/bloc/auth/auth_bloc.dart';
 import 'package:catatan_keuangan/components/forgot_password_component.dart';
 import 'package:catatan_keuangan/components/login_component.dart';
 import 'package:catatan_keuangan/components/register_component.dart';
@@ -9,10 +6,6 @@ import 'package:catatan_keuangan/core/bloc/auth/auth_bloc.dart';
 import 'package:catatan_keuangan/core/bloc/auth/auth_state.dart';
 import 'package:catatan_keuangan/extensions/navigate_extension.dart';
 import 'package:catatan_keuangan/screens/notifier/authenticate_screen_notifier.dart';
-import 'package:catatan_keuangan/screens/notifier/first_screen_notifier.dart';
-import 'package:catatan_keuangan/template/loginscreen.dart';
-import 'package:catatan_keuangan/template/registerscreen.dart';
-// import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:provider/provider.dart';
 
 import '../extensions/context_entension.dart';
@@ -36,14 +29,14 @@ class _AuthenticateScreenState extends State<AuthenticateScreen> {
   bool formSignUp = false;
   late final AuthBloc authBloc;
   late StreamSubscription authStream;
-  late AuthenticateScreenNotifier notifier;
+  // AuthenticateScreenNotifier? notifier;
 
   @override
   void initState() {
     // TODO: implement initState
     super.initState();
     authBloc = context.read<AuthBloc>();
-    notifier = context.read<AuthenticateScreenNotifier>();
+    // notifier = context.read<AuthenticateScreenNotifier>();
 
     authStream = authBloc.stream.listen((state) {
       /// statements after async gap without warning
@@ -61,7 +54,7 @@ class _AuthenticateScreenState extends State<AuthenticateScreen> {
 
   @override
   void dispose() {
-    notifier.dispose();
+    // notifier?.dispose();
     emailController.dispose();
     passwordController.dispose();
     authStream.cancel();
@@ -129,6 +122,8 @@ class _AuthenticateScreenState extends State<AuthenticateScreen> {
                               'https://www.freepnglogos.com/uploads/logo-3d-png/3d-company-logos-design-logo-online-2.png',
                               height: context.dynamicWidth(0.3),
                               width: context.dynamicWidth(0.3),
+                              errorBuilder: (context, error, stackTrace) =>
+                                  new Icon(Icons.error),
                               // width: 40,
                             ),
                           ),
@@ -336,7 +331,7 @@ class _AuthenticateScreenState extends State<AuthenticateScreen> {
                               right: context.dynamicWidth(0.1),
                               left: context.dynamicWidth(0.1),
                             ),
-                            child: LoginComponent(notifier: notifier),
+                            child: LoginComponent(),
                           ),
                         ),
                         AnimatedPositioned(
@@ -351,7 +346,7 @@ class _AuthenticateScreenState extends State<AuthenticateScreen> {
                               right: context.dynamicWidth(0.1),
                               left: context.dynamicWidth(0.1),
                             ),
-                            child: ForgotPasswordComponent(notifier: notifier),
+                            child: ForgotPasswordComponent(),
                           ),
                         ),
                         AnimatedPositioned(
@@ -366,7 +361,7 @@ class _AuthenticateScreenState extends State<AuthenticateScreen> {
                             ),
                             height: context.dynamicHeight(0.65),
                             width: context.dynamicWidth(1),
-                            child: RegisterComponent(notifier: notifier),
+                            child: RegisterComponent(),
                           ),
                         ),
                         AnimatedPositioned(

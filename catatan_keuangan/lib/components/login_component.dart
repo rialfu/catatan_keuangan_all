@@ -1,6 +1,7 @@
 import 'dart:async';
 
 import 'package:catatan_keuangan/components/component_custom.dart';
+import 'package:catatan_keuangan/constants/message_custom.dart';
 import 'package:catatan_keuangan/core/bloc/auth/auth_bloc.dart';
 import 'package:catatan_keuangan/core/bloc/auth/auth_event.dart';
 import 'package:catatan_keuangan/core/bloc/auth/auth_state.dart';
@@ -8,19 +9,20 @@ import 'package:catatan_keuangan/core/enum/auth_enum.dart';
 import 'package:catatan_keuangan/core/enum/biometric_enum.dart';
 import 'package:catatan_keuangan/extensions/string_extension.dart';
 import 'package:catatan_keuangan/init/cache/auth_cache_manager.dart';
+import 'package:catatan_keuangan/init/network/dio_manager.dart';
 import 'package:catatan_keuangan/screens/notifier/authenticate_screen_notifier.dart';
-import 'package:catatan_keuangan/screens/notifier/first_screen_notifier.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:google_sign_in/google_sign_in.dart';
 import 'package:local_auth/local_auth.dart';
 import 'package:local_auth/error_codes.dart' as auth_error;
 import 'package:local_auth_android/local_auth_android.dart';
 import '../extensions/context_entension.dart';
 
 class LoginComponent extends StatefulWidget {
-  AuthenticateScreenNotifier? notifier;
-  LoginComponent({super.key, this.notifier});
+  final AuthenticateScreenNotifier? notifier;
+  const LoginComponent({super.key, this.notifier});
 
   @override
   State<LoginComponent> createState() => _LoginComponentState();
@@ -34,7 +36,7 @@ class _LoginComponentState extends State<LoginComponent> {
   late StreamSubscription stream;
   final LocalAuthentication auth = LocalAuthentication();
   BiometricSupportState isDeviceSupport = BiometricSupportState.unknown;
-  // late AuthenticateScreenNotifier notifier;
+  late AuthenticateScreenNotifier notifier;
   @override
   void initState() {
     // TODO: implement initState
@@ -42,15 +44,24 @@ class _LoginComponentState extends State<LoginComponent> {
     var bloc = context.read<AuthBloc>();
     setIsDeviceSupport();
     stream = bloc.stream.listen(listening);
-    // notifier = context.read<AuthenticateScreenNotifier>();
-    // notifier.addListener(listenNotifier);
-    widget.notifier?.addListener(listenNotifier);
+    notifier = context.read<AuthenticateScreenNotifier>();
+    notifier.addListener(listenNotifier);
+    _googleSignIn =GoogleSignIn(
+      // Optional clientId
+      scopes: scopes,
+      serverClientId: '990321993205-oslpc9836jgbjiitb1f9omljk74k63cj.apps.googleusercontent.com'
+      // serverClientId: ,
+      // clientId: '990321993205-9otp334otkonapudg7fhb50jud86ictp.apps.googleusercontent.com'
+      // clientId: '990321993205-9otp334otkonapudg7fhb50jud86ictp.apps.googleusercontent.com'
+      // serverClientId: '990321993205-9otp334otkonapudg7fhb50jud86ictp.apps.googleusercontent.com'
+    );
+    // widget.notifier?.addListener(listenNotifier);
   }
 
   @override
   void dispose() {
-    widget.notifier?.removeListener(listenNotifier);
-    // notifier.removeListener(listenNotifier);
+    // widget.notifier?.removeListener(listenNotifier);
+    notifier.removeListener(listenNotifier);
     // notifier.dispose();
     stream.cancel();
     emailController.dispose();
@@ -59,9 +70,41 @@ class _LoginComponentState extends State<LoginComponent> {
   }
 
   void listenNotifier() {
-    if (widget.notifier?.page == 'login') {
+    if (notifier.page == 'login') {
       emailController.text = '';
       passwordController.text = '';
+    }
+  }
+  List<String> scopes = <String>[
+    'email',
+    'openid',
+    'profi',
+  ];
+  late GoogleSignIn _googleSignIn;
+  Future<void> signWithGoogle() async {
+
+    if (await _googleSignIn.isSignedIn()) {
+      print('logout');
+      _googleSignIn.signOut();
+      // _googleSignIn.
+      return;
+    }
+    try {
+      var res = await _googleSignIn.signIn();
+      print(res);
+      // print(res.)
+      if (res == null) return;
+      var auth = await res.authentication;
+      print(auth.idToken);
+      // if (auth.idToken == null) return;
+      ComponentCustom.alert(context, ['token:${auth.idToken}'], 'title');
+      String token = auth.idToken ?? '';
+      // var resServer = await DioManager.instance.dio.post('/create-or-login',data:{token:token});
+      // print(resServer.data);
+      // print(res);
+    } catch (err) {
+      ComponentCustom.alert(context, ['token:$err'], 'error');
+      print(err);
     }
   }
 
@@ -77,7 +120,7 @@ class _LoginComponentState extends State<LoginComponent> {
 
   Future<void> listening(AuthState state) async {
     String titleMessage = "Error";
-    List<String> message = ["App couldnt connect to server"];
+    List<String> message = [MessageCustom.serverNotActive];
     // String message = "App couldnt connect to server";
     if (state.error == AuthError.hostUnreachable) {
     } else if (state.error == AuthError.wrongEmailOrPassword) {
@@ -90,6 +133,7 @@ class _LoginComponentState extends State<LoginComponent> {
         "Please use standart login"
       ];
     }
+
     if (state.error == AuthError.wrongEmailOrPassword ||
         state.error == AuthError.hostUnreachable ||
         state.error == AuthError.wrongEmailOrPasswordBiometric) {
@@ -348,7 +392,12 @@ class _LoginComponentState extends State<LoginComponent> {
                     ),
                   )
                 ],
-              )
+              ),
+              // TextButton(
+              //     onPressed: () {
+              //       signWithGoogle();
+              //     },
+              //     child: Text("google"))
             ],
           ),
         ),

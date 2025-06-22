@@ -26,6 +26,9 @@ export class User {
   
     @Column()
     password: string;
+
+    @Column({'type':'boolean', default:true})
+    active: boolean;
     
     @ManyToOne(() => Role, (Role)=> Role.users,{eager:true})
     role: Role

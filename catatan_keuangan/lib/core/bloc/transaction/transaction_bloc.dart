@@ -39,19 +39,19 @@ class TransactionBloc extends Bloc<TransactionEvent, TransactionState> {
             newMonthly: state.monthly,
           ));
         } on CustomExceptionForPost catch (e) {
-          print(e.cause);
-          if (e.codeError == 429) {
-            // emit(TransactionStateFinishLoad(
-            //   newDaily: state.daily,
-            //   newMonthly: state.monthly,
-            // ));
-            emit(TransactionState.error(
-              state.daily,
-              state.monthly,
-              e.cause,
-            ));
-            return;
-          }
+          // print(e.cause);
+          // if (e.codeError == 429) {
+          // emit(TransactionStateFinishLoad(
+          //   newDaily: state.daily,
+          //   newMonthly: state.monthly,
+          // ));
+          emit(TransactionState.error(
+            state.daily,
+            state.monthly,
+            e.cause,
+          ));
+          return;
+          // }
         } catch (err) {
           print(err);
           if (err.toString().contains('unauthorized')) {
@@ -154,21 +154,21 @@ class TransactionBloc extends Bloc<TransactionEvent, TransactionState> {
             newMonthly: state.monthly,
           ));
         } on CustomExceptionForPost catch (e) {
-          if (e.codeError == 400) {
-            emit(TransactionState.error(state.daily, state.monthly, e.cause));
-            // print(stateStatus.message);
-          } else if (e.codeError == 429) {
-            // emit(TransactionStateFinishLoad(
-            //   newDaily: state.daily,
-            //   newMonthly: state.monthly,
-            // ));
-            emit(TransactionState.error(
-              state.daily,
-              state.monthly,
-              e.cause,
-            ));
-            return;
-          }
+          // if (e.codeError == 400) {
+          //   emit(TransactionState.error(state.daily, state.monthly, e.cause));
+          //   // print(stateStatus.message);
+          // } else if (e.codeError == 429) {
+          // emit(TransactionStateFinishLoad(
+          //   newDaily: state.daily,
+          //   newMonthly: state.monthly,
+          // ));
+          emit(TransactionState.error(
+            state.daily,
+            state.monthly,
+            e.cause,
+          ));
+          // return;
+          // }
         } catch (err) {
           if (err.toString().contains('unauthorized')) {
             emit(TransactionState.sessionLost());
@@ -242,21 +242,21 @@ class TransactionBloc extends Bloc<TransactionEvent, TransactionState> {
             newMonthly: state.monthly,
           ));
         } on CustomExceptionForPost catch (e) {
-          if (e.codeError == 400) {
-            emit(TransactionState.error(state.daily, state.monthly, e.cause));
-            // print(stateStatus.message);
-          } else if (e.codeError == 429) {
-            // emit(TransactionStateFinishLoad(
-            //   newDaily: state.daily,
-            //   newMonthly: state.monthly,
-            // ));
-            emit(TransactionState.error(
-              state.daily,
-              state.monthly,
-              e.cause,
-            ));
-            return;
-          }
+          // if (e.codeError == 400) {
+          // emit(TransactionState.error(state.daily, state.monthly, e.cause));
+          // print(stateStatus.message);
+          // } else if (e.codeError == 429) {
+          // emit(TransactionStateFinishLoad(
+          //   newDaily: state.daily,
+          //   newMonthly: state.monthly,
+          // ));
+          emit(TransactionState.error(
+            state.daily,
+            state.monthly,
+            e.cause,
+          ));
+          return;
+          // }
         } catch (err) {
           if (err.toString().contains('unauthorized')) {
             emit(TransactionState.sessionLost());
@@ -292,20 +292,20 @@ class TransactionBloc extends Bloc<TransactionEvent, TransactionState> {
           ));
         } on CustomExceptionForPost catch (e) {
           print('error custom:' + e.codeError.toString());
-          if (e.codeError == 400) {
-            emit(TransactionState.error(state.daily, state.monthly, e.cause));
-          } else if (e.codeError == 429) {
-            // emit(TransactionStateFinishLoad(
-            //   newDaily: state.daily,
-            //   newMonthly: state.monthly,
-            // ));
-            emit(TransactionState.error(
-              state.daily,
-              state.monthly,
-              e.cause,
-            ));
-            return;
-          }
+          // if (e.codeError == 400) {
+          //   emit(TransactionState.error(state.daily, state.monthly, e.cause));
+          // } else if (e.codeError == 429) {
+          // emit(TransactionStateFinishLoad(
+          //   newDaily: state.daily,
+          //   newMonthly: state.monthly,
+          // ));
+          emit(TransactionState.error(
+            state.daily,
+            state.monthly,
+            e.cause,
+          ));
+          return;
+          // }
         } catch (err) {
           if (err.toString().contains('unauthorized')) {
             emit(TransactionState.sessionLost());
@@ -345,21 +345,21 @@ class TransactionBloc extends Bloc<TransactionEvent, TransactionState> {
             newMonthly: data,
           ));
         } on CustomExceptionForPost catch (e) {
-          if (e.codeError == 400) {
-            emit(TransactionState.error(state.daily, state.monthly, e.cause));
-            // print(stateStatus.message);
-          } else if (e.codeError == 429) {
-            // emit(TransactionStateFinishLoad(
-            //   newDaily: state.daily,
-            //   newMonthly: state.monthly,
-            // ));
-            emit(TransactionState.error(
-              state.daily,
-              state.monthly,
-              e.cause,
-            ));
-            return;
-          }
+          // if (e.codeError == 400) {
+          // emit(TransactionState.error(state.daily, state.monthly, e.cause));
+          // print(stateStatus.message);
+          // } else if (e.codeError == 429) {
+          // emit(TransactionStateFinishLoad(
+          //   newDaily: state.daily,
+          //   newMonthly: state.monthly,
+          // ));
+          emit(TransactionState.error(
+            state.daily,
+            state.monthly,
+            e.cause,
+          ));
+          return;
+          // }
         } catch (err) {
           if (err.toString().contains('unauthorized')) {
             emit(TransactionState.sessionLost());

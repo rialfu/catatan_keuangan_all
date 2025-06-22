@@ -6,6 +6,7 @@ import { CreateCategoryDTO, UpdateCategoryDTO } from 'src/model/category.dto';
 import { Category } from 'src/model/category.entity';
 import { User } from 'src/model/user.entity';
 import { SkipThrottle } from '@nestjs/throttler';
+import { InjectUserToBody } from 'src/config/apply_decorator';
 
 @SkipThrottle()
 @Controller('category')
@@ -28,6 +29,7 @@ export class CategoryController {
     
     
     @Post('/create')
+    @InjectUserToBody()
     @UseGuards(AuthGuard('jwt'))
     @HttpCode(200)
     async create_category(@Request() req, @Body() data: CreateCategoryDTO): Promise<any>{

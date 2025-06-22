@@ -54,12 +54,12 @@ class _RegisterScreenState extends State<RegisterScreen> {
             message.add(responseMessage['message']);
           }
           if (contextD.mounted) {
-            showMessage(contextD, message, 'error');
+            showMessage(contextD, message, 'Error');
           }
         }
       }
     } catch (err) {
-      showMessage(contextD, [err.toString()], 'error');
+      showMessage(contextD, [err.toString()], 'Error');
     }
     setState(() {
       isLoad = false;

@@ -20,8 +20,8 @@ interface IsCategoryExistsOptions {
 export class CategoryUniqueValidation implements ValidatorConstraintInterface {
     constructor(private catService: CategoryService) {}
 
-    async validate(value: number, args: ExtendedValidationArguments): Promise<boolean>  {
-        
+    async validate(value: any, args: ExtendedValidationArguments): Promise<boolean>  {
+        console.log(value)
         let paramCustom  = args.constraints[0]
         let isNeed : boolean = true
         if(paramCustom != undefined && paramCustom['isNeed'] != undefined){

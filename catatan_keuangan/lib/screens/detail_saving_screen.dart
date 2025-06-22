@@ -78,6 +78,7 @@ class _DetailSavingScreenState extends State<DetailSavingScreen> {
   }
 
   Future<void> _showMyDialog() async {
+    // debugPrintStack();
     return showDialog<void>(
       context: context,
       barrierDismissible: false, // user must tap button!
@@ -133,7 +134,7 @@ class _DetailSavingScreenState extends State<DetailSavingScreen> {
             });
           }
           if (state.message != null) {
-            print(state.message);
+            // print(state.message);
             List message = [];
             if (state.message is List) {
               message.addAll(state.message as List);

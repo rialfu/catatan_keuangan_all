@@ -27,7 +27,7 @@ class _ModifyCategoryScreenState extends State<ModifyCategoryScreen> {
   late CategoryBloc categoryBloc;
   final _formKey = GlobalKey<FormState>();
   TextEditingController field = TextEditingController();
-  late StreamSubscription catStream;
+  late StreamSubscription? catStream;
   bool isLoad = false;
   @override
   void initState() {
@@ -56,23 +56,6 @@ class _ModifyCategoryScreenState extends State<ModifyCategoryScreen> {
           var authBloc = context.read<AuthBloc>();
           authBloc.add(LogoutRequested());
         });
-      } else if (state.message != null) {
-        List message = [];
-        if (state.message is List) {
-          message.addAll(state.message as List);
-        } else {
-          message.add(message);
-        }
-        _showMyDialog(
-          customMethod: () {
-            Navigator.of(context).pop();
-            // Navigator.of(context).pop();
-            categoryBloc.add(CategoryCleanMessage());
-          },
-          title: 'error',
-          message: message,
-          textClose: 'close',
-        );
       }
     });
   }
@@ -83,6 +66,7 @@ class _ModifyCategoryScreenState extends State<ModifyCategoryScreen> {
     List message = const ['Your session is gone.', 'You must login again'],
     required VoidCallback customMethod,
   }) async {
+    // debugPrintStack();
     return showDialog<void>(
       context: context,
       barrierDismissible: false, // user must tap button!
@@ -111,7 +95,7 @@ class _ModifyCategoryScreenState extends State<ModifyCategoryScreen> {
   @override
   void dispose() {
     field.dispose();
-    catStream.cancel();
+    catStream?.cancel();
     // TODO: implement dispose
     super.dispose();
   }

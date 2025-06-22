@@ -28,6 +28,8 @@ class CategoryBloc extends Bloc<CategoryEvent, CategoryState> {
       try {
         List<CategoryModel> res = await transactionService.getAllCategory();
         emit(CategoryStateFinishLoad(newCategories: res));
+      } on CustomExceptionForPost catch (e) {
+        emit(CategoryState.error(state.categories, e.cause));
       } catch (err) {
         if (err.toString().contains('unauthorized')) {
           emit(CategoryState.sessionLost());
@@ -55,10 +57,10 @@ class CategoryBloc extends Bloc<CategoryEvent, CategoryState> {
         ));
         // print(res);
       } on CustomExceptionForPost catch (e) {
-        if (e.codeError == 400) {
-          emit(CategoryState.error(state.categories, e.cause));
-          // print(stateStatus.message);
-        }
+        // if (e.codeError == 400) {
+        emit(CategoryState.error(state.categories, e.cause));
+        // print(stateStatus.message);
+        // }
       } catch (err) {
         if (err.toString().contains('unauthorized')) {
           emit(CategoryState.sessionLost());
@@ -79,10 +81,10 @@ class CategoryBloc extends Bloc<CategoryEvent, CategoryState> {
           newCategories: state.categories,
         ));
       } on CustomExceptionForPost catch (e) {
-        if (e.codeError == 400) {
-          emit(CategoryState.error(state.categories, e.cause));
-          // print(stateStatus.message);
-        }
+        // if (e.codeError == 400) {
+        emit(CategoryState.error(state.categories, e.cause));
+        // print(stateStatus.message);
+        // }
       } catch (err) {
         if (err.toString().contains('unauthorized')) {
           emit(CategoryState.sessionLost());
@@ -107,10 +109,10 @@ class CategoryBloc extends Bloc<CategoryEvent, CategoryState> {
         ));
         // print(res);
       } on CustomExceptionForPost catch (e) {
-        if (e.codeError == 400) {
-          emit(CategoryState.error(state.categories, e.cause));
-          // print(stateStatus.message);
-        }
+        // if (e.codeError == 400) {
+        emit(CategoryState.error(state.categories, e.cause));
+        // print(stateStatus.message);
+        // }
       } catch (err) {
         if (err.toString().contains('unauthorized')) {
           emit(CategoryState.sessionLost());

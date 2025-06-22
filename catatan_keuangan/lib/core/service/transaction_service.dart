@@ -1,5 +1,6 @@
 import 'dart:io';
 
+import 'package:catatan_keuangan/constants/message_custom.dart';
 import 'package:catatan_keuangan/core/model/category_model.dart';
 import 'package:catatan_keuangan/core/model/transaction_bulk_model.dart';
 import 'package:catatan_keuangan/core/model/transaction_daily_model.dart';
@@ -18,10 +19,18 @@ class TransactionService {
       // print(data);
       return data.map((e) => CategoryModel.fromJson(e)).toList();
     } on DioException catch (e) {
-      if (e.response?.statusCode == HttpStatus.unauthorized) {
-        throw Exception('unauthorized');
-      }
-      throw Exception(e.message);
+      CustomResponseError.buildThrowResponseFromServer(e);
+      return [];
+      // if (e.type == DioExceptionType.connectionError) {
+      //   throw CustomExceptionForPost(0, MessageCustom.serverNotActive);
+      // }
+      // if (e.type == DioExceptionType.connectionTimeout) {
+      //   throw CustomExceptionForPost(0, MessageCustom.serverNotActive);
+      // }
+      // if (e.response?.statusCode == HttpStatus.unauthorized) {
+      //   throw Exception('unauthorized');
+      // }
+      // throw Exception(e.message);
     } catch (err) {
       throw Exception(err);
     }
@@ -55,15 +64,22 @@ class TransactionService {
       // }
       // List data = res.data['data'];
     } on DioException catch (e) {
-      // print(e.response?.data);
-      if (e.response?.statusCode == HttpStatus.unauthorized) {
-        throw Exception('unauthorized');
-      }
-      if (e.response?.statusCode == HttpStatus.badRequest) {
-        // print(e.response?.data);
-        throw CustomExceptionForPost(400, e.response?.data['message']);
-      }
-      throw Exception(e.message);
+      CustomResponseError.buildThrowResponseFromServer(e);
+      return null;
+      // if (e.type == DioExceptionType.connectionError) {
+      //   throw CustomExceptionForPost(0, MessageCustom.serverNotActive);
+      // }
+      // if (e.type == DioExceptionType.connectionTimeout) {
+      //   throw CustomExceptionForPost(0, MessageCustom.serverNotActive);
+      // }
+      // if (e.response?.statusCode == HttpStatus.unauthorized) {
+      //   throw Exception('unauthorized');
+      // }
+      // if (e.response?.statusCode == HttpStatus.badRequest) {
+      //   // print(e.response?.data);
+      //   throw CustomExceptionForPost(400, e.response?.data['message']);
+      // }
+      // throw Exception(e.message);
     } catch (err) {
       // print(err);
       throw Exception(err);
@@ -78,10 +94,18 @@ class TransactionService {
       );
       // List data = res.data['data'];
     } on DioException catch (e) {
-      if (e.response?.statusCode == HttpStatus.unauthorized) {
-        throw Exception('unauthorized');
-      }
-      throw Exception(e.message);
+      CustomResponseError.buildThrowResponseFromServer(e);
+      return;
+      // if (e.type == DioExceptionType.connectionError) {
+      //   throw CustomExceptionForPost(0, MessageCustom.serverNotActive);
+      // }
+      // if (e.type == DioExceptionType.connectionTimeout) {
+      //   throw CustomExceptionForPost(0, MessageCustom.serverNotActive);
+      // }
+      // if (e.response?.statusCode == HttpStatus.unauthorized) {
+      //   throw Exception('unauthorized');
+      // }
+      // throw Exception(e.message);
     } catch (err) {
       throw Exception(err);
     }
@@ -96,15 +120,22 @@ class TransactionService {
       );
       // print(res);
     } on DioException catch (e) {
-      // print(e.response?.statusCode);
-      if (e.response?.statusCode == HttpStatus.unauthorized) {
-        throw Exception('unauthorized');
-      }
-      if (e.response?.statusCode == HttpStatus.badRequest) {
-        // print(e.response?.data);
-        throw CustomExceptionForPost(400, e.response?.data['message']);
-      }
-      throw Exception(e.message);
+      CustomResponseError.buildThrowResponseFromServer(e);
+      return;
+      // if (e.type == DioExceptionType.connectionError) {
+      //   throw CustomExceptionForPost(0, MessageCustom.serverNotActive);
+      // }
+      // if (e.type == DioExceptionType.connectionTimeout) {
+      //   throw CustomExceptionForPost(0, MessageCustom.serverNotActive);
+      // }
+      // if (e.response?.statusCode == HttpStatus.unauthorized) {
+      //   throw Exception('unauthorized');
+      // }
+      // if (e.response?.statusCode == HttpStatus.badRequest) {
+      //   // print(e.response?.data);
+      //   throw CustomExceptionForPost(400, e.response?.data['message']);
+      // }
+      // throw Exception(e.message);
     }
   }
 
@@ -118,16 +149,24 @@ class TransactionService {
       List data = res.data['data'];
       return data.map((e) => TransactionDailyModel.fromJson(e)).toList();
     } on DioException catch (e) {
-      if (e.response?.statusCode == HttpStatus.unauthorized) {
-        throw Exception('unauthorized');
-      }
-      if (e.response?.statusCode == HttpStatus.tooManyRequests) {
-        throw CustomExceptionForPost(
-          429,
-          e.response?.data['message'] ?? e.message,
-        );
-      }
-      throw Exception(e.message);
+      CustomResponseError.buildThrowResponseFromServer(e);
+      return [];
+      // if (e.type == DioExceptionType.connectionError) {
+      //   throw CustomExceptionForPost(0, MessageCustom.serverNotActive);
+      // }
+      // if (e.type == DioExceptionType.connectionTimeout) {
+      //   throw CustomExceptionForPost(0, MessageCustom.serverNotActive);
+      // }
+      // if (e.response?.statusCode == HttpStatus.unauthorized) {
+      //   throw Exception('unauthorized');
+      // }
+      // if (e.response?.statusCode == HttpStatus.tooManyRequests) {
+      //   throw CustomExceptionForPost(
+      //     429,
+      //     e.response?.data['message'] ?? e.message,
+      //   );
+      // }
+      // throw Exception(e.message);
     }
   }
 
@@ -152,20 +191,28 @@ class TransactionService {
         // return data.addId(id);
       }
     } on DioException catch (e) {
-      if (e.response?.statusCode == HttpStatus.unauthorized) {
-        throw Exception('unauthorized');
-      }
-      if (e.response?.statusCode == HttpStatus.badRequest) {
-        // print(e.response?.data);
-        throw CustomExceptionForPost(400, e.response?.data['message']);
-      }
-      if (e.response?.statusCode == HttpStatus.tooManyRequests) {
-        throw CustomExceptionForPost(
-          429,
-          e.response?.data['message'] ?? e.message,
-        );
-      }
-      throw Exception(e.message);
+      CustomResponseError.buildThrowResponseFromServer(e);
+      return 0;
+      // if (e.type == DioExceptionType.connectionError) {
+      //   throw CustomExceptionForPost(0, MessageCustom.serverNotActive);
+      // }
+      // if (e.type == DioExceptionType.connectionTimeout) {
+      //   throw CustomExceptionForPost(0, MessageCustom.serverNotActive);
+      // }
+      // if (e.response?.statusCode == HttpStatus.unauthorized) {
+      //   throw Exception('unauthorized');
+      // }
+      // if (e.response?.statusCode == HttpStatus.badRequest) {
+      //   // print(e.response?.data);
+      //   throw CustomExceptionForPost(400, e.response?.data['message']);
+      // }
+      // if (e.response?.statusCode == HttpStatus.tooManyRequests) {
+      //   throw CustomExceptionForPost(
+      //     429,
+      //     e.response?.data['message'] ?? e.message,
+      //   );
+      // }
+      // throw Exception(e.message);
     } catch (err) {
       throw Exception(err);
     }
@@ -179,20 +226,27 @@ class TransactionService {
         data: data.toJsonUpdate(),
       );
     } on DioException catch (e) {
-      // print(e.response?.statusCode);
-      if (e.response?.statusCode == HttpStatus.unauthorized) {
-        throw Exception('unauthorized');
-      }
-      if (e.response?.statusCode == HttpStatus.badRequest) {
-        throw CustomExceptionForPost(400, e.response?.data['message']);
-      }
-      if (e.response?.statusCode == HttpStatus.tooManyRequests) {
-        throw CustomExceptionForPost(
-          429,
-          e.response?.data['message'] ?? e.message,
-        );
-      }
-      throw Exception(e.message);
+      CustomResponseError.buildThrowResponseFromServer(e);
+      return;
+      // if (e.type == DioExceptionType.connectionError) {
+      //   throw CustomExceptionForPost(0, MessageCustom.serverNotActive);
+      // }
+      // if (e.type == DioExceptionType.connectionTimeout) {
+      //   throw CustomExceptionForPost(0, MessageCustom.serverNotActive);
+      // }
+      // if (e.response?.statusCode == HttpStatus.unauthorized) {
+      //   throw Exception('unauthorized');
+      // }
+      // if (e.response?.statusCode == HttpStatus.badRequest) {
+      //   throw CustomExceptionForPost(400, e.response?.data['message']);
+      // }
+      // if (e.response?.statusCode == HttpStatus.tooManyRequests) {
+      //   throw CustomExceptionForPost(
+      //     429,
+      //     e.response?.data['message'] ?? e.message,
+      //   );
+      // }
+      // throw Exception(e.message);
     }
   }
 
@@ -205,20 +259,27 @@ class TransactionService {
       );
       // print(res);
     } on DioException catch (e) {
-      // print(e.response?.statusCode);
-      if (e.response?.statusCode == HttpStatus.unauthorized) {
-        throw Exception('unauthorized');
-      }
-      if (e.response?.statusCode == HttpStatus.badRequest) {
-        throw CustomExceptionForPost(400, e.response?.data['message']);
-      }
-      if (e.response?.statusCode == HttpStatus.tooManyRequests) {
-        throw CustomExceptionForPost(
-          429,
-          e.response?.data['message'] ?? e.message,
-        );
-      }
-      throw Exception(e.message);
+      CustomResponseError.buildThrowResponseFromServer(e);
+      return;
+      // if (e.type == DioExceptionType.connectionError) {
+      //   throw CustomExceptionForPost(0, MessageCustom.serverNotActive);
+      // }
+      // if (e.type == DioExceptionType.connectionTimeout) {
+      //   throw CustomExceptionForPost(0, MessageCustom.serverNotActive);
+      // }
+      // if (e.response?.statusCode == HttpStatus.unauthorized) {
+      //   throw Exception('unauthorized');
+      // }
+      // if (e.response?.statusCode == HttpStatus.badRequest) {
+      //   throw CustomExceptionForPost(400, e.response?.data['message']);
+      // }
+      // if (e.response?.statusCode == HttpStatus.tooManyRequests) {
+      //   throw CustomExceptionForPost(
+      //     429,
+      //     e.response?.data['message'] ?? e.message,
+      //   );
+      // }
+      // throw Exception(e.message);
     }
   }
 
@@ -259,21 +320,28 @@ class TransactionService {
       }
       return finalData;
     } on DioException catch (e) {
-      // print(e.response?.statusCode);
-      if (e.response?.statusCode == HttpStatus.unauthorized) {
-        throw Exception('unauthorized');
-      }
-      if (e.response?.statusCode == HttpStatus.badRequest) {
-        // print(e.response?.data);
-        throw CustomExceptionForPost(400, e.response?.data['message']);
-      }
-      if (e.response?.statusCode == HttpStatus.tooManyRequests) {
-        throw CustomExceptionForPost(
-          429,
-          e.response?.data['message'] ?? e.message,
-        );
-      }
-      throw Exception(e);
+      CustomResponseError.buildThrowResponseFromServer(e);
+      return [];
+      // if (e.type == DioExceptionType.connectionError) {
+      //   throw CustomExceptionForPost(0, MessageCustom.serverNotActive);
+      // }
+      // if (e.type == DioExceptionType.connectionTimeout) {
+      //   throw CustomExceptionForPost(0, MessageCustom.serverNotActive);
+      // }
+      // if (e.response?.statusCode == HttpStatus.unauthorized) {
+      //   throw Exception('unauthorized');
+      // }
+      // if (e.response?.statusCode == HttpStatus.badRequest) {
+      //   // print(e.response?.data);
+      //   throw CustomExceptionForPost(400, e.response?.data['message']);
+      // }
+      // if (e.response?.statusCode == HttpStatus.tooManyRequests) {
+      //   throw CustomExceptionForPost(
+      //     429,
+      //     e.response?.data['message'] ?? e.message,
+      //   );
+      // }
+      // throw Exception(e);
     }
   }
 }

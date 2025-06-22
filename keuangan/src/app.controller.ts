@@ -18,6 +18,8 @@ import { generate_text } from './config/support_string';
 import { after } from 'node:test';
 import { MailService } from './mail/mail.service';
 import { ResetPasswordDTO, SendEmailDTO } from './users/dto/reset_password.dto';
+import { CreateOrSignInDTO } from './users/dto/create_or_sign.dto';
+import { OAuth2Client } from 'google-auth-library';
 @Controller()
 export class AppController {
   constructor(
@@ -34,42 +36,25 @@ export class AppController {
     return {'message':req['headers']['x-forwarded-for'], 'request':req['headers']};
     // return ['gak ', parseInt(process.env.PORT_DB || '3306') ||'gk nemu prot', process.env.USERNAME_DB||'asdads', process.env.PASS_DB || 'adas',process.env.DB||'db'];return ['gak ', parseInt(process.env.PORT_DB || '3306') ||'gk nemu prot', process.env.USERNAME_DB||'asdads', process.env.PASS_DB || 'adas',process.env.DB||'db'];
   }
-  // @Post('/test')
+  @Get('test')
   // @Throttle({ default: { limit: 1, ttl: 30000 } })
   async test(): Promise<any> {
-    // const response = await admin.messaging().send({
-    //   token:'eLNUb75sTwKv5vIeRtZY1b:APA91bE-GXIK3TPWVTTtDwqDyGpvet0FFKcp_YY9uhUxWETKH36vyVe4wVBLF9ZM8yOPmPaYgUN0XNKdJMh9o_dbbyQ4rvTYcuNCUZNWJUJX_AWXofI9mu2E',
-    //   notification:{
-    //     title: 'Notification Title',
-    //     body: 'Notification body',
-    //   }
-      
-    // });
-    // console.log(response)
-    return {'message':'success1'};
-    // try{
-    //   const RoleAdmin = await this.roleService.findRole('admin')
-    //   if (RoleAdmin == null){
-    //     return ['not found']
-    //   }
-    //   const data: Partial<User> ={
-    //     // username:'admin@test.com',
-    //     email:'admin@test.com',
-    //     password:'123456',
-    //     name:'rema',
-    //     role:RoleAdmin,
-    //   }
-    //   await this.userService.create(data)
-    //   return 'work'
-    // }catch(err){
-    //   Logger.error('error')
-    //   return 'error'
-    //   return err
-    // }
-    
+    const d = await this.appService.getHello()
+    return {'message':'success1', 'data':d};
   }
   
   
+  @Post('/create-or-login')
+  async create_or_login(@Request() req, @Body() body:CreateOrSignInDTO){
+    const client = new OAuth2Client()
+    const tick = await client.verifyIdToken({
+      idToken:body.token,
+      audience:process.env.oauth_client_id ?? ''
+    })
+    const payload = tick.getPayload()
+    return {'payload':payload}
+    // this.userService.findOne()
+  }
   @SkipThrottle()
   @Post('/create-account')
   async create_account(@Request() req, @Body() body:CreateUserDTO){

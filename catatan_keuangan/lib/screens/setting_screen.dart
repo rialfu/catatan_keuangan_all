@@ -13,6 +13,7 @@ import 'package:flutter/services.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:local_auth/local_auth.dart';
 import 'package:local_auth/error_codes.dart' as auth_error;
+// ignore: depend_on_referenced_packages
 import 'package:local_auth_android/local_auth_android.dart';
 
 class SettingScreen extends StatefulWidget {
@@ -47,7 +48,6 @@ class _SettingScreenState extends State<SettingScreen> {
   void initState() {
     super.initState();
     setIsDeviceSupport(initial: true);
-    var bloc = context.read<AuthBloc>();
   }
 
   @override

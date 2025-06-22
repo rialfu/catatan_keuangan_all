@@ -1,6 +1,8 @@
 // ignore_for_file: use_build_context_synchronously
 
 import 'package:catatan_keuangan/components/component_custom.dart';
+import 'package:catatan_keuangan/constants/message_custom.dart';
+import 'package:catatan_keuangan/customClass/custom_exception.dart';
 import 'package:catatan_keuangan/extensions/context_entension.dart';
 import 'package:catatan_keuangan/extensions/string_extension.dart';
 import 'package:catatan_keuangan/init/network/dio_manager.dart';
@@ -10,8 +12,8 @@ import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 
 class ForgotPasswordComponent extends StatefulWidget {
-  AuthenticateScreenNotifier? notifier;
-  ForgotPasswordComponent({super.key, this.notifier});
+  final AuthenticateScreenNotifier? notifier;
+  const ForgotPasswordComponent({super.key, this.notifier});
 
   @override
   State<ForgotPasswordComponent> createState() =>
@@ -25,20 +27,20 @@ class _ForgotPasswordComponentState extends State<ForgotPasswordComponent> {
   final _formKey = GlobalKey<FormState>();
   bool lockPass = true;
   bool isLoad = false;
-  // late AuthenticateScreenNotifier notifier;
+  late AuthenticateScreenNotifier notifier;
   @override
   void initState() {
     // TODO: implement initState
     super.initState();
-    // notifier = context.read<AuthenticateScreenNotifier>();
-    // notifier.addListener(listenNotifier);
-    widget.notifier?.addListener(listenNotifier);
+    notifier = context.read<AuthenticateScreenNotifier>();
+    notifier.addListener(listenNotifier);
+    // widget.notifier?.addListener(listenNotifier);
   }
 
   @override
   void dispose() {
-    // notifier.removeListener(listenNotifier);
-    widget.notifier?.removeListener(listenNotifier);
+    notifier.removeListener(listenNotifier);
+    // widget.notifier?.removeListener(listenNotifier);
     emailController.dispose();
     passController.dispose();
     codeController.dispose();
@@ -47,7 +49,7 @@ class _ForgotPasswordComponentState extends State<ForgotPasswordComponent> {
   }
 
   void listenNotifier() {
-    if (widget.notifier?.page == 'reset') {
+    if (notifier.page == 'reset') {
       emailController.text = '';
       passController.text = '';
       codeController.text = '';
@@ -74,30 +76,32 @@ class _ForgotPasswordComponentState extends State<ForgotPasswordComponent> {
       );
       ComponentCustom.alert(context, ['Success update password'], 'Success');
     } on DioException catch (err) {
-      if (err.type == DioExceptionType.connectionTimeout) {
-        ComponentCustom.alert(context, ['Server is not active'], 'Error');
-        return;
-      }
-      print('err');
-      // print(e)
-      print(err.response?.data);
-      List<String> message = ['Something is wrong here1'];
-      if (err.response?.data is Map<String, dynamic>) {
-        Map<String, dynamic> d = err.response!.data as Map<String, dynamic>;
-        print(err);
-        if (d.containsKey('message')) {
-          if (d['message'] is String) {
-            message = [d['message']];
-          } else if (d['message'] is List) {
-            message = (d['message'] as List).map((e) => e.toString()).toList();
-          }
-        }
-        print(d);
-      }
+      List<String> message = CustomResponseError.buildResponseFromServer(err);
+      // if (err.type == DioExceptionType.connectionTimeout) {
+      //   ComponentCustom.alert(
+      //     context,
+      //     [MessageCustom.serverNotActive],
+      //     'Error',
+      //   );
+      //   return;
+      // }
+      // List<String> message = ['Something is wrong here'];
+      // if (err.response?.data is Map<String, dynamic>) {
+      //   Map<String, dynamic> d = err.response!.data as Map<String, dynamic>;
+      //   // print(err);
+      //   if (d.containsKey('message')) {
+      //     if (d['message'] is String) {
+      //       message = [d['message']];
+      //     } else if (d['message'] is List) {
+      //       message = (d['message'] as List).map((e) => e.toString()).toList();
+      //     }
+      //   }
+      //   // print(d);?
+      // }
       ComponentCustom.alert(context, message, 'Error');
     } catch (err) {
       List<String> message = ['Something is wrong here'];
-      ComponentCustom.alert(context, [err.toString()], 'Error');
+      ComponentCustom.alert(context, [message], 'Error');
     }
   }
 
@@ -147,8 +151,8 @@ class _ForgotPasswordComponentState extends State<ForgotPasswordComponent> {
                       } on DioException catch (err) {
                         print(err);
                         if (err.type == DioExceptionType.connectionTimeout) {
-                          ComponentCustom.alert(
-                              context, ['Server is not acitve'], 'Message');
+                          ComponentCustom.alert(context,
+                              [MessageCustom.serverNotActive], 'Message');
                         }
                         List<String> message = ['Something is wrong here'];
                         if (err.response?.data is Map<String, dynamic>) {

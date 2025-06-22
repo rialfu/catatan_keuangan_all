@@ -51,7 +51,7 @@ class DefaultFirebaseOptions {
 
   static const FirebaseOptions android = FirebaseOptions(
     apiKey: 'AIzaSyDRPozn5Ksx5J6U9sddiMv5E6AoqE7zQlw',
-    appId: '1:990321993205:android:059f2ae6deeda2cf0aecbc',
+    appId: '1:990321993205:android:69943f667607e1580aecbc',
     messagingSenderId: '990321993205',
     projectId: 'latihan-60ea4',
     databaseURL: 'https://latihan-60ea4.firebaseio.com',
@@ -60,11 +60,12 @@ class DefaultFirebaseOptions {
 
   static const FirebaseOptions ios = FirebaseOptions(
     apiKey: 'AIzaSyBx5pDQBsVJ9Z-a8vCoExqtEeSYu-OdVd4',
-    appId: '1:990321993205:ios:e13e547f41bf33df0aecbc',
+    appId: '1:990321993205:ios:646c5acf71fd23940aecbc',
     messagingSenderId: '990321993205',
     projectId: 'latihan-60ea4',
     databaseURL: 'https://latihan-60ea4.firebaseio.com',
     storageBucket: 'latihan-60ea4.firebasestorage.app',
-    iosBundleId: 'com.example.catatanKeuangan',
+    androidClientId: '990321993205-9otp334otkonapudg7fhb50jud86ictp.apps.googleusercontent.com',
+    iosBundleId: 'org.rialfu.catatanKeuangan',
   );
 }

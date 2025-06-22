@@ -1,15 +1,18 @@
+// ignore_for_file: use_build_context_synchronously
+
 import 'package:catatan_keuangan/components/component_custom.dart';
+import 'package:catatan_keuangan/constants/message_custom.dart';
+import 'package:catatan_keuangan/customClass/custom_exception.dart';
 import 'package:catatan_keuangan/init/network/dio_manager.dart';
 import 'package:catatan_keuangan/screens/notifier/authenticate_screen_notifier.dart';
-import 'package:catatan_keuangan/screens/notifier/first_screen_notifier.dart';
 import 'package:dio/dio.dart';
 import 'package:flutter/material.dart';
-import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:provider/provider.dart';
 import '../extensions/context_entension.dart';
 
 class RegisterComponent extends StatefulWidget {
-  AuthenticateScreenNotifier? notifier;
-  RegisterComponent({super.key, this.notifier});
+  final AuthenticateScreenNotifier? notifier;
+  const RegisterComponent({super.key, this.notifier});
 
   @override
   State<RegisterComponent> createState() => _RegisterComponentState();
@@ -32,13 +35,13 @@ class _RegisterComponentState extends State<RegisterComponent> {
       r'[0-9]|[1-9]?[0-9])|[a-z0-9-]*[a-z0-9]:(?:[\x01-\x08\x0b\x0c\x0e-\x1f\'
       r'x21-\x5a\x53-\x7f]|\\[\x01-\x09\x0b\x0c\x0e-\x7f])+)\])';
 
-  // late AuthenticateScreenNotifier notifier;
+  late AuthenticateScreenNotifier notifier;
   @override
   void initState() {
     // TODO: implement initState
     super.initState();
-    // notifier = context.read<AuthenticateScreenNotifier>();
-    // notifier.addListener(listenNotifier);
+    notifier = context.read<AuthenticateScreenNotifier>();
+    notifier.addListener(listenNotifier);
     widget.notifier?.addListener(listenNotifier);
   }
 
@@ -62,27 +65,35 @@ class _RegisterComponentState extends State<RegisterComponent> {
         // showMessage(contextD, ['Success add new data'], 'Success Info');
       }
     } on DioException catch (e) {
-      if (e.type == DioExceptionType.connectionTimeout) {
-        ComponentCustom.alert(contextD, ['Server is not active'], 'error');
-      }
-      if (e.response?.statusCode == 400 || e.response?.statusCode == 429) {
-        Map responseMessage = e.response?.data as Map;
-        if (responseMessage.containsKey('message')) {
-          List message = [];
-          if (responseMessage['message'] is List) {
-            message = responseMessage['message'];
-          } else if (responseMessage['message'] is String) {
-            message.add(responseMessage['message']);
-          }
-          if (contextD.mounted) {
-            ComponentCustom.alert(contextD, message, 'error');
-            // showMessage(contextD, message, 'error');
-          }
-        }
-      }
+      List<String> message = CustomResponseError.buildResponseFromServer(e);
+      ComponentCustom.alert(contextD, message, 'Error');
+      //       // showMessage(contextD, message, 'Error');
+      // if (e.type == DioExceptionType.connectionError) {
+      //   ComponentCustom.alert(
+      //       contextD, [MessageCustom.serverNotActive], 'Error');
+      // }
+      // if (e.type == DioExceptionType.connectionTimeout) {
+      //   ComponentCustom.alert(
+      //       contextD, [MessageCustom.serverNotActive], 'Error');
+      // }
+      // if (e.response?.statusCode == 400 || e.response?.statusCode == 429) {
+      //   Map responseMessage = e.response?.data as Map;
+      //   if (responseMessage.containsKey('message')) {
+      //     List message = [];
+      //     if (responseMessage['message'] is List) {
+      //       message = responseMessage['message'];
+      //     } else if (responseMessage['message'] is String) {
+      //       message.add(responseMessage['message']);
+      //     }
+      //     if (contextD.mounted) {
+      //       ComponentCustom.alert(contextD, message, 'Error');
+      //       // showMessage(contextD, message, 'Error');
+      //     }
+      //   }
+      // }
     } catch (err) {
-      ComponentCustom.alert(contextD, [err.toString()], 'error');
-      // showMessage(contextD, [err.toString()], 'error');
+      ComponentCustom.alert(contextD, [err.toString()], 'Error');
+      // showMessage(contextD, [err.toString()], 'Error');
     }
     setState(() {
       isLoad = false;
@@ -91,8 +102,8 @@ class _RegisterComponentState extends State<RegisterComponent> {
 
   @override
   void dispose() {
-    widget.notifier?.removeListener(listenNotifier);
-    // notifier.removeListener(listenNotifier);
+    // widget.notifier?.removeListener(listenNotifier);
+    notifier.removeListener(listenNotifier);
     // notifier.dispose();
     emailController.dispose();
     passwordController.dispose();
@@ -102,9 +113,7 @@ class _RegisterComponentState extends State<RegisterComponent> {
   }
 
   void listenNotifier() {
-    if (
-        // notifier.page == 'register'
-        widget.notifier?.page == 'register') {
+    if (notifier.page == 'register') {
       _signInGlobalKey.currentState?.reset();
       emailController.text = '';
       passwordController.text = '';

@@ -117,6 +117,7 @@ class _ModifyTransactionScreenState extends State<ModifyTransactionScreen> {
     List message = const [],
     String textClose = 'Close',
   }) {
+    // debugPrintStack();
     return showDialog<void>(
       context: context,
       barrierDismissible: false, // user must tap button!

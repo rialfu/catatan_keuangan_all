@@ -8,9 +8,9 @@
   "client": [
     {
       "client_info": {
-        "mobilesdk_app_id": "1:990321993205:android:059f2ae6deeda2cf0aecbc",
+        "mobilesdk_app_id": "1:990321993205:android:e396e08110c7ea940aecbc",
         "android_client_info": {
-          "package_name": "com.example.catatan_keuangan"
+          "package_name": "com.example.flutter_app"
         }
       },
       "oauth_client": [],
@@ -27,12 +27,21 @@
     },
     {
       "client_info": {
-        "mobilesdk_app_id": "1:990321993205:android:e396e08110c7ea940aecbc",
+        "mobilesdk_app_id": "1:990321993205:android:69943f667607e1580aecbc",
         "android_client_info": {
-          "package_name": "com.example.flutter_app"
+          "package_name": "org.rialfu.catatan_keuangan"
         }
       },
-      "oauth_client": [],
+      "oauth_client": [
+        {
+          "client_id": "990321993205-9otp334otkonapudg7fhb50jud86ictp.apps.googleusercontent.com",
+          "client_type": 1,
+          "android_info": {
+            "package_name": "org.rialfu.catatan_keuangan",
+            "certificate_hash": "debbd56f30a87f1204aa592bd805a9cf70e5acbf"
+          }
+        }
+      ],
       "api_key": [
         {
           "current_key": "AIzaSyDRPozn5Ksx5J6U9sddiMv5E6AoqE7zQlw"

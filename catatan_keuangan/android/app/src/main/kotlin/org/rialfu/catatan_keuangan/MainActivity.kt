@@ -1,4 +1,4 @@
-package com.example.catatan_keuangan
+package org.rialfu.catatan_keuangan
 
 //import io.flutter.embedding.android.FlutterActivity
 import io.flutter.embedding.android.FlutterFragmentActivity

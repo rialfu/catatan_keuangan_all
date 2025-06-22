@@ -2,7 +2,7 @@ import 'package:catatan_keuangan/screens/authenticate.dart';
 import 'package:catatan_keuangan/screens/main_screen.dart';
 
 import '../../core/enum/auth_enum.dart';
-import '../../screens/first_screen.dart';
+// import '../../screens/first_screen.dart';
 import 'package:flutter/material.dart';
 
 extension NavigateExtension on AuthStatus {
