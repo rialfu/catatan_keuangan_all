@@ -11,14 +11,14 @@ export class TransactionExistsValidation implements ValidatorConstraintInterface
 
     async validate(value: number, args: ExtendedValidationArguments): Promise<boolean>  {
         
-        let userId : string = ''
+        let userId : number = -1;
         const context = args?.object[REQUEST_CONTEXT];
         if(context != null){
             userId = context.user.userId
         }
         return this.tranService.find_transaction({id:value}).then((data)=>{
             if(data == null) return false;
-            if(userId != ''){
+            if(userId != -1){
                 if(data.user.id != userId) return false
             }
             return true

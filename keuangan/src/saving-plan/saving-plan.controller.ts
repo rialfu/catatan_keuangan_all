@@ -33,7 +33,7 @@ export class SavingPlanController {
         data.target_date = '2025-06-03'
         data.target_money = 2000000
         const user = new User()
-        user.id = 'a858bd9b-7c44-45cf-ac2e-ab0acfa9ef23'
+        user.id = 1
         data.user = user
 
         let res = await this.savingPlanService.create(data)

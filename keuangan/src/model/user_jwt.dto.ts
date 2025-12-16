@@ -1,5 +1,5 @@
 export interface UserJWT {
-    userId: string,
+    userId: number,
     email: string,
     roles: string,
 }

@@ -18,8 +18,8 @@ import { CodeReset } from 'src/users/entities/code_reset.entity';
 
 @Entity()
 export class User {
-    @PrimaryColumn({ generated: "uuid" }) //it is used to generate primary id, when new data inserted.
-    id:string;
+    @PrimaryColumn({ generated:'increment' }) //it is used to generate primary id, when new data inserted.
+    id:number;
 
     @Column({unique:true}) // It is used to mark a specific class property as a table column
     email: string;

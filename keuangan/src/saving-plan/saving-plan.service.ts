@@ -186,7 +186,7 @@ export class SavingPlanService {
     delete_checkout(search:{[key: string]: any}): Promise<DeleteResult>{
         return this.savingPlanCheckoutRepo.delete(search)
     }
-    async process_create_checkout(data: Partial<SavingPlanCheckout>, id_saving_plan: string, id_user: string) : Promise<{[key: string]: any}>{
+    async process_create_checkout(data: Partial<SavingPlanCheckout>, id_saving_plan: string, id_user: number) : Promise<{[key: string]: any}>{
         const queryRunner = this.dataSource.createQueryRunner();
         await queryRunner.connect();
         await queryRunner.startTransaction();

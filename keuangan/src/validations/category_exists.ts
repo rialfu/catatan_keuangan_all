@@ -27,7 +27,7 @@ export class CategoryExistsValidation implements ValidatorConstraintInterface {
             isNeed = paramCustom['isNeed']
         }
         // console.log(isNeed)
-        let userId : string = ''
+        let userId : string | number | null = null;
         const context = args?.object[REQUEST_CONTEXT];
         if(context != null){
             userId = context.user.userId
@@ -36,7 +36,7 @@ export class CategoryExistsValidation implements ValidatorConstraintInterface {
         return this.catService.find({'id':value},{user:true}).then((data)=>{
             // if(isNeed == false) return true
             if(data == null) return false
-            if(userId != ''){
+            if(userId != null){
                 if(data.canDelete && data.user.id != userId) return false
             }
             return true;

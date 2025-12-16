@@ -28,7 +28,7 @@ export class CategoryUniqueValidation implements ValidatorConstraintInterface {
             isNeed = paramCustom['isNeed']
         }
         // console.log(isNeed)
-        let userId : string = ''
+        let userId : string | null | number= null;
         const context = args?.object[REQUEST_CONTEXT];
         if(context != null){
             userId = context.user.userId

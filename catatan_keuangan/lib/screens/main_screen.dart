@@ -619,7 +619,7 @@ class _MainScreenState extends State<MainScreen> with TickerProviderStateMixin {
                       Expanded(
                         flex: 2,
                         child: AutoSizeText(
-                          'Welcome ${state.name}',
+                          'Welcome ${state.name ?? ''}',
                           maxLines: 2,
                           style: TextStyle(color: Colors.white, fontSize: 19),
                         ),

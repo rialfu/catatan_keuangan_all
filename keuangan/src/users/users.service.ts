@@ -19,13 +19,13 @@ export class UsersService {
     findOne(email: string): Promise<User | null> {
         return this.users.findOneBy({email})
     }
-    findOneById(id: string){
+    findOneById(id: number){
         return this.users.findOneBy({id});
     }
     get_token_exist(token: string): Promise<UserToken | null>{
         return this.userTokens.findOneBy({fcm_token:token});
     }
-    get_user_token(id: string): Promise<UserToken | null>{
+    get_user_token(id: number): Promise<UserToken | null>{
         return this.userTokens.findOneBy({user:{id}})
     }
     update_token_user(data: Partial<UserToken>, id: number) :Promise<UpdateResult>{
@@ -38,7 +38,7 @@ export class UsersService {
         const data = this.users.create(user)
         return this.users.save(data)
     }
-    update_user(data:Partial<User>, id:string){
+    update_user(data:Partial<User>, id:number){
         return this.users.update({id}, data);
     }
     find_code_reset_from_user(email : string) : Promise<User | null>{

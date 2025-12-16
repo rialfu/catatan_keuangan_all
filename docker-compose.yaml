@@ -1,0 +1,18 @@
+version: '3.8'
+name: minio-cont
+services:
+  minio:
+    image: minio/minio:latest
+    container_name: minio
+    ports:
+      - "9000:9000"  # MinIO API port
+      - "9001:9001"  # MinIO console port
+    environment:
+      MINIO_ROOT_USER: admin  # Default root user
+      MINIO_ROOT_PASSWORD: 12312312  # Default root password
+    volumes:
+      - minio_data:/data  # Persistent storage for MinIO data
+    command: server /data --console-address ":9001"
+
+volumes:
+  minio_data:

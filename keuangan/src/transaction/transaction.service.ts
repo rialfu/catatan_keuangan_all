@@ -126,7 +126,7 @@ export class TransactionService {
             .getRawMany();
 
     }
-    async stream_load_data(start_date:Date, end_date:Date, userId: string | null) {
+    async stream_load_data(start_date:Date, end_date:Date, userId: string | number | null) {
         const queryRunner = this.dataSource.createQueryRunner()
         await queryRunner.connect()
         let columns = {

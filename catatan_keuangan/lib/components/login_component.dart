@@ -46,15 +46,16 @@ class _LoginComponentState extends State<LoginComponent> {
     stream = bloc.stream.listen(listening);
     notifier = context.read<AuthenticateScreenNotifier>();
     notifier.addListener(listenNotifier);
-    _googleSignIn =GoogleSignIn(
-      // Optional clientId
-      scopes: scopes,
-      serverClientId: '990321993205-oslpc9836jgbjiitb1f9omljk74k63cj.apps.googleusercontent.com'
-      // serverClientId: ,
-      // clientId: '990321993205-9otp334otkonapudg7fhb50jud86ictp.apps.googleusercontent.com'
-      // clientId: '990321993205-9otp334otkonapudg7fhb50jud86ictp.apps.googleusercontent.com'
-      // serverClientId: '990321993205-9otp334otkonapudg7fhb50jud86ictp.apps.googleusercontent.com'
-    );
+    _googleSignIn = GoogleSignIn(
+        // Optional clientId
+        scopes: scopes,
+        serverClientId:
+            '990321993205-1cnpc4mcjebfm863ep8761d8a48ie0ja.apps.googleusercontent.com'
+        // serverClientId: ,
+        // clientId: '990321993205-9otp334otkonapudg7fhb50jud86ictp.apps.googleusercontent.com'
+        // clientId: '990321993205-9otp334otkonapudg7fhb50jud86ictp.apps.googleusercontent.com'
+        // serverClientId: '990321993205-9otp334otkonapudg7fhb50jud86ictp.apps.googleusercontent.com'
+        );
     // widget.notifier?.addListener(listenNotifier);
   }
 
@@ -75,19 +76,19 @@ class _LoginComponentState extends State<LoginComponent> {
       passwordController.text = '';
     }
   }
+
   List<String> scopes = <String>[
-    'email',
-    'openid',
-    'profi',
+    // 'email',
+    // 'openid',
+    // 'profi',
   ];
   late GoogleSignIn _googleSignIn;
   Future<void> signWithGoogle() async {
-
     if (await _googleSignIn.isSignedIn()) {
       print('logout');
       _googleSignIn.signOut();
       // _googleSignIn.
-      return;
+      // return;
     }
     try {
       var res = await _googleSignIn.signIn();
