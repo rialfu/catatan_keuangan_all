@@ -147,7 +147,7 @@ export class SavingPlanService {
     create(data: SavingPlan): Promise<SavingPlan>{
         return this.savingPlanRepo.save(data)
     }
-    update(data: Partial<SavingPlan>, id: string){
+    update(data: Partial<SavingPlan>, id: number){
         return this.savingPlanRepo.update({id}, data)
     }
     delete(search:{[key: string]: any}): Promise<DeleteResult>{
@@ -186,7 +186,7 @@ export class SavingPlanService {
     delete_checkout(search:{[key: string]: any}): Promise<DeleteResult>{
         return this.savingPlanCheckoutRepo.delete(search)
     }
-    async process_create_checkout(data: Partial<SavingPlanCheckout>, id_saving_plan: string, id_user: number) : Promise<{[key: string]: any}>{
+    async process_create_checkout(data: Partial<SavingPlanCheckout>, id_saving_plan: number, id_user: number) : Promise<{[key: string]: any}>{
         const queryRunner = this.dataSource.createQueryRunner();
         await queryRunner.connect();
         await queryRunner.startTransaction();

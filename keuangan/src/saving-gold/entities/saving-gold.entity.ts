@@ -5,8 +5,8 @@ import { User } from "src/model/user.entity";
 
 @Entity()
 export class SavingGold {
-    @PrimaryColumn({ generated: "uuid" })
-    id: string
+    @PrimaryColumn({ generated: "increment" })
+    id: number
 
     @Column({type:'decimal', precision:20, scale:2})
     price: number

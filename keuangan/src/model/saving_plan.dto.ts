@@ -34,7 +34,7 @@ export class CreateSavingPlanDTO{
 export class UpdateSavingPlanDTO{
 
     @IsNotEmpty()
-    id: string;
+    id: number;
 
     @IsOptional()
     @IsString({'message':'Name is must string'})
@@ -75,6 +75,6 @@ export class CreateSavingPlanCheckoutDTO{
     date_checkout: string;
 
     @IsNotEmpty()
-    @IsString()
-    id_saving_plan:string
+    @IsNumber()
+    id_saving_plan:number
 }

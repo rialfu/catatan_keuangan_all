@@ -4,8 +4,8 @@ import { SavingGold } from "./saving-gold.entity";
 
 @Entity()
 export class SavingGoldOwner {
-    @PrimaryColumn({ generated: "uuid" })
-    id: string
+    @PrimaryColumn({ generated: "increment" })
+    id: number
 
     @Column({length:100})
     name_own: string

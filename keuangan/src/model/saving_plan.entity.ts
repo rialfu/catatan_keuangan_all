@@ -4,8 +4,8 @@ import { SavingPlanCheckout } from "./saving_plan_checkout_entity";
 
 @Entity()
 export class SavingPlan {
-    @PrimaryColumn({ generated: "uuid" }) //it is used to generate primary id, when new data inserted.
-    id: string;
+    @PrimaryGeneratedColumn() //it is used to generate primary id, when new data inserted.
+    id: number;
 
     @Column({length:100,}) // It is used to mark a specific class property as a table column
     name: string;

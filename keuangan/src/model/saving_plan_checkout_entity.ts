@@ -3,7 +3,7 @@ import { SavingPlan } from "./saving_plan.entity";
 
 @Entity()
 export class SavingPlanCheckout {
-    @PrimaryGeneratedColumn('increment', {type:'bigint',unsigned:true}) //it is used to generate primary id, when new data inserted.
+    @PrimaryGeneratedColumn('increment') //it is used to generate primary id, when new data inserted.
     id: number;
 
 

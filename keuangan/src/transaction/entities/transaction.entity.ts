@@ -7,7 +7,7 @@ import { Column, CreateDateColumn,  Entity,  UpdateDateColumn, ManyToOne, Primar
 
 @Entity()
 export class Transaction {
-    @PrimaryGeneratedColumn('increment', {type:'bigint',unsigned:true}) //it is used to generate primary id, when new data inserted.
+    @PrimaryGeneratedColumn('increment') //it is used to generate primary id, when new data inserted.
     id: number;
 
     @Column() // It is used to mark a specific class property as a table column

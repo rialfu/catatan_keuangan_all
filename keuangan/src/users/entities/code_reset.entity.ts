@@ -3,13 +3,13 @@ import { Column, CreateDateColumn, Entity, JoinColumn, OneToOne, PrimaryGenerate
 
 @Entity()
 export class CodeReset {
-    @PrimaryGeneratedColumn('increment', {type:'bigint',unsigned:true}) //it is used to generate primary id, when new data inserted.
+    @PrimaryGeneratedColumn('increment') //it is used to generate primary id, when new data inserted.
     id: number;
 
     @Column({length:8}) // It is used to mark a specific class property as a table column
     code: string;
 
-    @Column({'type':'datetime'})
+    @Column()
     expired_date: Date;
     
    

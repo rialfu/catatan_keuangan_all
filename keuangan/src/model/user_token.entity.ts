@@ -4,7 +4,7 @@ import { User } from "./user.entity";
 @Entity()
 export class UserToken {
     
-    @PrimaryGeneratedColumn('increment', {type:'bigint',unsigned:true}) //it is used to generate primary id, when new data inserted.
+    @PrimaryGeneratedColumn('increment') //it is used to generate primary id, when new data inserted.
     id: number;
     
     @Column()
