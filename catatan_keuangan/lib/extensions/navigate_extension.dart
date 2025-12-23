@@ -1,3 +1,4 @@
+import 'package:catatan_keuangan/screens/RegisterSSOScreen.dart';
 import 'package:catatan_keuangan/screens/authenticate.dart';
 import 'package:catatan_keuangan/screens/main_screen.dart';
 
@@ -10,15 +11,13 @@ extension NavigateExtension on AuthStatus {
     switch (this) {
       case AuthStatus.authenticated:
         return MainScreen();
-      // return const HomeView();
       case AuthStatus.guest:
-        // return const LoginView();
-        // return FirstScreen();
         return AuthenticateScreen();
+      case AuthStatus.ssoRegister:
+        return Registerssoscreen();
+
       case AuthStatus.unknown:
-        // return SplashView();
         break;
-      // return FirstScreen();
     }
     return AuthenticateScreen();
     // return FirstScreen();

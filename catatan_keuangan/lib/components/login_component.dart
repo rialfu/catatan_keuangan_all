@@ -9,7 +9,6 @@ import 'package:catatan_keuangan/core/enum/auth_enum.dart';
 import 'package:catatan_keuangan/core/enum/biometric_enum.dart';
 import 'package:catatan_keuangan/extensions/string_extension.dart';
 import 'package:catatan_keuangan/init/cache/auth_cache_manager.dart';
-import 'package:catatan_keuangan/init/network/dio_manager.dart';
 import 'package:catatan_keuangan/screens/notifier/authenticate_screen_notifier.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
@@ -47,16 +46,10 @@ class _LoginComponentState extends State<LoginComponent> {
     notifier = context.read<AuthenticateScreenNotifier>();
     notifier.addListener(listenNotifier);
     _googleSignIn = GoogleSignIn(
-        // Optional clientId
-        scopes: scopes,
-        serverClientId:
-            '990321993205-1cnpc4mcjebfm863ep8761d8a48ie0ja.apps.googleusercontent.com'
-        // serverClientId: ,
-        // clientId: '990321993205-9otp334otkonapudg7fhb50jud86ictp.apps.googleusercontent.com'
-        // clientId: '990321993205-9otp334otkonapudg7fhb50jud86ictp.apps.googleusercontent.com'
-        // serverClientId: '990321993205-9otp334otkonapudg7fhb50jud86ictp.apps.googleusercontent.com'
-        );
-    // widget.notifier?.addListener(listenNotifier);
+      scopes: scopes,
+      serverClientId:
+          '990321993205-sk2p5hjpdgvamdl9v7ig6if5mmcslp09.apps.googleusercontent.com',
+    );
   }
 
   @override
@@ -79,35 +72,10 @@ class _LoginComponentState extends State<LoginComponent> {
 
   List<String> scopes = <String>[
     // 'email',
-    // 'openid',
+    'openid',
     // 'profi',
   ];
   late GoogleSignIn _googleSignIn;
-  Future<void> signWithGoogle() async {
-    if (await _googleSignIn.isSignedIn()) {
-      print('logout');
-      _googleSignIn.signOut();
-      // _googleSignIn.
-      // return;
-    }
-    try {
-      var res = await _googleSignIn.signIn();
-      print(res);
-      // print(res.)
-      if (res == null) return;
-      var auth = await res.authentication;
-      print(auth.idToken);
-      // if (auth.idToken == null) return;
-      ComponentCustom.alert(context, ['token:${auth.idToken}'], 'title');
-      String token = auth.idToken ?? '';
-      // var resServer = await DioManager.instance.dio.post('/create-or-login',data:{token:token});
-      // print(resServer.data);
-      // print(res);
-    } catch (err) {
-      ComponentCustom.alert(context, ['token:$err'], 'error');
-      print(err);
-    }
-  }
 
   Future<void> setIsDeviceSupport({bool initial = false}) async {
     // auth.authenticate(localizedReason: localizedReason)
@@ -133,11 +101,17 @@ class _LoginComponentState extends State<LoginComponent> {
         "Username or Password is not match",
         "Please use standart login"
       ];
+    } else if (state.error == AuthError.failedGoogleSSO) {
+      message = [
+        "Something is wrong with System or Google",
+        "Please Try again or use standart login"
+      ];
     }
 
     if (state.error == AuthError.wrongEmailOrPassword ||
         state.error == AuthError.hostUnreachable ||
-        state.error == AuthError.wrongEmailOrPasswordBiometric) {
+        state.error == AuthError.wrongEmailOrPasswordBiometric ||
+        state.error == AuthError.failedGoogleSSO) {
       ComponentCustom.alert(
         context,
         message,
@@ -148,32 +122,107 @@ class _LoginComponentState extends State<LoginComponent> {
           Navigator.of(context).pop();
         },
       );
-      // showDialog<void>(
-      //   context: context,
-      //   barrierDismissible: false, // user must tap button!
-      //   builder: (BuildContext context) {
-      //     return AlertDialog(
-      //       title: Text(titleMessage),
-      //       content: SingleChildScrollView(
-      //         child: ListBody(
-      //           children: message.map((e) => Text(e)).toList(),
-      //         ),
-      //       ),
-      //       actions: <Widget>[
-      //         TextButton(
-      //           child: const Text('Close'),
-      //           onPressed: () {
-      //             var bloc = context.read<AuthBloc>();
-      //             bloc.add(CleanAuthRequest());
-      //             Navigator.of(context).pop();
+    }
+  }
 
-      //             // authBloc.add(LogoutRequested());
-      //           },
-      //         ),
-      //       ],
-      //     );
-      //   },
-      // );
+  Future<void> openForgot() async {
+    context.read<AuthenticateScreenNotifier>().closeLogin();
+
+    await Future.delayed(Duration(milliseconds: 300));
+    if (!mounted) return;
+    context.read<AuthenticateScreenNotifier>().openResetPass();
+    FocusScope.of(context).unfocus();
+  }
+
+  Future<void> loginBiometrict(AuthState stateBloc) async {
+    if (stateBloc.isLoad) return;
+    if (isDeviceSupport == BiometricSupportState.unsupported) {
+      ComponentCustom.alert(
+        context,
+        ['Your device is not support biometric'],
+        'Alert',
+      );
+
+      return;
+    } else if (isDeviceSupport == BiometricSupportState.unknown) {
+      setIsDeviceSupport();
+      return;
+    }
+    bool isAuthenticate = false;
+    try {
+      isAuthenticate = await auth.authenticate(
+        localizedReason: 'Please put your biometric',
+        options: AuthenticationOptions(
+          useErrorDialogs: false,
+          biometricOnly: true,
+        ),
+        authMessages: [
+          AndroidAuthMessages(
+            signInTitle: 'Biometric authentication required!',
+            cancelButton: 'No thanks',
+          )
+        ],
+      );
+    } on PlatformException catch (e) {
+      String message = e.toString();
+      if (e.code == auth_error.passcodeNotSet) {
+        message = 'Your device not configure';
+      } else if (e.code == auth_error.notAvailable) {
+        message = 'Your device not support';
+      }
+      if (!mounted) return;
+      ComponentCustom.alert(
+        context,
+        [message],
+        'Alert',
+      );
+      return;
+    } catch (err) {
+      if (!mounted) return;
+      ComponentCustom.alert(
+        context,
+        ["Something is wrong"],
+        'Alert',
+      );
+      return;
+    }
+
+    if (isAuthenticate == false) return;
+    var acm = AuthCacheManager();
+    var data = await acm.getAuth();
+
+    if (data == null) return;
+    if (!data.containsKey('email')) return;
+    if (!data.containsKey('password')) return;
+    if (!mounted) return;
+    context.read<AuthBloc>().add(
+          LoginRequestedWithBiometric(
+            data['email'],
+            data['password'],
+          ),
+        );
+  }
+
+  Future<void> signWithGoogle() async {
+    if (await _googleSignIn.isSignedIn()) {
+      _googleSignIn.signOut();
+    }
+    try {
+      var res = await _googleSignIn.signIn();
+      if (res == null) return;
+      var auth = await res.authentication;
+      if (!mounted) return;
+      String token = auth.idToken ?? '';
+      if (token == '') {
+        ComponentCustom.alert(
+            context, ['Gagal mendapatkan verifikasi dari google'], 'error');
+      }
+
+      var bloc = context.read<AuthBloc>();
+      bloc.add(LoginWithGoogleSSO(token, res.email));
+    } catch (err) {
+      if (!mounted) return;
+      ComponentCustom.alert(context, ['token:$err'], 'error');
     }
   }
 
@@ -243,15 +292,9 @@ class _LoginComponentState extends State<LoginComponent> {
               Align(
                 alignment: Alignment.centerRight,
                 child: TextButton(
-                    onPressed: () async {
-                      context.read<AuthenticateScreenNotifier>().closeLogin();
-                      await Future.delayed(Duration(milliseconds: 300));
-                      context
-                          .read<AuthenticateScreenNotifier>()
-                          .openResetPass();
-                      FocusScope.of(context).unfocus();
-                    },
-                    child: Text('forgot password')),
+                  onPressed: openForgot,
+                  child: Text('forgot password'),
+                ),
               ),
               SizedBox(
                 height: context.dynamicHeight(0.02),
@@ -319,72 +362,8 @@ class _LoginComponentState extends State<LoginComponent> {
                     ),
                     child: IconButton(
                       onPressed: () async {
-                        if (stateBloc.isLoad) return;
-                        if (isDeviceSupport ==
-                            BiometricSupportState.unsupported) {
-                          ComponentCustom.alert(
-                            context,
-                            ['Your device is not support biometric'],
-                            'Alert',
-                          );
-
-                          return;
-                        } else if (isDeviceSupport ==
-                            BiometricSupportState.unknown) {
-                          setIsDeviceSupport();
-                          return;
-                        }
-                        bool isAuthenticate = false;
-                        try {
-                          isAuthenticate = await auth.authenticate(
-                            localizedReason: 'Please put your biometric',
-                            options: AuthenticationOptions(
-                              useErrorDialogs: false,
-                              biometricOnly: true,
-                            ),
-                            authMessages: [
-                              AndroidAuthMessages(
-                                signInTitle:
-                                    'Biometric authentication required!',
-                                cancelButton: 'No thanks',
-                              )
-                            ],
-                          );
-                        } on PlatformException catch (e) {
-                          String message = e.toString();
-                          if (e.code == auth_error.passcodeNotSet) {
-                            message = 'Your device not configure';
-                          } else if (e.code == auth_error.notAvailable) {
-                            message = 'Your device not support';
-                          }
-                          ComponentCustom.alert(
-                            context,
-                            [message],
-                            'Alert',
-                          );
-                          return;
-                        } catch (err) {
-                          ComponentCustom.alert(
-                            context,
-                            ["Something is wrong"],
-                            'Alert',
-                          );
-                          return;
-                        }
-
-                        if (isAuthenticate == false) return;
-                        var acm = AuthCacheManager();
-                        var data = await acm.getAuth();
-
-                        if (data == null) return;
-                        if (!data.containsKey('email')) return;
-                        if (!data.containsKey('password')) return;
-                        context.read<AuthBloc>().add(
-                              LoginRequestedWithBiometric(
-                                data['email'],
-                                data['password'],
-                              ),
-                            );
+                        // st
+                        loginBiometrict(stateBloc);
                       },
                       icon: Icon(
                         Icons.fingerprint,
@@ -394,11 +373,11 @@ class _LoginComponentState extends State<LoginComponent> {
                   )
                 ],
               ),
-              // TextButton(
-              //     onPressed: () {
-              //       signWithGoogle();
-              //     },
-              //     child: Text("google"))
+              TextButton(
+                  onPressed: () {
+                    signWithGoogle();
+                  },
+                  child: Text("google"))
             ],
           ),
         ),

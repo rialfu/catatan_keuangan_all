@@ -23,7 +23,7 @@ class AuthenticateScreenNotifier extends ChangeNotifier {
     _heightScreen = heightScreen;
     titleScreenLogin = -1 * widthScreen * 0.45;
     titleScreenRegister = -1 * widthScreen * 0.45;
-    titleScreenForgotPass = -1 * widthScreen * 0.55;
+    titleScreenForgotPass = -1 * widthScreen * 0.6;
     // rightRegister = _widthScreen * -1;
     leftLogin = _widthScreen * -1;
     leftRegister = _widthScreen * -1;
@@ -98,7 +98,7 @@ class AuthenticateScreenNotifier extends ChangeNotifier {
 
   void closeResetPass() {
     leftResetPass = _widthScreen * -1;
-    titleScreenForgotPass = -1 * _widthScreen * 0.55;
+    titleScreenForgotPass = -1 * _widthScreen * 0.6;
     notifyListeners();
   }
 }

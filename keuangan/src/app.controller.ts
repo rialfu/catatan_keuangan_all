@@ -1,4 +1,4 @@
-import { Body, Controller, Get, HttpCode, HttpException, HttpStatus, Ip, Logger, Post, Request, Res, UseGuards, UseInterceptors } from '@nestjs/common';
+import { BadRequestException, Body, Controller, Get, HttpCode, HttpException, HttpStatus, Ip, Logger, Post, Request, Res, UnauthorizedException, UseGuards, UseInterceptors } from '@nestjs/common';
 import { AppService } from './app.service';
 import { AuthGuard } from '@nestjs/passport';
 import { UsersService } from './users/users.service';
@@ -18,8 +18,9 @@ import { generate_text } from './config/support_string';
 import { after } from 'node:test';
 import { MailService } from './mail/mail.service';
 import { ResetPasswordDTO, SendEmailDTO } from './users/dto/reset_password.dto';
-import { CreateOrSignInDTO } from './users/dto/create_or_sign.dto';
+import { LogInSSODTO } from './users/dto/login_sso.dto';
 import { OAuth2Client } from 'google-auth-library';
+import { RegisterSSODTO } from './users/dto/register_sso.dto';
 @Controller()
 export class AppController {
   constructor(
@@ -32,7 +33,6 @@ export class AppController {
 
   @Get('/')
   getHello(@Request() req, @Ip() ip){
-    // console.log(req.headers['x-forwarded-for']);
     return {'message':req['headers']['x-forwarded-for'], 'request':req['headers']};
     // return ['gak ', parseInt(process.env.PORT_DB || '3306') ||'gk nemu prot', process.env.USERNAME_DB||'asdads', process.env.PASS_DB || 'adas',process.env.DB||'db'];return ['gak ', parseInt(process.env.PORT_DB || '3306') ||'gk nemu prot', process.env.USERNAME_DB||'asdads', process.env.PASS_DB || 'adas',process.env.DB||'db'];
   }
@@ -44,17 +44,83 @@ export class AppController {
   }
   
   
-  @Post('/create-or-login')
-  async create_or_login(@Request() req, @Body() body:CreateOrSignInDTO){
-    const client = new OAuth2Client()
-    const tick = await client.verifyIdToken({
-      idToken:body.token,
-      audience:process.env.oauth_client_id ?? ''
-    })
-    const payload = tick.getPayload()
-    return {'payload':payload}
-    // this.userService.findOne()
+  @Post('/login-sso')
+  async login_sso(@Request() req, @Body() body:LogInSSODTO){
+    try{
+      const clientId = process.env.oauth_client_id ?? ''
+      const client = new OAuth2Client(clientId)
+      const tick = await client.verifyIdToken({
+        idToken:body.token,
+        audience:clientId,
+      })
+
+      const payload = tick.getPayload()
+      if(payload == undefined || payload['email'] == undefined){
+        throw new HttpException({'message':'payload empty'}, HttpStatus.INTERNAL_SERVER_ERROR);
+      }
+      const email = payload['email']
+      let user = await this.userService.findOne(email);
+      if(user == null){
+        return {'register':true }
+      }
+      return this.authService.login(user)
+      
+    }catch(err){
+      const errorMessage = (err.message ?? '').toLowerCase()
+      if (errorMessage.includes('token used too late')) {
+        throw new UnauthorizedException('Token sudah kadaluwarsa (expired)');
+      } else if (errorMessage.includes('invalid token signature')) {
+        throw new UnauthorizedException('Tanda tangan token tidak valid');
+      } else if (errorMessage.includes('wrong number of segments')) {
+        throw new BadRequestException('Format token rusak (terpotong)');
+      } else {
+        throw new UnauthorizedException('Verifikasi token gagal: ' + err.message);
+      }
+    }
   }
+
+  @Post('/register-sso')
+  async register_sso(@Request() req, @Body() body:RegisterSSODTO){
+    try{
+      const clientId = process.env.oauth_client_id ?? ''
+      const client = new OAuth2Client(clientId)
+      const tick = await client.verifyIdToken({
+        idToken:body.token,
+        audience:clientId,
+      })
+
+      const payload = tick.getPayload()
+      if(payload == undefined || payload['email'] == undefined){
+        throw new HttpException({'message':'payload empty'}, HttpStatus.INTERNAL_SERVER_ERROR);
+      }
+      const email = payload['email']
+      let user = await this.userService.findOne(email);
+      if(user == null){
+        user = new User()
+        user.email = email
+        user.name = body.name
+        user.password = body.password
+        const role = new Role()
+        role.id = 2
+        user.role = role
+        const res = await this.userService.create(user)
+      }
+      return this.authService.login(user)
+      
+    }catch(err){
+      const errorMessage = (err.message ?? '').toLowerCase()
+      if (errorMessage.includes('token used too late')) {
+        throw new UnauthorizedException('Token sudah kadaluwarsa (expired)');
+      } else if (errorMessage.includes('invalid token signature')) {
+        throw new UnauthorizedException('Tanda tangan token tidak valid');
+      } else if (errorMessage.includes('wrong number of segments')) {
+        throw new BadRequestException('Format token rusak (terpotong)');
+      } else {
+        throw new UnauthorizedException('Verifikasi token gagal: ' + err.message);
+      }
+    }
+  }
+
   @SkipThrottle()
   @Post('/create-account')
   async create_account(@Request() req, @Body() body:CreateUserDTO){
@@ -63,10 +129,7 @@ export class AppController {
     if(exist != null){
       throw new HttpException({'message':['Email has used']}, HttpStatus.BAD_REQUEST);
     }
-    // const role = await this.roleService.findRole('user')
-    // if(role == null){
-    //   throw new HttpException({'message':'Error something'}, 500);
-    // }
+    
     const user = new User()
     user.email = body.email
     user.name = body.name
@@ -134,24 +197,7 @@ export class AppController {
             // console.log('5')
           }
         }
-        
       }
-
-      // const userToken : Partial<UserToken> = new UserToken()
-      // userToken.fcm_token = token
-      // console.log(res)
-      // // console.log(req)
-      // if(res != null){
-      //   console.log('update')
-      //   // userToken.id = res.id
-      //   // await this.userService.update_token_user(userToken, req.user.id)
-      // }else{
-      //   console.log('insert')
-      //   const user = new User()
-      //   user.id = req.user.id
-      //   userToken.user = user
-      //   // await this.userService.insert_token_user(userToken)
-      // }
     }
     return this.authService.login(req.user)
   }
@@ -217,13 +263,9 @@ export class AppController {
       return {'message':'Please wait, email will send'}
     }
     let now = new Date()
-    // if(resUser.code_reset.expired_date.getTime() > now.getTime()){
-    //   return {'please wait second': (resUser.code_reset.expired_date.getTime() -now.getTime()  ) / 1000}
-    // }
     let conditionBefore = new Date(resUser.code_reset.expired_date)
     conditionBefore.setMinutes(conditionBefore.getMinutes() - 2)
     if(((now.getTime() - conditionBefore.getTime()) / 1000 )< 30){
-      // return {'message':'Please wait, email will send'}
       return {'message':'please wait '+(30 - (now.getTime() - conditionBefore.getTime()  ) / 1000).toFixed(2)+ 's for resend code' }
     }
     now = new Date()

@@ -9,6 +9,7 @@ export class AuthService {
 
     async validateUser(email: string, pass: string): Promise<any> {
         const user = await this.usersService.findOne(email);
+        console.log(email, pass)
         if(user == null) return null;
         if (user.password === pass) {
             const { password, ...result } = user;
@@ -30,6 +31,7 @@ export class AuthService {
             access_token: token,
             refesh_token: refresh,
             name:user.name,
+            email:user.email,
         };
     }
 

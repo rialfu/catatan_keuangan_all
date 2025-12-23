@@ -1,5 +1,7 @@
 enum NetworkEnums {
   loginurl('auth/login'),
+  loginssourl('login-sso'),
+  registerssourl('register-sso'),
   introOff('introOff'),
   token('token');
 

@@ -1,11 +1,9 @@
 import 'dart:io';
 
-import 'package:catatan_keuangan/constants/message_custom.dart';
+import 'package:catatan_keuangan/core/model/login_sso_model.dart';
 import 'package:catatan_keuangan/customClass/custom_exception.dart';
 import 'package:catatan_keuangan/init/network/firebase_message.dart';
 import 'package:dio/dio.dart';
-import 'package:google_sign_in/google_sign_in.dart';
-
 import '../../core/enum/network_enum.dart';
 import '../../core/model/auth_model.dart';
 import '../../core/model/login_model.dart';
@@ -31,27 +29,9 @@ class AuthService extends IAuthService {
         NetworkEnums.loginurl.path,
         data: data,
       );
-      // if (response.statusCode == HttpStatus.ok) {
       return AuthModel.fromJson(response.data);
-      // }
     } on DioException catch (err) {
-      print((err.response?.data.toString() ?? '').contains('ERR_NGROK_3200'));
       CustomResponseError.buildThrowResponseFromServer(err);
-      // print('err: ${err.response?.statusCode}');
-      // if (err.type == DioExceptionType.connectionError) {
-      //   throw CustomExceptionForPost(0, MessageCustom.serverNotActive);
-      // }
-      // if (err.type == DioExceptionType.connectionTimeout) {
-      //   throw CustomExceptionForPost(0, MessageCustom.serverNotActive);
-      // }
-      // print('message');
-      // print(err.response?.data);
-      // if (err.response?.statusCode == 401) {
-      //   throw CustomExceptionForPost(401, 'Email or Password is wrong');
-      // }
-
-      // // if (err.type == DioErrorType.CONNECT_TIMEOUT) {}
-      // throw Exception(err);
     } catch (err) {
       print(err);
       throw Exception(err);
@@ -61,7 +41,6 @@ class AuthService extends IAuthService {
   @override
   Future<String?> getStatus() async {
     var res = await dioManager.dio.get('user');
-    print(res.data);
     if (res.statusCode == HttpStatus.ok) {
       Map<String, dynamic> rawData = res.data;
 
@@ -85,36 +64,6 @@ class AuthService extends IAuthService {
       // return data;
     } on DioException catch (err) {
       CustomResponseError.buildThrowResponseFromServer(err);
-      // if (err.type == DioExceptionType.connectionError) {
-      //   throw CustomExceptionForPost(0, MessageCustom.serverNotActive);
-      // }
-      // if (err.type == DioExceptionType.connectionTimeout) {
-      //   throw CustomExceptionForPost(0, MessageCustom.serverNotActive);
-      // }
-      // if (err.response?.statusCode == HttpStatus.unauthorized) {
-      //   throw CustomExceptionForPost(401, 'unauthorized');
-      // }
-      // if (err.response?.statusCode == HttpStatus.badRequest) {
-      //   // print(e.response?.data);
-      //   throw CustomExceptionForPost(
-      //       400,
-      //       err.response?.data['message'] ??
-      //           ['Bad Request, Please message to adminitrator']);
-      // }
-      // if (err.response?.statusCode == HttpStatus.tooManyRequests) {
-      //   throw CustomExceptionForPost(
-      //     429,
-      //     err.response?.data['message'] ??
-      //         ['Too Many Request, Please message to adminitrator'],
-      //   );
-      // }
-      // if (err.response?.statusCode == HttpStatus.forbidden) {
-      //   // print(e.response?.data);
-      //   throw CustomExceptionForPost(
-      //       403,
-      //       err.response?.data['message'] ??
-      //           ['Forbidden, Please message to adminitrator']);
-      // }
     } catch (err) {
       throw CustomExceptionForPost(
         0,
@@ -128,7 +77,43 @@ class AuthService extends IAuthService {
     return data;
   }
 
-  signInOrRegister() async {
+  Future<Map<String, dynamic>> signInSSO(LoginSSOModel inp) async {
+    Map<String, dynamic> data = inp.toJson();
+    try {
+      var res =
+          await dioManager.dio.post(NetworkEnums.loginssourl.path, data: data);
+      data = res.data as Map<String, dynamic>;
 
+      return data;
+    } on DioException catch (err) {
+      CustomResponseError.buildThrowResponseFromServer(err);
+      return {};
+    } catch (err) {
+      throw CustomExceptionForPost(
+        0,
+        'Feature has problem',
+      );
+    }
+  }
+
+  Future<AuthModel?> registerSSO(LoginSSOModel inp) async {
+    Map<String, dynamic> data = inp.toJson();
+    try {
+      var res = await dioManager.dio
+          .post(NetworkEnums.registerssourl.path, data: data);
+      data = res.data as Map<String, dynamic>;
+
+      return AuthModel.fromJson(res.data);
+    } on DioException catch (err) {
+      print("register sso err" + err.toString());
+      CustomResponseError.buildThrowResponseFromServer(err);
+      return null;
+    } catch (err) {
+      print("register sso err1" + err.toString());
+      throw CustomExceptionForPost(
+        0,
+        'Feature has problem',
+      );
+    }
   }
 }

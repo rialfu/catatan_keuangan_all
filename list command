@@ -1,0 +1,6 @@
+generate keystore
+keytool -genkey -v -keystore "D:\folder-pilihan-anda\nama_keystore_bebas.jks" -alias nama_alias_anda -keyalg RSA -keysize 2048 -validity 10000
+liat sha keystore
+keytool -list -v -keystore "D:\folder-pilihan-anda\nama_keystore_bebas.jks" -alias nama_alias_anda
+
+untuk mendaftarkan google sso di google console

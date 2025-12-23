@@ -30,9 +30,43 @@ class LoginRequestedWithBiometric extends AuthEvent {
   List<Object?> get props => [email, password];
 }
 
+class LoginWithGoogleSSO extends AuthEvent {
+  final String idToken;
+  final String email;
+  const LoginWithGoogleSSO(this.idToken, this.email);
+  @override
+  List<Object?> get props => [idToken];
+}
+
+class RegisterWithGoogleSSO extends AuthEvent {
+  final String idToken;
+  final String email;
+  final String name;
+  final String password;
+  const RegisterWithGoogleSSO(
+    this.idToken,
+    this.email,
+    this.name,
+    this.password,
+  );
+  @override
+  List<Object?> get props => [idToken, email, name, password];
+}
+
 class LogoutRequested extends AuthEvent {}
 
 class CleanAuthRequest extends AuthEvent {}
+
+class CleanAuthRequestRegister extends AuthEvent {
+  final String idToken;
+  final String email;
+  const CleanAuthRequestRegister(
+    this.idToken,
+    this.email,
+  );
+  @override
+  List<Object?> get props => [idToken, email];
+}
 
 class RegisterRequested extends AuthEvent {
   final LoginModel data;

@@ -16,14 +16,6 @@ export class JwtStrategy extends PassportStrategy(Strategy) {
             // usernameField:'email',
         });
     }
-    
-    // async handleRequest(err: any, user: any, info: any, context: any, status: any){
-    //     Logger.log(err)
-    //     Logger.log(user)
-    //     Logger.log(info)
-    //     Logger.log(status)
-    //     return super.handleRequest(err, user, info, context, status);
-    // }
     async validate(payload: any) {
         
         return {

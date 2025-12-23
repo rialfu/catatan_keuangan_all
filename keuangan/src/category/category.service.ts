@@ -49,15 +49,15 @@ export class CategoryService {
         let query = this.categoryRepo.createQueryBuilder('c')
         query.select(['c.id as id',' c.category_name as category_name', 
             'c.canDelete as canUpdate',
-            'case when c.canDelete =  false then false when c.canDelete = true and count(t.id) > 0 then false else true end canDelete',
+            '(case when c.canDelete =  false then false when c.canDelete = true and count(t.id) > 0 then false else true end) as canDelete',
             
         ]) 
         query = query.leftJoin(Transaction, 't', 'c.id=t.categoryId')
-        query = query.where('canDelete=false')
+        query = query.where('c.canDelete=false')
         if(search['user_id'] != undefined){
             query = query.orWhere('c.userId = :userId',{userId:search['user_id']})
         }
-        query = query.groupBy('c.id').addGroupBy('category_name').addGroupBy('canDelete');
+        query = query.groupBy('c.id').addGroupBy('category_name').addGroupBy('c.canDelete');
         return query.getRawMany()
     
     }

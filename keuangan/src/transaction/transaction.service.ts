@@ -25,7 +25,10 @@ export class TransactionService {
         
         let defaultFormat :string = `DATE_FORMAT(t.tanggal_transaksi,\'%Y-%m-%d\') as tanggal_transaksi`
        
-        if(process.env.TYPE_DB == 'mssql'){
+        if(process.env.TYPE_DB == 'postgres'){
+            defaultFormat = 'TO_CHAR(t.tanggal_transaksi, \'YYYY-MM-DD\') AS tanggal_transaksi'
+        }
+        else if(process.env.TYPE_DB == 'mssql'){
             defaultFormat = `convert(varchar, t.tanggal, 23)`
         }
         let query = this.transactionRepo.createQueryBuilder('t')
@@ -103,17 +106,23 @@ export class TransactionService {
         return res;
     }
     accumulation_based_month(data: any): Promise<any[]>{
+        let tanggalCo : string = 'DATE_FORMAT(tanggal_transaksi, "%Y-%m")'
+        let yearTx : string = 'YEAR(tanggal_transaksi)'
+        if(process.env.TYPE_DB=='postgres'){
+            tanggalCo = 'TO_CHAR(tanggal_transaksi, \'YYYY-MM\')'
+            yearTx = 'EXTRACT(YEAR FROM tanggal_transaksi)'
+        }
         let query = this.transactionRepo.createQueryBuilder('t')
         .select(['sum(harga) as total',
-            'DATE_FORMAT(tanggal_transaksi, "%Y-%m") as tanggal'
+            tanggalCo+' as tanggal'
             , 'debcre'])
         .where('t.userId = :userId', {userId:data['userId']})
         if (data?.tanggal_transaksi != undefined){
-            query = query.andWhere('YEAR(tanggal_transaksi) = :tanggal_transaksi', {tanggal_transaksi:data['tanggal_transaksi'].split('-')[0]})
+            query = query.andWhere(yearTx+' = :tanggal_transaksi', {tanggal_transaksi:data['tanggal_transaksi'].split('-')[0]})
         }
         const res = query
             .groupBy('t.debcre')
-            .addGroupBy('DATE_FORMAT(tanggal_transaksi, "%Y-%m")')
+            .addGroupBy(tanggalCo)
             .getRawMany()
         return res;
     }
@@ -151,6 +160,10 @@ export class TransactionService {
             abortProcess = true; // Abort proses jika ada error pada stream CSV
             // stringifier.end();
         });
+        let tanggalCo: string = 'DATE_FORMAT(tanggal_transaksi, \'%Y-%m-%d\') as tanggal'
+        if(process.env.TYPE_DB == 'postgres'){
+            tanggalCo = 'TO_CHAR(tanggal_transaksi, \'YYYY-MM-DD\') AS tanggal'
+        }
         let batch_size = 100;
         (async () => {
             let offset = 0;
@@ -167,7 +180,7 @@ export class TransactionService {
                         'case when debcre = \'debit\' then \'Income\' else \'Expense\' end as ie',
                         'harga as amount',
                         'c.category_name as category',
-                        'DATE_FORMAT(tanggal_transaksi, \'%Y-%m-%d\') as tanggal'
+                        tanggalCo
                     ])
                     .leftJoin(Category, 'c', 'c.id = t.categoryId')
                     .where('tanggal_transaksi >= :start_date',{start_date:start_date.toISOString().split('T')[0]})
@@ -184,16 +197,7 @@ export class TransactionService {
                     .offset(offset)
                     .getRawMany()
                     
-                    // console.log(data)
-                    
                     if (data.length > 0) {
-                        // if(isFirstBatch){
-                        //     isFirstBatch = false;
-                        //     stringifier.write(data)
-                        // }else{
-                        //     stringifier.options.header = false;
-                        //     stringifier.write(data)
-                        // }
                         for(let i=0; i<data.length;i++){
                             stringifier.write(data[i])
                             if(isFirstBatch){

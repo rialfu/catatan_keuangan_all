@@ -1,7 +1,4 @@
-// ignore_for_file: use_build_context_synchronously
-
 import 'package:catatan_keuangan/components/component_custom.dart';
-import 'package:catatan_keuangan/constants/message_custom.dart';
 import 'package:catatan_keuangan/customClass/custom_exception.dart';
 import 'package:catatan_keuangan/init/network/dio_manager.dart';
 import 'package:catatan_keuangan/screens/notifier/authenticate_screen_notifier.dart';
@@ -67,30 +64,6 @@ class _RegisterComponentState extends State<RegisterComponent> {
     } on DioException catch (e) {
       List<String> message = CustomResponseError.buildResponseFromServer(e);
       ComponentCustom.alert(contextD, message, 'Error');
-      //       // showMessage(contextD, message, 'Error');
-      // if (e.type == DioExceptionType.connectionError) {
-      //   ComponentCustom.alert(
-      //       contextD, [MessageCustom.serverNotActive], 'Error');
-      // }
-      // if (e.type == DioExceptionType.connectionTimeout) {
-      //   ComponentCustom.alert(
-      //       contextD, [MessageCustom.serverNotActive], 'Error');
-      // }
-      // if (e.response?.statusCode == 400 || e.response?.statusCode == 429) {
-      //   Map responseMessage = e.response?.data as Map;
-      //   if (responseMessage.containsKey('message')) {
-      //     List message = [];
-      //     if (responseMessage['message'] is List) {
-      //       message = responseMessage['message'];
-      //     } else if (responseMessage['message'] is String) {
-      //       message.add(responseMessage['message']);
-      //     }
-      //     if (contextD.mounted) {
-      //       ComponentCustom.alert(contextD, message, 'Error');
-      //       // showMessage(contextD, message, 'Error');
-      //     }
-      //   }
-      // }
     } catch (err) {
       ComponentCustom.alert(contextD, [err.toString()], 'Error');
       // showMessage(contextD, [err.toString()], 'Error');

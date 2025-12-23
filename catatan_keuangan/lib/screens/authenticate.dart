@@ -39,10 +39,10 @@ class _AuthenticateScreenState extends State<AuthenticateScreen> {
     // notifier = context.read<AuthenticateScreenNotifier>();
 
     authStream = authBloc.stream.listen((state) {
-      /// statements after async gap without warning
-      if (state is AuthStateLogin) {
+      if (state is AuthStateLogin || state is AuthStateRegisterSSO) {
         // if (state is LoginState) {
         Future.delayed(Duration(milliseconds: 500), () {
+          if (!mounted) return;
           Navigator.pushReplacement(
             context,
             MaterialPageRoute(builder: (context) => state.status.firstView),
@@ -54,7 +54,6 @@ class _AuthenticateScreenState extends State<AuthenticateScreen> {
 
   @override
   void dispose() {
-    // notifier?.dispose();
     emailController.dispose();
     passwordController.dispose();
     authStream.cancel();
@@ -223,27 +222,6 @@ class _AuthenticateScreenState extends State<AuthenticateScreen> {
                   ),
                 );
               }),
-              // Consumer<AuthenticateScreenNotifier>(
-              //   builder: (context, value, child) {
-              //     return AnimatedPositioned(
-              //       top: context.dynamicHeight(0.1),
-              //       duration: Duration(milliseconds: 300),
-              //       left: value.page == 'first'
-              //           ? -context.dynamicHeight(0.2)
-              //           : context.dynamicWidth(0.1),
-              //       child: Text(
-              //         value.page == 'login'
-              //             ? "Hello \nSign In!"
-              //             : "Create Your \nAccount ",
-              //         style: TextStyle(
-              //           color: Colors.white,
-              //           fontSize: context.dynamicHeight(0.035),
-              //           fontWeight: FontWeight.w800,
-              //         ),
-              //       ),
-              //     );
-              //   },
-              // ),
               Consumer<AuthenticateScreenNotifier>(
                 builder: (context, value, child) {
                   return AnimatedPositioned(

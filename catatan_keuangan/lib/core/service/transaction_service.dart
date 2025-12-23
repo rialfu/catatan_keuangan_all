@@ -1,6 +1,3 @@
-import 'dart:io';
-
-import 'package:catatan_keuangan/constants/message_custom.dart';
 import 'package:catatan_keuangan/core/model/category_model.dart';
 import 'package:catatan_keuangan/core/model/transaction_bulk_model.dart';
 import 'package:catatan_keuangan/core/model/transaction_daily_model.dart';
@@ -21,16 +18,6 @@ class TransactionService {
     } on DioException catch (e) {
       CustomResponseError.buildThrowResponseFromServer(e);
       return [];
-      // if (e.type == DioExceptionType.connectionError) {
-      //   throw CustomExceptionForPost(0, MessageCustom.serverNotActive);
-      // }
-      // if (e.type == DioExceptionType.connectionTimeout) {
-      //   throw CustomExceptionForPost(0, MessageCustom.serverNotActive);
-      // }
-      // if (e.response?.statusCode == HttpStatus.unauthorized) {
-      //   throw Exception('unauthorized');
-      // }
-      // throw Exception(e.message);
     } catch (err) {
       throw Exception(err);
     }
